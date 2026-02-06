@@ -8,14 +8,15 @@ export const useNotesStore = defineStore('notes', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  async function fetchNotesByItemId(itemId: string) {
+  async function fetchNotesByItemId(itemId: string): Promise<Note[]> {
     loading.value = true
     error.value = null
     try {
-      notes.value = await storage.getNotesByItemId(itemId)
+      return await storage.getNotesByItemId(itemId)
     } catch (e: any) {
       error.value = 'Error al cargar las notas'
       console.error(e)
+      return []
     } finally {
       loading.value = false
     }

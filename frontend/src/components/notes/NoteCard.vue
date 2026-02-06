@@ -28,7 +28,7 @@ function formatDate(date: Date): string {
         <div class="note-header">
             <div class="note-date">
                 <i class="fas fa-calendar"></i>
-                {{ formatDate(note.fecha) }}
+                {{ formatDate(note.fechaCreacion) }}
             </div>
             <div class="note-actions">
                 <button class="btn-icon" title="Editar nota" @click="emit('edit', note.id)">
@@ -41,11 +41,11 @@ function formatDate(date: Date): string {
         </div>
 
         <div class="note-content">
-            <div v-if="note.spoilers" class="spoiler-warning">
+            <div v-if="note.esSpoiler" class="spoiler-warning">
                 <i class="fas fa-exclamation-triangle"></i>
                 Contiene spoilers
             </div>
-            <p class="note-text">{{ note.texto }}</p>
+            <p class="note-text">{{ note.contenido }}</p>
         </div>
     </div>
 </template>

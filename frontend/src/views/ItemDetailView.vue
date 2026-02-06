@@ -39,7 +39,7 @@ async function loadItem() {
 }
 
 async function loadNotes() {
-    itemNotes.value = await notesStore.fetchNotesByItem(itemId)
+    itemNotes.value = await notesStore.fetchNotesByItemId(itemId)
 }
 
 const typeIcons: Record<ItemType, string> = {
@@ -100,12 +100,15 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean }) {
 
     try {
         if (editingNoteId.value) {
-            await notesStore.updateNote(editingNoteId.value, data.texto, data.spoilers)
+            await notesStore.updateNote(editingNoteId.value, {
+                contenido: data.texto,
+                esSpoiler: data.spoilers
+            })
         } else {
             await notesStore.createNote({
                 itemId: item.value.id,
-                texto: data.texto,
-                spoilers: data.spoilers
+                contenido: data.texto,
+                esSpoiler: data.spoilers
             })
         }
         await loadNotes()
@@ -250,8 +253,9 @@ const editingNote = computed(() => {
         <!-- Note Modal -->
         <AppModal :is-open="showNoteModal" :title="editingNoteId ? 'Editar Nota' : 'Nueva Nota'"
             @close="showNoteModal = false; editingNoteId = null">
-            <NoteForm :item-id="item.id" :initial-text="editingNote?.texto" :initial-spoilers="editingNote?.spoilers"
-                @save="handleSaveNote" @cancel="showNoteModal = false; editingNoteId = null" />
+            <NoteForm :item-id="item.id" :initial-text="editingNote?.contenido"
+                :initial-spoilers="editingNote?.esSpoiler" @save="handleSaveNote"
+                @cancel="showNoteModal = false; editingNoteId = null" />
         </AppModal>
 
         <!-- Delete Confirmation Modal -->
