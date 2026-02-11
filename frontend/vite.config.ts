@@ -22,12 +22,12 @@ export default defineConfig({
         display: 'standalone',
         icons: [
           {
-            src: 'favicon.png', // Since it's in public root
-            sizes: '192x192', // Assuming it scales or is large enough
+            src: 'favicon.png?v=2',
+            sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'app-icon.png',
+            src: 'app-icon.png?v=2',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
