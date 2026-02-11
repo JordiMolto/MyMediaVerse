@@ -1,0 +1,72 @@
+@import './variables.css';
+
+/* Background Colors */
+.bg-main {
+    background-color: var(--color-bg-main);
+}
+
+.bg-surface {
+    background-color: var(--color-bg-surface);
+}
+
+.bg-card {
+    background-color: var(--color-bg-card);
+}
+
+.bg-card-hover:hover {
+    background-color: var(--color-bg-card-hover);
+}
+
+/* Semantic Backgrounds */
+.bg-primary {
+    background-color: var(--color-primary);
+}
+
+.bg-success {
+    background-color: var(--color-success);
+}
+
+.bg-warning {
+    background-color: var(--color-warning);
+}
+
+.bg-danger {
+    background-color: var(--color-danger);
+}
+
+/* Glassmorphism */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Gradients */
+.grad-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+}
+
+.grad-dark {
+    background: linear-gradient(135deg, var(--color-bg-surface), var(--color-bg-main));
+}
+
+/* Border Colors */
+.border {
+    border: 1px solid var(--color-border);
+}
+
+.border-primary {
+    border: 1px solid var(--color-primary);
+}
+
+.border-dashed {
+    border: 1px dashed var(--color-border);
+}
