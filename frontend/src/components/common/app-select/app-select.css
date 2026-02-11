@@ -1,62 +1,66 @@
 .app-select {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
-}
+    gap: var(--space-2);
 
-.select-label {
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    color: var(--text-primary);
-}
+    .select-label {
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-semibold);
+        color: var(--color-text-primary);
 
-.required {
-    color: var(--color-danger);
-}
+        .required {
+            color: var(--color-danger);
+            margin-left: var(--space-1);
+        }
+    }
 
-.select-wrapper {
-    position: relative;
-}
+    .select-wrapper {
+        position: relative;
 
-.select-field {
-    width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
-    padding-right: calc(var(--spacing-md) + 24px);
-    background: var(--bg-card);
-    border: 2px solid transparent;
-    border-radius: var(--radius-md);
-    color: var(--text-primary);
-    font-size: var(--font-size-base);
-    font-family: var(--font-family);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    appearance: none;
-}
+        .select-field {
+            width: 100%;
+            padding: var(--space-3) var(--space-4);
+            padding-right: calc(var(--space-4) + 24px);
+            background: var(--color-bg-card);
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-md);
+            color: var(--color-text-primary);
+            font-size: var(--fs-base);
+            font-family: var(--font-main);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            appearance: none;
 
-.select-field:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    background: var(--bg-secondary);
-}
+            &:focus {
+                outline: none;
+                border-color: var(--color-primary);
+                background: var(--color-bg-card-hover);
+                box-shadow: 0 0 0 4px var(--color-primary-alpha);
+            }
 
-.select-field:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        }
 
-.select-icon {
-    position: absolute;
-    right: var(--spacing-md);
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted);
-    pointer-events: none;
-}
+        .select-icon {
+            position: absolute;
+            right: var(--space-4);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-muted);
+            pointer-events: none;
+            font-size: var(--fs-base);
+        }
+    }
 
-.select-error {
-    font-size: var(--font-size-sm);
-    color: var(--color-danger);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
+    .select-error {
+        font-size: var(--fs-sm);
+        color: var(--color-danger);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-top: var(--space-1);
+    }
 }

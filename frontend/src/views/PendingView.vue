@@ -59,57 +59,62 @@ async function handleChangeStatus(id: string, status: ItemStatus) {
 </script>
 
 <template>
-  <div class="pending-view">
-    <div class="container">
-      <header class="page-header">
-        <h1 class="page-title">
-          <i class="fas fa-clock"></i>
+  <div class="pending-view py-12">
+    <div class="container flex flex-col gap-10">
+      <header class="page-header text-center flex flex-col gap-2">
+        <h1 class="page-title text-3xl fw-bold flex items-center justify-center gap-4">
+          <i class="fas fa-clock text-warning"></i>
           Pendientes
         </h1>
-        <p class="page-subtitle">{{ filteredItems.length }} items por ver/leer/jugar</p>
+        <p class="page-subtitle text-secondary">{{ filteredItems.length }} items por ver/leer/jugar</p>
       </header>
 
-      <div class="type-tabs">
-        <button class="type-tab" :class="{ active: selectedType === null }" @click="selectType(null)">
+      <div class="type-tabs flex gap-3 overflow-x-auto pb-2">
+        <button class="type-tab flex items-center gap-2 px-6 py-3 rounded-md bg-surface text-secondary fw-semibold transition-all hover:bg-card hover:text-primary" 
+          :class="{ active: selectedType === null }" @click="selectType(null)">
           <i class="fas fa-th"></i>
           Todos
         </button>
-        <button v-for="type in types" :key="type.value" class="type-tab"
+        <button v-for="type in types" :key="type.value" class="type-tab flex items-center gap-2 px-6 py-3 rounded-md bg-surface text-secondary fw-semibold transition-all hover:bg-card hover:text-primary"
           :class="{ active: selectedType === type.value }" @click="selectType(type.value)">
           <i class="fas" :class="type.icon"></i>
           {{ type.label }}
         </button>
       </div>
 
-      <div v-if="itemsStore.loading" class="loading">
-        <i class="fas fa-spinner fa-spin"></i>
-        Cargando...
+      <div v-if="itemsStore.loading" class="loading flex items-center justify-center gap-4 py-12 text-secondary">
+        <i class="fas fa-spinner fa-spin text-2xl"></i>
+        <span>Cargando...</span>
       </div>
 
-      <div v-else-if="filteredItems.length === 0" class="empty-state">
-        <i class="fas fa-inbox"></i>
-        <p>No hay items pendientes</p>
-        <p class="empty-hint">¡Añade algo nuevo para empezar!</p>
+      <div v-else-if="filteredItems.length === 0" class="empty-state flex flex-col items-center gap-4 py-12 text-secondary">
+        <i class="fas fa-inbox text-5xl opacity-30"></i>
+        <div class="text-center">
+          <p class="text-xl">No hay items pendientes</p>
+          <p class="empty-hint text-sm text-muted">¡Añade algo nuevo para empezar!</p>
+        </div>
       </div>
 
-      <div v-else class="items-grid">
-        <div v-for="item in filteredItems" :key="item.id" class="item-card" @click="goToDetail(item.id)">
-          <div class="item-header">
-            <h3 class="item-title">{{ item.titulo }}</h3>
-            <span class="item-type">
+      <div v-else class="flex flex-wrap gap-6 animate-fade">
+        <div v-for="item in filteredItems" :key="item.id" class="item-card glass-card p-6 flex flex-col gap-6 hover-lift" @click="goToDetail(item.id)">
+          <div class="item-header flex justify-between items-start">
+            <h3 class="item-title text-lg fw-semibold truncate">{{ item.titulo }}</h3>
+            <span class="item-type-badge flex-shrink-0 w-8 h-8 flex items-center justify-center rounded bg-primary text-white">
               <i class="fas" :class="types.find(t => t.value === item.tipo)?.icon"></i>
             </span>
           </div>
-          <div class="item-footer">
-            <div class="item-priority">
+          <div class="item-footer flex justify-between items-center">
+            <div class="item-priority flex gap-1 text-warning text-sm">
               <i v-for="n in (item.prioridad || 1)" :key="n" class="fas fa-star"></i>
             </div>
-            <div class="item-actions">
-              <button class="btn-icon" title="Marcar en progreso"
+            <div class="item-actions flex gap-2">
+              <button class="btn-icon w-8 h-8 rounded bg-surface text-secondary flex items-center justify-center transition-all hover:bg-primary hover:text-white" 
+                title="Marcar en progreso"
                 @click.stop="handleChangeStatus(item.id, ItemStatus.IN_PROGRESS)">
                 <i class="fas fa-play"></i>
               </button>
-              <button class="btn-icon" title="Marcar completado"
+              <button class="btn-icon w-8 h-8 rounded bg-surface text-secondary flex items-center justify-center transition-all hover:bg-success hover:text-white" 
+                title="Marcar completado"
                 @click.stop="handleChangeStatus(item.id, ItemStatus.COMPLETED)">
                 <i class="fas fa-check"></i>
               </button>
@@ -120,7 +125,8 @@ async function handleChangeStatus(id: string, status: ItemStatus) {
     </div>
 
     <!-- Floating Action Button -->
-    <button class="fab" @click="showCreateModal = true" title="Añadir nuevo item">
+    <button class="fab fixed bottom-8 right-8 w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl z-20 hover-scale" 
+      @click="showCreateModal = true" title="Añadir nuevo item">
       <i class="fas fa-plus"></i>
     </button>
 
@@ -133,202 +139,35 @@ async function handleChangeStatus(id: string, status: ItemStatus) {
 
 <style scoped>
 .pending-view {
-  min-height: 100vh;
-  padding: var(--spacing-xl) 0;
-}
+  min-height: calc(100vh - var(--header-height));
 
-.page-header {
-  text-align: center;
-  margin-bottom: var(--spacing-xl);
-}
+  .type-tab {
+    &.active {
+      background: var(--color-primary);
+      color: white;
+    }
+  }
 
-.page-title {
-  font-size: var(--font-size-3xl);
-  font-weight: 700;
-  margin-bottom: var(--spacing-xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-}
+  .item-card {
+    width: calc(33.333% - 1.1rem);
+    min-width: 280px;
 
-.page-subtitle {
-  font-size: var(--font-size-lg);
-  color: var(--text-secondary);
-}
+    @media (max-width: 1024px) {
+      width: calc(50% - 0.75rem);
+    }
 
-.type-tabs {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-xl);
-  overflow-x: auto;
-  padding-bottom: var(--spacing-xs);
-}
+    @media (max-width: 768px) {
+      width: 100%;
+    }
+  }
 
-.type-tab {
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-card);
-  border: 2px solid transparent;
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
+  .fab {
+    background: var(--color-primary);
+    box-shadow: 0 4px 20px var(--color-primary-alpha);
 
-.type-tab:hover {
-  background: var(--bg-card-hover);
-  color: var(--text-primary);
-}
-
-.type-tab.active {
-  background: var(--color-primary);
-  color: white;
-  border-color: var(--color-primary);
-}
-
-.loading {
-  text-align: center;
-  padding: var(--spacing-xl);
-  font-size: var(--font-size-lg);
-  color: var(--text-secondary);
-}
-
-.loading i {
-  margin-right: var(--spacing-sm);
-}
-
-.empty-state {
-  text-align: center;
-  padding: var(--spacing-xl);
-  color: var(--text-secondary);
-}
-
-.empty-state i {
-  font-size: var(--font-size-4xl);
-  margin-bottom: var(--spacing-md);
-  opacity: 0.5;
-}
-
-.empty-hint {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-}
-
-.items-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--spacing-md);
-}
-
-.item-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
-  transition: all var(--transition-normal);
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-}
-
-.item-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-}
-
-.item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--spacing-md);
-}
-
-.item-title {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  flex: 1;
-  margin-right: var(--spacing-sm);
-}
-
-.item-type {
-  width: 32px;
-  height: 32px;
-  background: var(--color-primary);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  flex-shrink: 0;
-}
-
-.item-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.item-priority {
-  color: var(--color-warning);
-  font-size: var(--font-size-sm);
-}
-
-.item-actions {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.btn-icon {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-icon:hover {
-  background: var(--color-primary);
-  color: white;
-}
-
-.fab {
-  position: fixed;
-  bottom: var(--spacing-xl);
-  right: var(--spacing-xl);
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary), hsl(220, 90%, 48%));
-  color: white;
-  border: none;
-  box-shadow: var(--shadow-lg);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--font-size-xl);
-  transition: all var(--transition-normal);
-  z-index: 100;
-}
-
-.fab:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.5);
-}
-
-@media (max-width: 768px) {
-  .items-grid {
-    grid-template-columns: 1fr;
+    &:hover {
+      box-shadow: 0 8px 30px var(--color-primary-alpha);
+    }
   }
 }
 </style>

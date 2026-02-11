@@ -24,108 +24,44 @@ function formatDate(date: Date): string {
 </script>
 
 <template>
-    <div class="note-card">
-        <div class="note-header">
-            <div class="note-date">
-                <i class="fas fa-calendar"></i>
-                {{ formatDate(note.fechaCreacion) }}
-            </div>
-            <div class="note-actions">
-                <button class="btn-icon" title="Editar nota" @click="emit('edit', note.id)">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-icon btn-danger" title="Eliminar nota" @click="emit('delete', note.id)">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="note-content">
-            <div v-if="note.esSpoiler" class="spoiler-warning">
-                <i class="fas fa-exclamation-triangle"></i>
-                Contiene spoilers
-            </div>
-            <p class="note-text">{{ note.contenido }}</p>
-        </div>
+  <div class="note-card glass-card p-6 flex flex-col gap-4">
+    <div class="note-header flex justify-between items-center">
+      <div class="note-date flex items-center gap-2 text-xs text-muted">
+        <i class="fas fa-calendar"></i>
+        <span>{{ formatDate(note.fechaCreacion) }}</span>
+      </div>
+      <div class="note-actions flex gap-2">
+        <button class="btn-icon p-1.5 rounded bg-surface text-secondary transition-all hover:bg-primary hover:text-white" title="Editar nota" @click="emit('edit', note.id)">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn-icon p-1.5 rounded bg-surface text-secondary transition-all hover:bg-danger hover:text-white" title="Eliminar nota" @click="emit('delete', note.id)">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
     </div>
+
+    <div class="note-content flex flex-col gap-3">
+      <div v-if="note.esSpoiler" class="spoiler-warning flex items-center gap-2 px-3 py-1 rounded-md bg-warning/10 border border-warning text-warning text-xs fw-bold w-fit">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Contiene spoilers</span>
+      </div>
+      <p class="note-text text-primary leading-relaxed whitespace-pre-wrap break-words">{{ note.contenido }}</p>
+    </div>
+  </div>
 </template>
 
 <style scoped>
 .note-card {
-    background: var(--bg-card);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
-    border-left: 3px solid var(--color-primary);
-}
+  border-left: 4px solid var(--color-primary);
 
-.note-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-sm);
-}
-
-.note-date {
-    font-size: var(--font-size-xs);
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-}
-
-.note-actions {
-    display: flex;
-    gap: var(--spacing-xs);
-}
-
-.btn-icon {
-    width: 28px;
-    height: 28px;
-    border: none;
-    background: var(--bg-secondary);
-    color: var(--text-secondary);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all var(--transition-fast);
+  .btn-icon {
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--font-size-sm);
-}
-
-.btn-icon:hover {
-    background: var(--color-primary);
-    color: white;
-}
-
-.btn-icon.btn-danger:hover {
-    background: var(--color-danger);
-}
-
-.note-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-.spoiler-warning {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background: rgba(255, 193, 7, 0.1);
-    border: 1px solid var(--color-warning);
-    border-radius: var(--radius-sm);
-    color: var(--color-warning);
-    font-size: var(--font-size-xs);
-    font-weight: 600;
-    width: fit-content;
-}
-
-.note-text {
-    color: var(--text-primary);
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-wrap: break-word;
+    border: none;
+    cursor: pointer;
+  }
 }
 </style>

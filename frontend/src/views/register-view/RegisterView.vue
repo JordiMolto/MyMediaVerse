@@ -96,72 +96,73 @@ function goToLogin() {
 
 <style scoped>
 .register-view {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-xl);
-    background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
-}
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background: radial-gradient(circle at top left, var(--color-primary-alpha), transparent),
+              radial-gradient(circle at bottom right, var(--color-accent-alpha), transparent),
+              var(--color-bg-main);
 
-.register-container {
+  .register-container {
     width: 100%;
     margin: 0 auto;
     max-width: 450px;
-}
+  }
 
-.register-header {
+  .register-header {
     text-align: center;
-    margin-bottom: var(--spacing-xl);
-}
-
-.register-title {
-    font-size: var(--font-size-3xl);
-    font-weight: 700;
-    margin-bottom: var(--spacing-xs);
-}
-
-.register-subtitle {
-    color: var(--text-secondary);
-    font-size: var(--font-size-base);
-}
-
-.register-form {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
-}
+    gap: var(--space-2);
 
-.error-message {
-    padding: var(--spacing-sm) var(--spacing-md);
-    background: rgba(239, 68, 68, 0.1);
+    .register-title {
+      font-size: var(--fs-3xl);
+      font-weight: var(--fw-bold);
+      color: var(--color-text-primary);
+    }
+
+    .register-subtitle {
+      color: var(--color-text-secondary);
+      font-size: var(--fs-base);
+    }
+  }
+
+  .register-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .error-message {
+    padding: var(--space-3) var(--space-4);
+    background: hsla(0, 85%, 60%, 0.1);
     border: 1px solid var(--color-danger);
     border-radius: var(--radius-md);
     color: var(--color-danger);
-    font-size: var(--font-size-sm);
+    font-size: var(--fs-sm);
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
-}
+    gap: var(--space-2);
+  }
 
-.register-footer {
+  .register-footer {
     text-align: center;
-    padding-top: var(--spacing-lg);
-    border-top: 1px solid var(--bg-card);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm);
-}
+    gap: var(--space-2);
 
-.register-footer p {
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-}
-
-@media (max-width: 768px) {
-    .register-view {
-        padding: var(--spacing-md);
+    p {
+      color: var(--color-text-secondary);
+      font-size: var(--fs-sm);
     }
+  }
+
+  @media (max-width: 768px) {
+    padding: var(--space-4);
+  }
 }
 </style>

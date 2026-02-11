@@ -49,74 +49,33 @@ function handleCancel() {
 </script>
 
 <template>
-    <form class="note-form" @submit.prevent="handleSubmit">
-        <AppInput v-model="texto" type="textarea" label="Nota" placeholder="Escribe tu nota aquí..." :rows="6" required
-            :error="error" />
+  <form class="note-form flex flex-col gap-6" @submit.prevent="handleSubmit">
+    <AppInput v-model="texto" type="textarea" label="Nota" placeholder="Escribe tu nota aquí..." :rows="6" required
+      :error="error" />
 
-        <div class="spoiler-checkbox">
-            <label class="checkbox-label">
-                <input v-model="spoilers" type="checkbox" class="checkbox-input">
-                <span class="checkbox-text">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Contiene spoilers
-                </span>
-            </label>
-        </div>
+    <div class="spoiler-checkbox py-2">
+      <label class="checkbox-label flex items-center gap-3 cursor-pointer select-none">
+        <input v-model="spoilers" type="checkbox" class="checkbox-input w-5 h-5 cursor-pointer accent-warning">
+        <span class="checkbox-text flex items-center gap-2 text-sm text-secondary">
+          <i class="fas fa-exclamation-triangle text-warning"></i>
+          Contiene spoilers
+        </span>
+      </label>
+    </div>
 
-        <div class="form-actions">
-            <AppButton type="button" variant="ghost" @click="handleCancel">
-                Cancelar
-            </AppButton>
-            <AppButton type="submit" variant="primary" icon="fa-save">
-                Guardar Nota
-            </AppButton>
-        </div>
-    </form>
+    <div class="form-actions flex gap-4 justify-end pt-6 border-t border-white/5">
+      <AppButton type="button" variant="ghost" @click="handleCancel">
+        Cancelar
+      </AppButton>
+      <AppButton type="submit" variant="primary" icon="fa-save">
+        Guardar Nota
+      </AppButton>
+    </div>
+  </form>
 </template>
 
 <style scoped>
 .note-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-}
-
-.spoiler-checkbox {
-    padding: var(--spacing-sm) 0;
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    cursor: pointer;
-    user-select: none;
-}
-
-.checkbox-input {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    accent-color: var(--color-warning);
-}
-
-.checkbox-text {
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-}
-
-.checkbox-text i {
-    color: var(--color-warning);
-}
-
-.form-actions {
-    display: flex;
-    gap: var(--spacing-sm);
-    justify-content: flex-end;
-    padding-top: var(--spacing-md);
-    border-top: 1px solid var(--bg-card);
+  width: 100%;
 }
 </style>

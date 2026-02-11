@@ -58,63 +58,68 @@ function getRatingStars(rating?: number) {
 </script>
 
 <template>
-  <div class="completed-view">
-    <div class="container">
-      <header class="page-header">
-        <h1 class="page-title">
-          <i class="fas fa-check-circle"></i>
+  <div class="completed-view py-12">
+    <div class="container flex flex-col gap-10">
+      <header class="page-header text-center flex flex-col gap-2">
+        <h1 class="page-title text-3xl fw-bold flex items-center justify-center gap-4">
+          <i class="fas fa-check-circle text-success"></i>
           Completados
         </h1>
-        <p class="page-subtitle">{{ filteredItems.length }} items vistos/leídos/jugados</p>
+        <p class="page-subtitle text-secondary">{{ filteredItems.length }} items vistos/leídos/jugados</p>
       </header>
 
-      <div class="type-tabs">
-        <button class="type-tab" :class="{ active: selectedType === null }" @click="selectType(null)">
+      <div class="type-tabs flex gap-3 overflow-x-auto pb-2">
+        <button class="type-tab flex items-center gap-2 px-6 py-3 rounded-md bg-surface text-secondary fw-semibold transition-all hover:bg-card hover:text-primary" 
+          :class="{ active: selectedType === null }" @click="selectType(null)">
           <i class="fas fa-th"></i>
           Todos
         </button>
-        <button v-for="type in types" :key="type.value" class="type-tab"
+        <button v-for="type in types" :key="type.value" class="type-tab flex items-center gap-2 px-6 py-3 rounded-md bg-surface text-secondary fw-semibold transition-all hover:bg-card hover:text-primary"
           :class="{ active: selectedType === type.value }" @click="selectType(type.value)">
           <i class="fas" :class="type.icon"></i>
           {{ type.label }}
         </button>
       </div>
 
-      <div v-if="itemsStore.loading" class="loading">
-        <i class="fas fa-spinner fa-spin"></i>
-        Cargando...
+      <div v-if="itemsStore.loading" class="loading flex items-center justify-center gap-4 py-12 text-secondary">
+        <i class="fas fa-spinner fa-spin text-2xl"></i>
+        <span>Cargando...</span>
       </div>
 
-      <div v-else-if="filteredItems.length === 0" class="empty-state">
-        <i class="fas fa-inbox"></i>
-        <p>No hay items completados</p>
-        <p class="empty-hint">¡Completa algo de tu lista pendiente!</p>
+      <div v-else-if="filteredItems.length === 0" class="empty-state flex flex-col items-center gap-4 py-12 text-secondary">
+        <i class="fas fa-inbox text-5xl opacity-30"></i>
+        <div class="text-center">
+          <p class="text-xl">No hay items completados</p>
+          <p class="empty-hint text-sm text-muted">¡Completa algo de tu lista pendiente!</p>
+        </div>
       </div>
 
-      <div v-else class="items-grid">
-        <div v-for="item in filteredItems" :key="item.id" class="item-card" @click="goToDetail(item.id)">
-          <div class="item-header">
-            <h3 class="item-title">{{ item.titulo }}</h3>
-            <span class="item-type">
+      <div v-else class="flex flex-wrap gap-6 animate-fade">
+        <div v-for="item in filteredItems" :key="item.id" class="item-card glass-card p-6 flex flex-col gap-6 hover-lift" @click="goToDetail(item.id)">
+          <div class="item-header flex justify-between items-start">
+            <h3 class="item-title text-lg fw-semibold truncate">{{ item.titulo }}</h3>
+            <span class="item-type-badge flex-shrink-0 w-8 h-8 flex items-center justify-center rounded bg-success text-white">
               <i class="fas" :class="types.find(t => t.value === item.tipo)?.icon"></i>
             </span>
           </div>
 
-          <div v-if="item.rating" class="item-rating">
-            <i v-for="n in getRatingStars(item.rating).fullStars" :key="'full-' + n" class="fas fa-star"></i>
-            <i v-if="getRatingStars(item.rating).halfStar" class="fas fa-star-half-alt"></i>
-            <span class="rating-value">{{ item.rating }}/10</span>
+          <div v-if="item.rating" class="item-rating flex items-center gap-2 text-warning text-sm">
+            <div class="flex gap-1">
+              <i v-for="n in getRatingStars(item.rating).fullStars" :key="'full-' + n" class="fas fa-star"></i>
+              <i v-if="getRatingStars(item.rating).halfStar" class="fas fa-star-half-alt"></i>
+            </div>
+            <span class="rating-value text-muted fw-semibold">{{ item.rating }}/10</span>
           </div>
 
-          <div class="item-footer">
-            <div class="item-date">
+          <div class="item-footer flex justify-between items-center pt-4 border-t border-white/5">
+            <div class="item-date flex items-center gap-2 text-sm text-muted">
               <i class="fas fa-calendar"></i>
-              {{ new Date(item.fechaFin || item.fechaCreacion).toLocaleDateString('es-ES', {
+              <span>{{ new Date(item.fechaFin || item.fechaCreacion).toLocaleDateString('es-ES', {
                 year: 'numeric',
                 month: 'short'
-              }) }}
+              }) }}</span>
             </div>
-            <button class="btn-add-note" @click.stop="goToDetail(item.id)">
+            <button class="btn-add-note flex items-center gap-2 px-3 py-1.5 rounded bg-surface text-secondary text-sm fw-semibold transition-all hover:bg-primary hover:text-white" @click.stop="goToDetail(item.id)">
               <i class="fas fa-plus"></i>
               Añadir nota
             </button>
@@ -124,7 +129,8 @@ function getRatingStars(rating?: number) {
     </div>
 
     <!-- Floating Action Button -->
-    <button class="fab" @click="showCreateModal = true" title="Añadir nuevo item">
+    <button class="fab fixed bottom-8 right-8 w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl z-20 hover-scale" 
+      @click="showCreateModal = true" title="Añadir nuevo item">
       <i class="fas fa-plus"></i>
     </button>
 
@@ -137,218 +143,35 @@ function getRatingStars(rating?: number) {
 
 <style scoped>
 .completed-view {
-  min-height: 100vh;
-  padding: var(--spacing-xl) 0;
-}
+  min-height: calc(100vh - var(--header-height));
 
-.page-header {
-  text-align: center;
-  margin-bottom: var(--spacing-xl);
-}
+  .type-tab {
+    &.active {
+      background: var(--color-success);
+      color: white;
+    }
+  }
 
-.page-title {
-  font-size: var(--font-size-3xl);
-  font-weight: 700;
-  margin-bottom: var(--spacing-xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  color: var(--color-success);
-}
+  .item-card {
+    width: calc(33.333% - 1.1rem);
+    min-width: 280px;
 
-.page-subtitle {
-  font-size: var(--font-size-lg);
-  color: var(--text-secondary);
-}
+    @media (max-width: 1024px) {
+      width: calc(50% - 0.75rem);
+    }
 
-.type-tabs {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-xl);
-  overflow-x: auto;
-  padding-bottom: var(--spacing-xs);
-}
+    @media (max-width: 768px) {
+      width: 100%;
+    }
+  }
 
-.type-tab {
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-card);
-  border: 2px solid transparent;
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
+  .fab {
+    background: var(--color-success);
+    box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
 
-.type-tab:hover {
-  background: var(--bg-card-hover);
-  color: var(--text-primary);
-}
-
-.type-tab.active {
-  background: var(--color-success);
-  color: white;
-  border-color: var(--color-success);
-}
-
-.loading {
-  text-align: center;
-  padding: var(--spacing-xl);
-  font-size: var(--font-size-lg);
-  color: var(--text-secondary);
-}
-
-.loading i {
-  margin-right: var(--spacing-sm);
-}
-
-.empty-state {
-  text-align: center;
-  padding: var(--spacing-xl);
-  color: var(--text-secondary);
-}
-
-.empty-state i {
-  font-size: var(--font-size-4xl);
-  margin-bottom: var(--spacing-md);
-  opacity: 0.5;
-}
-
-.empty-hint {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-}
-
-.items-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--spacing-md);
-}
-
-.item-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
-  transition: all var(--transition-normal);
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-}
-
-.item-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-}
-
-.item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--spacing-sm);
-}
-
-.item-title {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  flex: 1;
-  margin-right: var(--spacing-sm);
-}
-
-.item-type {
-  width: 32px;
-  height: 32px;
-  background: var(--color-success);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  flex-shrink: 0;
-}
-
-.item-rating {
-  color: var(--color-warning);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--spacing-md);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.rating-value {
-  color: var(--text-secondary);
-  margin-left: var(--spacing-xs);
-  font-weight: 600;
-}
-
-.item-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.item-date {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.btn-add-note {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--bg-secondary);
-  border: none;
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.btn-add-note:hover {
-  background: var(--color-primary);
-  color: white;
-}
-
-.fab {
-  position: fixed;
-  bottom: var(--spacing-xl);
-  right: var(--spacing-xl);
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-success), hsl(140, 60%, 42%));
-  color: white;
-  border: none;
-  box-shadow: var(--shadow-lg);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--font-size-xl);
-  transition: all var(--transition-normal);
-  z-index: 100;
-}
-
-.fab:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 32px rgba(34, 197, 94, 0.5);
-}
-
-@media (max-width: 768px) {
-  .items-grid {
-    grid-template-columns: 1fr;
+    &:hover {
+      box-shadow: 0 8px 30px rgba(34, 197, 94, 0.4);
+    }
   }
 }
 </style>

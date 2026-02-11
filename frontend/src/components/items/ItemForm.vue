@@ -106,68 +106,62 @@ function handleCancel() {
 </script>
 
 <template>
-    <form class="item-form" @submit.prevent="handleSubmit">
-        <div class="form-grid">
-            <AppSelect v-model="formData.tipo" :options="typeOptions" label="Tipo" required />
-
-            <AppInput v-model="formData.titulo" label="Título" placeholder="Ej: Inception" icon="fa-heading" required
-                :error="errors.titulo" />
-
-            <AppSelect v-model="formData.estado" :options="statusOptions" label="Estado" required />
-
-            <AppSelect v-if="showPriority" v-model="formData.prioridad" :options="priorityOptions" label="Prioridad" />
-
-            <AppInput v-if="showRating" v-model="formData.rating" type="number" label="Rating (0-10)" placeholder="8"
-                icon="fa-star" :error="errors.rating" />
-
-            <AppInput v-model="formData.tags" label="Tags (separados por comas)"
-                placeholder="ciencia ficción, thriller, acción" icon="fa-tags" />
-
-            <div class="full-width">
-                <AppInput v-model="formData.descripcion" type="textarea" label="Descripción (opcional)"
-                    placeholder="Añade una descripción..." :rows="4" />
-            </div>
+  <form class="item-form flex flex-col gap-10" @submit.prevent="handleSubmit">
+    <div class="form-content flex flex-col gap-6">
+      <div class="form-row flex gap-6 flex-wrap">
+        <div class="flex-1 min-w-[200px]">
+          <AppSelect v-model="formData.tipo" :options="typeOptions" label="Tipo" required />
         </div>
-
-        <div class="form-actions">
-            <AppButton type="button" variant="ghost" @click="handleCancel">
-                Cancelar
-            </AppButton>
-            <AppButton type="submit" variant="primary" icon="fa-save">
-                {{ mode === 'create' ? 'Crear' : 'Guardar' }}
-            </AppButton>
+        <div class="flex-1 min-w-[200px]">
+          <AppInput v-model="formData.titulo" label="Título" placeholder="Ej: Inception" icon="fa-heading" required
+            :error="errors.titulo" />
         </div>
-    </form>
+      </div>
+
+      <div class="form-row flex gap-6 flex-wrap">
+        <div class="flex-1 min-w-[200px]">
+          <AppSelect v-model="formData.estado" :options="statusOptions" label="Estado" required />
+        </div>
+        <div v-if="showPriority" class="flex-1 min-w-[200px]">
+          <AppSelect v-model="formData.prioridad" :options="priorityOptions" label="Prioridad" />
+        </div>
+        <div v-if="showRating" class="flex-1 min-w-[200px]">
+          <AppInput v-model="formData.rating" type="number" label="Rating (0-10)" placeholder="8"
+            icon="fa-star" :error="errors.rating" />
+        </div>
+      </div>
+
+      <AppInput v-model="formData.tags" label="Tags (separados por comas)"
+        placeholder="ciencia ficción, thriller, acción" icon="fa-tags" />
+
+      <AppInput v-model="formData.descripcion" type="textarea" label="Descripción (opcional)"
+        placeholder="Añade una descripción..." :rows="4" />
+    </div>
+
+    <div class="form-actions flex gap-4 justify-end pt-6 border-t border-white/5">
+      <AppButton type="button" variant="ghost" @click="handleCancel">
+        Cancelar
+      </AppButton>
+      <AppButton type="submit" variant="primary" icon="fa-save">
+        {{ mode === 'create' ? 'Crear' : 'Guardar' }}
+      </AppButton>
+    </div>
+  </form>
 </template>
 
 <style scoped>
 .item-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
-}
+  width: 100%;
 
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
-}
-
-.full-width {
-    grid-column: 1 / -1;
-}
-
-.form-actions {
-    display: flex;
-    gap: var(--spacing-sm);
-    justify-content: flex-end;
-    padding-top: var(--spacing-md);
-    border-top: 1px solid var(--bg-card);
-}
-
-@media (max-width: 768px) {
-    .form-grid {
-        grid-template-columns: 1fr;
+  .form-row {
+    @media (max-width: 640px) {
+      flex-direction: column;
+      gap: var(--space-4);
     }
+  }
+
+  .min-w-\[200px\] {
+    min-width: 200px;
+  }
 }
 </style>

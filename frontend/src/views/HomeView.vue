@@ -2,7 +2,6 @@
 import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useItemsStore } from '@/stores/items'
-import { ItemStatus } from '@/types'
 
 const router = useRouter()
 const itemsStore = useItemsStore()
@@ -21,17 +20,17 @@ const stats = computed(() => ({
 
 <template>
   <div class="home-view py-12">
-    <div class="container animate-fade">
-      <header class="hero text-center mb-10">
-        <h1 class="hero-title text-gradient mb-2">
+    <div class="container animate-fade flex flex-col gap-10">
+      <header class="hero text-center flex flex-col gap-2">
+        <h1 class="hero-title text-gradient">
           <i class="fas fa-film"></i>
           MyMediaVerse
         </h1>
         <p class="hero-subtitle text-secondary text-xl">Tu universo personal de entretenimiento</p>
       </header>
 
-      <div class="grid grid-cols-4 gap-6 mb-10">
-        <div class="stat-card glass-card p-6 flex items-center gap-4 hover-lift">
+      <div class="flex flex-wrap gap-6">
+        <div class="stat-card glass-card p-6 flex items-center gap-4 hover-lift flex-1">
           <div class="stat-icon pending bg-warning">
             <i class="fas fa-clock"></i>
           </div>
@@ -41,7 +40,7 @@ const stats = computed(() => ({
           </div>
         </div>
 
-        <div class="stat-card glass-card p-6 flex items-center gap-4 hover-lift">
+        <div class="stat-card glass-card p-6 flex items-center gap-4 hover-lift flex-1">
           <div class="stat-icon in-progress bg-info">
             <i class="fas fa-play-circle"></i>
           </div>
@@ -51,7 +50,7 @@ const stats = computed(() => ({
           </div>
         </div>
 
-        <div class="stat-card glass-card p-6 flex items-center gap-4 hover-lift">
+        <div class="stat-card glass-card p-6 flex items-center gap-4 hover-lift flex-1">
           <div class="stat-icon completed bg-success">
             <i class="fas fa-check-circle"></i>
           </div>
@@ -61,7 +60,7 @@ const stats = computed(() => ({
           </div>
         </div>
 
-        <div class="stat-card glass-card p-6 flex items-center gap-4 hover-lift">
+        <div class="stat-card glass-card p-6 flex items-center gap-4 hover-lift flex-1">
           <div class="stat-icon total bg-primary">
             <i class="fas fa-database"></i>
           </div>
@@ -89,26 +88,30 @@ const stats = computed(() => ({
 <style scoped>
 .home-view {
   min-height: calc(100vh - var(--header-height));
-}
 
-.hero-title {
-  font-size: clamp(2.5rem, 8vw, 4.5rem);
-}
+  .hero {
+    .hero-title {
+      font-size: clamp(2.5rem, 8vw, 4.5rem);
+    }
+  }
 
-.stat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: white;
-}
+  .stat-card {
+    .stat-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+    }
+  }
 
-@media (max-width: 768px) {
   .action-buttons {
-    flex-direction: column;
+    @media (max-width: 768px) {
+      flex-direction: column;
+    }
   }
 }
 </style>

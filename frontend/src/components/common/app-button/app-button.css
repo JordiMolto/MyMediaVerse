@@ -12,97 +12,97 @@
     white-space: nowrap;
     position: relative;
     overflow: hidden;
-}
 
-.app-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 
-/* Sizes */
-.size-small {
-    padding: var(--space-1) var(--space-3);
-    font-size: var(--fs-xs);
-}
+    &.full-width {
+        width: 100%;
+    }
 
-.size-medium {
-    padding: var(--space-2) var(--space-5);
-    font-size: var(--fs-base);
-}
+    &.is-loading {
+        pointer-events: none;
+        opacity: 0.8;
+    }
 
-.size-large {
-    padding: var(--space-4) var(--space-8);
-    font-size: var(--fs-lg);
-}
+    /* Sizes */
+    &.size-small {
+        padding: var(--space-1) var(--space-3);
+        font-size: var(--fs-xs);
+    }
 
-/* Variants */
-.variant-primary {
-    background: var(--color-primary);
-    color: white;
-    box-shadow: 0 4px 15px var(--color-primary-alpha);
-}
+    &.size-medium {
+        padding: var(--space-2) var(--space-5);
+        font-size: var(--fs-base);
+    }
 
-.variant-primary:hover:not(:disabled) {
-    transform: translateY(-2px);
-    background: var(--color-primary-hover);
-    box-shadow: 0 8px 25px var(--color-primary-alpha);
-}
+    &.size-large {
+        padding: var(--space-4) var(--space-8);
+        font-size: var(--fs-lg);
+    }
 
-.variant-primary:active:not(:disabled) {
-    transform: translateY(0);
-}
+    /* Variants */
+    &.variant-primary {
+        background: var(--color-primary);
+        color: white;
+        box-shadow: 0 4px 15px var(--color-primary-alpha);
 
-.variant-secondary {
-    background: var(--color-accent);
-    color: white;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
+        &:hover:not(:disabled) {
+            transform: translateY(-2px);
+            background: var(--color-primary-hover);
+            box-shadow: 0 8px 25px var(--color-primary-alpha);
+        }
 
-.variant-secondary:hover:not(:disabled) {
-    transform: translateY(-2px);
-    filter: brightness(1.1);
-}
+        &:active:not(:disabled) {
+            transform: translateY(0);
+        }
+    }
 
-.variant-success {
-    background: var(--color-success);
-    color: white;
-}
+    &.variant-secondary {
+        background: var(--color-accent);
+        color: white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 
-.variant-danger {
-    background: var(--color-danger);
-    color: white;
-}
+        &:hover:not(:disabled) {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+    }
 
-.variant-ghost {
-    background: var(--color-bg-card);
-    color: var(--color-text-secondary);
-    border-color: var(--color-border);
-}
+    &.variant-success {
+        background: var(--color-success);
+        color: white;
+    }
 
-.variant-ghost:hover:not(:disabled) {
-    background: var(--color-bg-card-hover);
-    color: var(--color-text-primary);
-    border-color: var(--color-border-hover);
-}
+    &.variant-danger {
+        background: var(--color-danger);
+        color: white;
+    }
 
-.variant-glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--glass-border);
-    color: var(--color-text-primary);
-}
+    &.variant-ghost {
+        background: var(--color-bg-card);
+        color: var(--color-text-secondary);
+        border-color: var(--color-border);
 
-.variant-glass:hover:not(:disabled) {
-    background: var(--color-bg-card-hover);
-    border-color: var(--color-primary);
-}
+        &:hover:not(:disabled) {
+            background: var(--color-bg-card-hover);
+            color: var(--color-text-primary);
+            border-color: var(--color-border-hover);
+        }
+    }
 
-.full-width {
-    width: 100%;
-}
+    &.variant-glass {
+        background: var(--glass-bg);
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        border: 1px solid var(--glass-border);
+        color: var(--color-text-primary);
 
-.is-loading {
-    pointer-events: none;
-    opacity: 0.8;
+        &:hover:not(:disabled) {
+            background: var(--color-bg-card-hover);
+            border-color: var(--color-primary);
+        }
+    }
 }
