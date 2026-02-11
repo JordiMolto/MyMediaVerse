@@ -9,6 +9,7 @@ import MediaCard from '@/components/common/MediaCard.vue'
 import { exportToCSV } from '@/utils/export'
 
 import AppSelect from '@/components/common/app-select/AppSelect.vue'
+import AppFab from '@/components/common/AppFab.vue'
 
 const router = useRouter()
 const itemsStore = useItemsStore()
