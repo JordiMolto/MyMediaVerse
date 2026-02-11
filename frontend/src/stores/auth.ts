@@ -20,15 +20,15 @@ export const useAuthStore = defineStore('auth', () => {
 
     loading.value = true
     error.value = null
-    
+
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password
       })
-      
+
       if (signUpError) throw signUpError
-      
+
       user.value = data.user
       return data
     } catch (e: any) {
@@ -48,15 +48,15 @@ export const useAuthStore = defineStore('auth', () => {
 
     loading.value = true
     error.value = null
-    
+
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password
       })
-      
+
       if (signInError) throw signInError
-      
+
       user.value = data.user
       return data
     } catch (e: any) {
@@ -73,15 +73,37 @@ export const useAuthStore = defineStore('auth', () => {
 
     loading.value = true
     error.value = null
-    
+
     try {
       const { error: signOutError } = await supabase.auth.signOut()
       if (signOutError) throw signOutError
-      
+
       user.value = null
     } catch (e: any) {
       error.value = e.message || 'Error al cerrar sesión'
       console.error('Sign out error:', e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function updateUser(updates: { display_name?: string; avatar_url?: string }) {
+    if (!supabase) return
+
+    loading.value = true
+    error.value = null
+
+    try {
+      const { data, error: updateError } = await supabase.auth.updateUser({
+        data: updates
+      })
+
+      if (updateError) throw updateError
+      user.value = data.user
+      return data.user
+    } catch (e: any) {
+      error.value = e.message || 'Error al actualizar perfil'
       throw e
     } finally {
       loading.value = false
@@ -113,6 +135,7 @@ export const useAuthStore = defineStore('auth', () => {
     signUp,
     signIn,
     signOut,
+    updateUser,
     initialize
   }
 })

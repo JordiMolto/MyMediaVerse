@@ -30,7 +30,8 @@ export async function createNote(note: Omit<Note, 'id' | 'fechaCreacion'>): Prom
     user_id: user.id,
     item_id: note.itemId,
     contenido: note.contenido,
-    es_spoiler: note.esSpoiler
+    es_spoiler: note.esSpoiler,
+    tipo_hito: note.tipoHito
   }
 
   const { data, error } = await supabase
@@ -48,9 +49,10 @@ export async function updateNote(id: string, updates: Partial<Note>): Promise<No
   if (!supabase) throw new Error('Supabase not configured')
 
   const supabaseUpdates: any = {}
-  
+
   if (updates.contenido !== undefined) supabaseUpdates.contenido = updates.contenido
   if (updates.esSpoiler !== undefined) supabaseUpdates.es_spoiler = updates.esSpoiler
+  if (updates.tipoHito !== undefined) supabaseUpdates.tipo_hito = updates.tipoHito
 
   const { data, error } = await supabase
     .from('notes')
@@ -84,6 +86,7 @@ function mapSupabaseNoteToLocal(supabaseNote: any): Note {
     itemId: supabaseNote.item_id,
     contenido: supabaseNote.contenido,
     esSpoiler: supabaseNote.es_spoiler,
+    tipoHito: supabaseNote.tipo_hito as any,
     fechaCreacion: new Date(supabaseNote.created_at)
   }
 }

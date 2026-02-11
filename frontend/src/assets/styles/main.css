@@ -2,7 +2,7 @@
 
 /* Site specific components or overrides can go here */
 
-/* Example: Custom Button (Global) */
+/* Global Button Styles */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -13,19 +13,21 @@
     transition: all var(--transition-base);
     cursor: pointer;
     gap: var(--space-3);
+    border: 1px solid transparent;
+    font-family: var(--font-main);
 
-    &-primary {
+    &.btn-primary {
         background-color: var(--color-primary);
         color: white;
 
         &:hover {
-            background-color: var(--color-primary-hover);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-glow);
+            background-color: var(--color-primary);
+            filter: brightness(1.1);
+            box-shadow: var(--shadow-purple);
         }
     }
 
-    &-glass {
+    &.btn-glass {
         background: var(--glass-bg);
         backdrop-filter: blur(var(--glass-blur));
         -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -34,7 +36,31 @@
 
         &:hover {
             background: var(--color-bg-card-hover);
-            border-color: var(--color-primary);
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+            box-shadow: var(--shadow-cyan);
         }
     }
+
+    &.btn-large {
+        padding: var(--space-4) var(--space-8);
+        font-size: var(--fs-lg);
+        border-radius: var(--radius-lg);
+    }
+}
+
+.hover-scale {
+    transition: opacity var(--transition-fast);
+
+    &:hover {
+        opacity: 0.9;
+    }
+}
+
+.glass-card {
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    backdrop-filter: blur(var(--glass-blur));
+    border-radius: var(--radius-xl);
+    /* 24px as per variables */
 }

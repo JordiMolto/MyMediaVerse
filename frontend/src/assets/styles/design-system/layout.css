@@ -118,6 +118,18 @@
     gap: var(--space-12);
 }
 
+.gap-16 {
+    gap: var(--space-16);
+}
+
+.gap-24 {
+    gap: var(--space-24);
+}
+
+.gap-32 {
+    gap: var(--space-32);
+}
+
 /* Flex-based Autogrid (Replacement for CSS Grid) */
 .flex-grid {
     display: flex;
@@ -174,4 +186,44 @@
 
 .z-max {
     z-index: 9999;
+}
+
+/* --- App Layout System --- */
+.app-layout {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-bg-main);
+}
+
+.main-content {
+    flex: 1;
+    width: 100%;
+    max-width: var(--container-max-width);
+    /* 1280px */
+    margin: 0 auto;
+    padding: var(--space-6);
+    /* 32px base padding */
+    display: flex;
+    flex-direction: column;
+
+    /* Spacious but not extreme */
+    padding-top: var(--space-10);
+    padding-bottom: var(--space-12);
+
+    @media (max-width: 1024px) {
+        padding: var(--space-6) var(--space-4);
+    }
+}
+
+/* Universal Section spacing */
+.app-section {
+    width: 100%;
+    padding-top: var(--space-8);
+    padding-bottom: var(--space-8);
+
+    @media (max-width: 640px) {
+        padding-top: var(--space-4);
+        padding-bottom: var(--space-4);
+    }
 }

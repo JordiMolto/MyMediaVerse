@@ -49,7 +49,23 @@ export async function createItem(item: Omit<Item, 'id' | 'fechaCreacion'>): Prom
     descripcion: item.descripcion,
     tags: item.tags,
     fecha_inicio: item.fechaInicio,
-    fecha_fin: item.fechaFin
+    fecha_fin: item.fechaFin,
+    imagen: item.imagen,
+    duracion: item.duracion,
+    progreso_temporadas: item.progresoTemporadas,
+    progreso_lectura: item.progresoLectura,
+    plataforma: item.plataforma,
+    director: item.director,
+    autor: item.autor,
+    editorial: item.editorial,
+    genero: item.genero,
+    reparto: item.reparto,
+    developer: item.developer,
+    tiempo_estimado: item.tiempoEstimado,
+    veces_consumido: item.vecesConsumido,
+    ultima_vez: item.ultimaVez,
+    mini_reseña: item.miniReseña,
+    archivos: item.archivos
   }
 
   const { data, error } = await supabase
@@ -67,7 +83,7 @@ export async function updateItem(id: string, updates: Partial<Item>): Promise<It
   if (!supabase) throw new Error('Supabase not configured')
 
   const supabaseUpdates: any = {}
-  
+
   if (updates.tipo) supabaseUpdates.tipo = updates.tipo
   if (updates.titulo) supabaseUpdates.titulo = updates.titulo
   if (updates.estado) supabaseUpdates.estado = updates.estado
@@ -77,6 +93,22 @@ export async function updateItem(id: string, updates: Partial<Item>): Promise<It
   if (updates.tags !== undefined) supabaseUpdates.tags = updates.tags
   if (updates.fechaInicio !== undefined) supabaseUpdates.fecha_inicio = updates.fechaInicio
   if (updates.fechaFin !== undefined) supabaseUpdates.fecha_fin = updates.fechaFin
+  if (updates.imagen !== undefined) supabaseUpdates.imagen = updates.imagen
+  if (updates.duracion !== undefined) supabaseUpdates.duracion = updates.duracion
+  if (updates.progresoTemporadas !== undefined) supabaseUpdates.progreso_temporadas = updates.progresoTemporadas
+  if (updates.progresoLectura !== undefined) supabaseUpdates.progreso_lectura = updates.progresoLectura
+  if (updates.plataforma !== undefined) supabaseUpdates.plataforma = updates.plataforma
+  if (updates.director !== undefined) supabaseUpdates.director = updates.director
+  if (updates.autor !== undefined) supabaseUpdates.autor = updates.autor
+  if (updates.editorial !== undefined) supabaseUpdates.editorial = updates.editorial
+  if (updates.genero !== undefined) supabaseUpdates.genero = updates.genero
+  if (updates.reparto !== undefined) supabaseUpdates.reparto = updates.reparto
+  if (updates.developer !== undefined) supabaseUpdates.developer = updates.developer
+  if (updates.tiempoEstimado !== undefined) supabaseUpdates.tiempo_estimado = updates.tiempoEstimado
+  if (updates.vecesConsumido !== undefined) supabaseUpdates.veces_consumido = updates.vecesConsumido
+  if (updates.ultimaVez !== undefined) supabaseUpdates.ultima_vez = updates.ultimaVez
+  if (updates.miniReseña !== undefined) supabaseUpdates.mini_reseña = updates.miniReseña
+  if (updates.archivos !== undefined) supabaseUpdates.archivos = updates.archivos
 
   const { data, error } = await supabase
     .from('items')
@@ -116,6 +148,22 @@ function mapSupabaseItemToLocal(supabaseItem: any): Item {
     tags: supabaseItem.tags,
     fechaCreacion: new Date(supabaseItem.fecha_creacion),
     fechaInicio: supabaseItem.fecha_inicio ? new Date(supabaseItem.fecha_inicio) : undefined,
-    fechaFin: supabaseItem.fecha_fin ? new Date(supabaseItem.fecha_fin) : undefined
+    fechaFin: supabaseItem.fecha_fin ? new Date(supabaseItem.fecha_fin) : undefined,
+    imagen: supabaseItem.imagen,
+    duracion: supabaseItem.duracion,
+    progresoTemporadas: supabaseItem.progreso_temporadas,
+    progresoLectura: supabaseItem.progreso_lectura,
+    plataforma: supabaseItem.plataforma,
+    director: supabaseItem.director,
+    autor: supabaseItem.autor,
+    editorial: supabaseItem.editorial,
+    genero: supabaseItem.genero,
+    reparto: supabaseItem.reparto,
+    developer: supabaseItem.developer,
+    tiempoEstimado: supabaseItem.tiempo_estimado,
+    vecesConsumido: supabaseItem.veces_consumido,
+    ultimaVez: supabaseItem.ultima_vez ? new Date(supabaseItem.ultima_vez) : undefined,
+    miniReseña: supabaseItem.mini_reseña,
+    archivos: supabaseItem.archivos
   }
 }

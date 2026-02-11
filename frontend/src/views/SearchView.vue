@@ -5,13 +5,20 @@ import { useItemsStore } from '@/stores/items'
 import { ItemType, ItemStatus } from '@/types'
 import AppInput from '@/components/common/app-input/AppInput.vue'
 import AppSelect from '@/components/common/app-select/AppSelect.vue'
+import MediaCard from '@/components/common/MediaCard.vue'
+import AppModal from '@/components/common/app-modal/AppModal.vue'
+import NoteForm from '@/components/notes/NoteForm.vue'
+import { useNotesStore } from '@/stores/notes'
 
 const router = useRouter()
 const itemsStore = useItemsStore()
+const notesStore = useNotesStore()
 
 const searchQuery = ref('')
 const selectedType = ref<ItemType | 'all'>('all')
 const selectedStatus = ref<ItemStatus | 'all'>('all')
+const showQuickNoteModal = ref(false)
+const quickNoteItemId = ref<string | null>(null)
 
 onMounted(() => {
   itemsStore.fetchItems()
@@ -43,21 +50,6 @@ const statusOptions = [
   { value: ItemStatus.ABANDONED, label: 'Abandonado' }
 ]
 
-const typeIcons: Record<ItemType, string> = {
-  [ItemType.MOVIE]: 'fa-film',
-  [ItemType.SERIES]: 'fa-tv',
-  [ItemType.ANIME]: 'fa-dragon',
-  [ItemType.BOOK]: 'fa-book',
-  [ItemType.VIDEOGAME]: 'fa-gamepad',
-  [ItemType.BOARDGAME]: 'fa-dice'
-}
-
-const statusColors: Record<ItemStatus, string> = {
-  [ItemStatus.PENDING]: 'var(--color-warning)',
-  [ItemStatus.IN_PROGRESS]: 'hsl(200, 90%, 60%)',
-  [ItemStatus.COMPLETED]: 'var(--color-success)',
-  [ItemStatus.ABANDONED]: 'var(--text-muted)'
-}
 
 function goToDetail(id: string) {
   router.push(`/item/${id}`)
@@ -67,6 +59,26 @@ function clearFilters() {
   searchQuery.value = ''
   selectedType.value = 'all'
   selectedStatus.value = 'all'
+}
+
+function handleQuickNote(itemId: string) {
+  quickNoteItemId.value = itemId
+  showQuickNoteModal.value = true
+}
+
+async function saveQuickNote(data: { texto: string; spoilers: boolean }) {
+  if (!quickNoteItemId.value) return
+  try {
+    await notesStore.createNote({
+      itemId: quickNoteItemId.value,
+      contenido: data.texto,
+      esSpoiler: data.spoilers
+    })
+    showQuickNoteModal.value = false
+    quickNoteItemId.value = null
+  } catch (error) {
+    console.error('Error saving quick note:', error)
+  }
 }
 </script>
 
@@ -125,43 +137,19 @@ function clearFilters() {
           </h2>
         </div>
 
-        <div class="flex flex-wrap gap-6">
-          <div v-for="item in filteredResults" :key="item.id" class="item-card glass-card p-6 flex flex-col gap-4 hover-lift" @click="goToDetail(item.id)">
-            <div class="item-header flex gap-4 items-start">
-              <div class="item-icon flex-shrink-0" :style="{ background: statusColors[item.estado] }">
-                <i class="fas" :class="typeIcons[item.tipo]"></i>
-              </div>
-              <div class="item-info min-w-0 flex-1 flex flex-col gap-1">
-                <h3 class="item-title text-lg fw-semibold truncate">{{ item.titulo }}</h3>
-                <div class="item-meta flex gap-3 items-center flex-wrap">
-                  <span class="meta-badge px-2 py-0.5 border rounded text-xs fw-semibold"
-                    :style="{ borderColor: statusColors[item.estado], color: statusColors[item.estado] }">
-                    {{statusOptions.find(s => s.value === item.estado)?.label}}
-                  </span>
-                  <span v-if="item.rating" class="item-rating flex items-center gap-1 text-warning text-sm fw-semibold">
-                    <i class="fas fa-star"></i>
-                    {{ item.rating }}/10
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <p v-if="item.descripcion" class="item-description text-secondary text-sm line-clamp-2">
-              {{ item.descripcion.substring(0, 100) }}{{ item.descripcion.length > 100 ? '...' : '' }}
-            </p>
-
-            <div v-if="item.tags && item.tags.length > 0" class="item-tags flex flex-wrap gap-2">
-              <span v-for="tag in item.tags.slice(0, 3)" :key="tag" class="tag bg-primary px-2 py-0.5 rounded text-xs fw-semibold text-white">
-                {{ tag }}
-              </span>
-              <span v-if="item.tags.length > 3" class="tag-more bg-surface px-2 py-0.5 rounded text-xs fw-semibold text-muted">
-                +{{ item.tags.length - 3 }}
-              </span>
-            </div>
+        <div class="flex flex-wrap gap-x-6 gap-y-10">
+          <div v-for="item in filteredResults" :key="item.id" class="search-item-wrapper">
+            <MediaCard :item="item" @click="goToDetail" @quick-note="handleQuickNote" />
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Quick Note Modal -->
+    <AppModal :is-open="showQuickNoteModal" title="Añadir Nota Rápida" 
+      @close="showQuickNoteModal = false; quickNoteItemId = null">
+      <NoteForm v-if="quickNoteItemId" :item-id="quickNoteItemId" @save="saveQuickNote" @cancel="showQuickNoteModal = false" />
+    </AppModal>
   </div>
 </template>
 
@@ -202,27 +190,19 @@ function clearFilters() {
     }
   }
 
-  .item-card {
-    width: calc(33.333% - 1rem);
-    min-width: 300px;
+  .search-item-wrapper {
+    width: calc(25% - 1.25rem);
+    min-width: 200px;
 
-    .item-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-      color: white;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    @media (max-width: 1280px) {
+      width: calc(33.333% - 1rem);
     }
 
     @media (max-width: 1024px) {
       width: calc(50% - 0.75rem);
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 640px) {
       width: 100%;
     }
   }

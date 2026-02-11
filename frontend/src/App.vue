@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
-import Navbar from '@/components/layout/navbar/Navbar.vue'
+import MainLayout from '@/layouts/MainLayout.vue'
 </script>
 
 <template>
-  <div id="app">
-    <Navbar />
-    <RouterView />
-  </div>
+  <MainLayout />
 </template>
 
 <style>

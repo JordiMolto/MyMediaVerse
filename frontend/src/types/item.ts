@@ -13,6 +13,25 @@ export interface Item {
   tags?: string[]
   imagen?: string
   descripcion?: string
+
+  // Adaptive Metadata
+  duracion?: number // minutos
+  progresoTemporadas?: string // e.g., "S02/05"
+  progresoLectura?: string // e.g., "120/350" o "45%"
+  plataforma?: string // e.g., "PC", "PS5"
+  director?: string
+  autor?: string
+  editorial?: string
+  genero?: string[]
+  reparto?: string[] // solo nombres principales
+  developer?: string
+  tiempoEstimado?: string // HLTB style
+
+  // Personal Stats
+  vecesConsumido?: number
+  ultimaVez?: Date
+  miniReseña?: string
+  archivos?: string[] // URLs de fotos personales (entrada cine, libro físico)
 }
 
 export interface ItemFilters {

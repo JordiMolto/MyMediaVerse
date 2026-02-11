@@ -8,9 +8,22 @@ h4,
 h5,
 h6 {
     font-weight: var(--fw-bold);
-    line-height: 1.2;
+    line-height: 1.1;
     color: var(--color-text-primary);
+    letter-spacing: -0.03em;
+    /* More aggressive for premium look */
+}
+
+.tracking-tighter {
+    letter-spacing: -0.05em;
+}
+
+.tracking-tight {
     letter-spacing: -0.02em;
+}
+
+.tracking-widest {
+    letter-spacing: 0.1em;
 }
 
 h1 {

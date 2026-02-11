@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import AppButton from '@/components/common/app-button/AppButton.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -16,76 +15,38 @@ function goToHome() {
     router.push('/')
 }
 
-function goToPending() {
-    router.push('/pendiente')
-}
-
-function goToInProgress() {
-    router.push('/en-progreso')
-}
-
-function goToCompleted() {
-    router.push('/hecho')
-}
-
-function goToSearch() {
-    router.push('/buscar')
-}
-
-function goToLogin() {
-    router.push('/login')
-}
-
-async function handleLogout() {
-    await authStore.signOut()
-    router.push('/login')
-}
 </script>
 
 <template>
     <nav class="navbar" v-if="!isAuthPage">
         <div class="navbar-container">
             <div class="navbar-brand" @click="goToHome">
-                <i class="fas fa-film"></i>
+                <i class="fas fa-rocket"></i>
                 <span>MyMediaVerse</span>
             </div>
 
             <div class="navbar-menu">
-                <button class="nav-link" :class="{ active: route.name === 'home' }" @click="goToHome">
-                    <i class="fas fa-home"></i>
-                    <span>Inicio</span>
-                </button>
-
-                <button class="nav-link" :class="{ active: route.name === 'pending' }" @click="goToPending">
-                    <i class="fas fa-clock"></i>
-                    <span>Pendiente</span>
-                </button>
-
-                <button class="nav-link" :class="{ active: route.name === 'in-progress' }" @click="goToInProgress">
-                    <i class="fas fa-play-circle"></i>
-                    <span>En Progreso</span>
-                </button>
-
-                <button class="nav-link" :class="{ active: route.name === 'completed' }" @click="goToCompleted">
-                    <i class="fas fa-check-circle"></i>
-                    <span>Completado</span>
-                </button>
-
-                <button class="nav-link" :class="{ active: route.name === 'search' }" @click="goToSearch">
-                    <i class="fas fa-search"></i>
-                    <span>Buscar</span>
-                </button>
+                <button class="nav-link" :class="{ active: route.name === 'home' }"
+                    @click="router.push('/')">Inicio</button>
+                <button class="nav-link" :class="{ active: route.name === 'pending' }"
+                    @click="router.push('/pendiente')">Pendiente</button>
+                <button class="nav-link" :class="{ active: route.name === 'in-progress' }"
+                    @click="router.push('/en-progreso')">En Progreso</button>
+                <button class="nav-link" :class="{ active: route.name === 'completed' }"
+                    @click="router.push('/hecho')">Completado</button>
             </div>
 
             <div class="navbar-actions">
-                <div v-if="authStore.isAuthenticated" class="user-info">
-                    <span class="user-email">{{ authStore.user?.email }}</span>
-                    <AppButton variant="ghost" size="small" icon="fa-sign-out-alt" @click="handleLogout">
-                        Salir
-                    </AppButton>
+                <button class="icon-btn" title="Notificaciones">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <div v-if="authStore.isAuthenticated" class="user-profile-trigger" @click="router.push('/perfil')"
+                    title="Mi Perfil">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User Avatar"
+                        class="avatar-img shadow-sm" />
                 </div>
-                <AppButton v-else variant="primary" size="small" icon="fa-sign-in-alt" @click="goToLogin">
-                    Iniciar Sesión
+                <AppButton v-else variant="primary" size="small" icon="fa-sign-in-alt" @click="router.push('/login')">
+                    Entrar
                 </AppButton>
             </div>
         </div>

@@ -49,6 +49,12 @@ const routes: RouteRecordRaw[] = [
     name: 'search',
     component: () => import('@/views/SearchView.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/perfil',
+    name: 'profile',
+    component: () => import('@/views/ProfileView.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
@@ -58,14 +64,14 @@ const router = createRouter({
 })
 
 // Navigation guard - require authentication for all routes except login/register
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _, next) => {
   const authStore = useAuthStore()
-  
+
   // Wait for auth to initialize
   if (!authStore.initialized) {
     await authStore.initialize()
   }
-  
+
   const requiresAuth = to.meta.requiresAuth !== false
 
   if (requiresAuth && !authStore.isAuthenticated) {

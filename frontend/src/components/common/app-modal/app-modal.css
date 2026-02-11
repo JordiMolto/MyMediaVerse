@@ -4,8 +4,9 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(var(--glass-blur));
+    background: rgba(0, 0, 0, 0.85);
+    /* Darker backdrop */
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -15,8 +16,9 @@
     .modal-container {
         background: var(--color-bg-surface);
         border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg);
+        border-radius: var(--radius-xl);
+        /* Unified 24px */
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         max-height: 90vh;
         overflow: hidden;
         display: flex;
@@ -42,45 +44,46 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: var(--space-6);
+        padding: var(--space-8);
         border-bottom: 1px solid var(--color-border);
 
         .modal-title {
             font-size: var(--fs-xl);
-            font-weight: var(--fw-bold);
+            font-weight: 800;
             color: var(--color-text-primary);
             margin: 0;
+            letter-spacing: -0.02em;
         }
 
         .modal-close {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border: none;
-            background: var(--color-bg-card);
+            background: rgba(255, 255, 255, 0.05);
             color: var(--color-text-secondary);
-            border-radius: var(--radius-sm);
+            border-radius: 50%;
             cursor: pointer;
             transition: all var(--transition-fast);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: var(--fs-lg);
+            font-size: 1rem;
 
             &:hover {
-                background: var(--color-danger);
-                color: white;
+                background: rgba(255, 255, 255, 0.1);
+                color: var(--color-text-primary);
             }
         }
     }
 
     .modal-body {
-        padding: var(--space-6);
+        padding: var(--space-8);
         overflow-y: auto;
         flex: 1;
     }
 
     .modal-footer {
-        padding: var(--space-6);
+        padding: var(--space-6) var(--space-8);
         border-top: 1px solid var(--color-border);
         display: flex;
         gap: var(--space-3);
@@ -94,7 +97,7 @@
     transition: opacity var(--transition-base);
 
     .modal-container {
-        transition: transform var(--transition-base);
+        transition: all var(--transition-base);
     }
 }
 
@@ -103,6 +106,7 @@
     opacity: 0;
 
     .modal-container {
-        transform: scale(0.9);
+        transform: translateY(10px);
+        /* Subtle slide up instead of scale */
     }
 }
