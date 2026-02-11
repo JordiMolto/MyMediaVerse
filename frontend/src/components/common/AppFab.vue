@@ -20,7 +20,7 @@ defineEmits<{
     background: var(--color-accent);
     color: var(--color-bg-main);
     border: none;
-    border-radius: 18px;
+    border-radius: 50%;
     /* Rounded square style from Image 1 */
     font-size: 1.5rem;
     display: flex;
@@ -48,7 +48,7 @@ defineEmits<{
 
 @media (max-width: 768px) {
     .app-fab {
-        bottom: var(--space-6);
+        bottom: var(--space-12);
         right: var(--space-6);
         width: 56px;
         height: 56px;

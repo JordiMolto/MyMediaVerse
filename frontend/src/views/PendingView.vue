@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useItemsStore } from '@/stores/items'
 import { ItemType, Item, Priority } from '@/types'
@@ -7,6 +7,7 @@ import AppModal from '@/components/common/app-modal/AppModal.vue'
 import ItemForm from '@/components/items/ItemForm.vue'
 import MediaCard from '@/components/common/MediaCard.vue'
 import { exportToCSV } from '@/utils/export'
+import AppSelect from '@/components/common/app-select/AppSelect.vue'
 
 const router = useRouter()
 const itemsStore = useItemsStore()
@@ -14,6 +15,12 @@ const itemsStore = useItemsStore()
 const selectedType = ref<ItemType | null>(null)
 const sortBy = ref('priority')
 const showCreateModal = ref(false)
+
+const sortOptions = [
+  { value: 'priority', label: 'Prioridad' },
+  { value: 'recent', label: 'Nuevos primero' },
+  { value: 'alpha', label: 'Alfabético' }
+]
 
 onMounted(() => {
   itemsStore.fetchItems()
@@ -54,6 +61,65 @@ const types = [
 function handleExport() {
   exportToCSV(filteredItems.value, 'lista-pendiente.csv')
 }
+
+// Pagination
+const currentPage = ref(1)
+const itemsPerPage = 12
+
+const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage))
+
+const paginatedItems = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredItems.value.slice(start, end)
+})
+
+const visiblePages = computed(() => {
+  const pages: (number | string)[] = []
+  const total = totalPages.value
+  const current = currentPage.value
+
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1)
+  }
+
+  // Always show first
+  pages.push(1)
+
+  if (current > 3) {
+    pages.push('...')
+  }
+
+  // Show neighbors
+  const start = Math.max(2, current - 1)
+  const end = Math.min(total - 1, current + 1)
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+
+  if (current < total - 2) {
+    pages.push('...')
+  }
+
+  // Always show last
+  pages.push(total)
+
+  return pages
+})
+
+function changePage(page: number | string) {
+  if (typeof page === 'string') return
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+// Reset page when filters change
+watch([selectedType, sortBy], () => {
+  currentPage.value = 1
+})
 
 function goToDetail(id: string) {
   router.push(`/item/${id}`)
@@ -101,13 +167,11 @@ async function handleCreateItem(itemData: Partial<Item>) {
           </div>
         </div>
 
-        <div class="sort-wrapper flex items-center gap-3">
+        <div class="sort-wrapper flex items-center gap-4">
           <span class="sort-label">ORDENAR POR</span>
-          <select v-model="sortBy" class="sort-select">
-            <option value="priority">Prioridad</option>
-            <option value="recent">Nuevos primero</option>
-            <option value="alpha">Alfabético</option>
-          </select>
+          <div class="sort-select-container">
+            <AppSelect v-model="sortBy" :options="sortOptions" pill />
+          </div>
         </div>
       </div>
     </section>
@@ -128,15 +192,27 @@ async function handleCreateItem(itemData: Partial<Item>) {
         </div>
       </div>
 
-      <div v-else class="items-grid">
-        <MediaCard v-for="item in filteredItems" :key="item.id" :item="item" @click="goToDetail" />
-      </div>
+      <div v-else class="content-wrapper flex flex-col gap-16">
+        <div class="items-grid">
+          <MediaCard v-for="item in paginatedItems" :key="item.id" :item="item" @click="goToDetail" />
+        </div>
 
-      <!-- Pagination Placeholder -->
-      <div v-if="filteredItems.length > 0" class="pagination-mock mt-20 flex justify-center gap-2">
-        <button class="page-btn active">1</button>
-        <button class="page-btn">2</button>
-        <span class="page-dots">...</span>
+        <!-- Pagination -->
+        <div v-if="totalPages > 1" class="pagination-controls flex justify-center gap-2">
+          <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <button v-for="(page, index) in visiblePages" :key="index" class="page-btn"
+            :class="{ active: currentPage === page, 'dots': page === '...' }" @click="changePage(page)"
+            :disabled="page === '...'">
+            {{ page }}
+          </button>
+
+          <button class="page-btn" :disabled="currentPage === totalPages" @click="changePage(currentPage + 1)">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
       </div>
     </section>
 
@@ -162,7 +238,7 @@ async function handleCreateItem(itemData: Partial<Item>) {
   padding: var(--space-2) var(--space-5);
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   color: var(--color-text-secondary);
   font-size: var(--fs-sm);
   font-weight: 700;
@@ -198,19 +274,8 @@ async function handleCreateItem(itemData: Partial<Item>) {
   letter-spacing: 0.1em;
 }
 
-.sort-select {
-  background: transparent;
-  border: none;
-  color: white;
-  font-weight: 800;
-  font-size: var(--fs-sm);
-  cursor: pointer;
-  outline: none;
-
-  option {
-    background: var(--color-bg-surface);
-    color: white;
-  }
+.sort-select-container {
+  width: 180px;
 }
 
 .items-grid {
@@ -228,12 +293,12 @@ async function handleCreateItem(itemData: Partial<Item>) {
   justify-content: center;
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   color: var(--color-text-secondary);
   font-weight: 700;
   transition: all var(--transition-base);
 
-  &:hover {
+  &:hover:not(:disabled):not(.dots) {
     background: var(--color-bg-card-hover);
     color: white;
   }
@@ -243,25 +308,48 @@ async function handleCreateItem(itemData: Partial<Item>) {
     color: var(--color-bg-main);
     border-color: var(--color-accent);
   }
-}
 
-.page-dots {
-  display: flex;
-  align-items: flex-end;
-  padding-bottom: var(--space-2);
-  color: var(--color-text-muted);
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.dots {
+    border: none;
+    background: transparent;
+    cursor: default;
+    color: var(--color-text-muted);
+
+    &:hover {
+      background: transparent;
+    }
+  }
 }
 
 @media (max-width: 1024px) {
   .filter-bar {
     flex-direction: column;
     align-items: flex-start;
+    gap: var(--space-4);
   }
 
   .category-tabs-wrapper {
     width: 100%;
+    max-width: 100%;
     overflow-x: auto;
     padding-bottom: var(--space-2);
+    /* Hide scrollbar for cleaner look */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .category-tabs {
+    flex-wrap: nowrap;
+    min-width: min-content;
   }
 }
 </style>

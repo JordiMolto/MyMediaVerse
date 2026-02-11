@@ -57,7 +57,7 @@
         padding: var(--space-2) var(--space-4);
         background: transparent;
         border: none;
-        border-radius: var(--radius-md);
+        border-radius: var(--radius-full);
         color: var(--color-text-secondary);
         font-size: var(--fs-sm);
         font-weight: var(--fw-bold);
@@ -139,29 +139,71 @@
         .navbar-brand span {
             display: none;
         }
+
+        .navbar-brand i {
+            font-size: 1.5rem;
+        }
     }
 }
 
 @media (max-width: 768px) {
     .navbar {
+        z-index: 10;
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+        top: auto;
+        border-bottom: none;
+        border-top: 1px solid var(--glass-border);
+        background: rgba(6, 8, 10, 0.95);
+        /* More solid for bottom nav */
+
         .navbar-container {
             padding: 0 var(--space-4);
+            justify-content: space-between;
         }
 
-        .nav-link {
-            padding: var(--space-2);
-
-            span {
-                display: none;
-            }
-        }
-
-        .user-email {
+        .navbar-brand {
             display: none;
         }
 
         .navbar-menu {
             gap: var(--space-1);
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .nav-link {
+            flex-direction: column;
+            gap: 4px;
+            padding: var(--space-2);
+            font-size: 10px;
+            border-radius: var(--radius-lg);
+
+            i {
+                font-size: 1.2rem;
+            }
+
+            span {
+                display: block;
+                /* Show text below icon if space permits, or hide if very small */
+                font-size: 9px;
+            }
+
+            &.active::after {
+                display: none;
+                /* Remove dot indicator */
+            }
+
+            &.active {
+                color: var(--color-primary);
+                background: rgba(168, 85, 247, 0.1);
+            }
+        }
+
+        .navbar-actions {
+            display: none;
+            /* Hide top actions on mobile bottom nav, or move them elsewhere */
         }
     }
 }

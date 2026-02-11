@@ -118,6 +118,18 @@
     --radius-lg: var(--radius-lg);
     --transition-normal: var(--transition-base);
     --font-family: var(--font-main);
+
+    /* --- New Variables --- */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.3s ease;
+    --transition-slow: 0.5s ease;
+
+    --color-primary-alpha: rgba(168, 85, 247, 0.2);
+    --color-primary-hover: #9333EA;
+    --color-accent-hover: #00D5E0;
+    --color-danger: #EF4444;
+    --color-success: #10B981;
+    --color-warning: #F59E0B;
     --font-size-xs: var(--fs-xs);
     --font-size-sm: var(--fs-sm);
     --font-size-base: var(--fs-base);

@@ -145,5 +145,16 @@ function handleSaveItem(item: any) {
   gap: var(--space-4);
   width: 100%;
 }
+
+@media (max-width: 640px) {
+  .dashboard-container {
+    gap: var(--space-6);
+  }
+
+  .stats-section {
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+}
 </style>
 ```

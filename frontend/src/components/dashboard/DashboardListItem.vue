@@ -147,7 +147,7 @@ function formatRelativeTime(date: Date) {
 
 .status-badge {
     padding: 2px 12px;
-    border-radius: 6px;
+    border-radius: var(--radius-full);
     font-size: 9px;
     font-weight: 900;
     letter-spacing: 0.05em;

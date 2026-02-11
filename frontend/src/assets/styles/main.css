@@ -8,7 +8,7 @@
     align-items: center;
     justify-content: center;
     padding: var(--space-3) var(--space-6);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-full);
     font-weight: var(--fw-semibold);
     transition: all var(--transition-base);
     cursor: pointer;
@@ -42,10 +42,20 @@
         }
     }
 
+    &.btn-extra-small {
+        padding: var(--space-1) var(--space-3);
+        font-size: var(--fs-xs);
+    }
+
+    &.btn-small {
+        padding: var(--space-2) var(--space-5);
+        font-size: var(--fs-sm);
+    }
+
     &.btn-large {
         padding: var(--space-4) var(--space-8);
         font-size: var(--fs-lg);
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-full);
     }
 }
 

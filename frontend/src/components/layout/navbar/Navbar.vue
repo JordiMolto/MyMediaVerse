@@ -26,14 +26,24 @@ function goToHome() {
             </div>
 
             <div class="navbar-menu">
-                <button class="nav-link" :class="{ active: route.name === 'home' }"
-                    @click="router.push('/')">Inicio</button>
+                <button class="nav-link" :class="{ active: route.name === 'home' }" @click="router.push('/')">
+                    <i class="fas fa-home"></i>
+                    <span>Inicio</span>
+                </button>
                 <button class="nav-link" :class="{ active: route.name === 'pending' }"
-                    @click="router.push('/pendiente')">Pendiente</button>
+                    @click="router.push('/pendiente')">
+                    <i class="fas fa-clock"></i>
+                    <span>Pendiente</span>
+                </button>
                 <button class="nav-link" :class="{ active: route.name === 'in-progress' }"
-                    @click="router.push('/en-progreso')">En Progreso</button>
-                <button class="nav-link" :class="{ active: route.name === 'completed' }"
-                    @click="router.push('/hecho')">Completado</button>
+                    @click="router.push('/en-progreso')">
+                    <i class="fas fa-play"></i>
+                    <span>En Progreso</span>
+                </button>
+                <button class="nav-link" :class="{ active: route.name === 'completed' }" @click="router.push('/hecho')">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Completado</span>
+                </button>
             </div>
 
             <div class="navbar-actions">

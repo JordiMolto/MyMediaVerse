@@ -154,8 +154,13 @@ withDefaults(defineProps<Props>(), {
 }
 
 @media (max-width: 640px) {
+    .stat-card {
+        padding: var(--space-4) var(--space-6);
+        min-height: 140px;
+    }
+
     .stat-value {
-        font-size: var(--fs-4xl);
+        font-size: var(--fs-3xl);
     }
 }
 </style>

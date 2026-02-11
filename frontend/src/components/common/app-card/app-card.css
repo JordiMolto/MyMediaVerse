@@ -1,7 +1,7 @@
 .app-card {
     background: var(--color-bg-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
     box-shadow: var(--shadow-sm);
     transition: var(--transition-base);
     overflow: hidden;

@@ -89,6 +89,7 @@ function handleQuickNote(e: Event) {
     border: 1px solid var(--color-border);
     transition: all var(--transition-base);
     box-shadow: var(--shadow-md);
+    transition: 0.3s;
 
     &:hover {
         transform: translateY(-8px);
