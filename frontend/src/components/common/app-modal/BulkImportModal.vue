@@ -52,6 +52,11 @@ const startProcess = async () => {
     step.value = 'enriching'
     await parseAndEnrich(selectedFile.value, selectType.value)
 
+    if (error.value) {
+        step.value = 'upload'
+        return
+    }
+
     // Pre-select found items
     selectedForImport.value = new Set()
     enrichedItems.value.forEach(item => {

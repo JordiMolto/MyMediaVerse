@@ -18,6 +18,27 @@ CREATE TABLE items (
   fecha_creacion TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   fecha_inicio TIMESTAMP WITH TIME ZONE,
   fecha_fin TIMESTAMP WITH TIME ZONE,
+  
+  -- Adaptive Metadata
+  imagen TEXT,
+  duracion INTEGER,
+  progreso_temporadas VARCHAR(50),
+  progreso_lectura VARCHAR(50),
+  plataforma VARCHAR(100),
+  director VARCHAR(255),
+  autor VARCHAR(255),
+  editorial VARCHAR(255),
+  genero TEXT[],
+  reparto TEXT[],
+  developer VARCHAR(255),
+  tiempo_estimado VARCHAR(50),
+  
+  -- Personal Stats
+  veces_consumido INTEGER DEFAULT 0,
+  ultima_vez TIMESTAMP WITH TIME ZONE,
+  mini_reseña TEXT,
+  archivos TEXT[],
+
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -29,6 +50,7 @@ CREATE TABLE notes (
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   contenido TEXT NOT NULL,
   es_spoiler BOOLEAN DEFAULT FALSE,
+  tipo_hito VARCHAR(50) DEFAULT 'none',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

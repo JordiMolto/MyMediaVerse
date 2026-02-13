@@ -2,6 +2,8 @@ import { ref } from 'vue'
 import readXlsxFile from 'read-excel-file'
 import Papa from 'papaparse'
 import { searchTMDB, getTMDBImageUrl } from '@/services/external/tmdb.service'
+import { searchGoogleBooks } from '@/services/external/google-books.service'
+import { searchRawgGames } from '@/services/external/rawg.service'
 import { Item, ItemType, ItemStatus } from '@/types'
 
 interface ImportedRow {
@@ -35,10 +37,10 @@ export function useBulkImport() {
                         complete: (results) => {
                             const rows = results.data as any[][]
                             data = rows.slice(1).map(row => ({
-                                titulo: String(row[0] || ''),
-                                estado: row[1] ? String(row[1]) : undefined,
+                                titulo: row[0] ? String(row[0]).trim() : '',
+                                estado: row[1] ? String(row[1]).trim() : undefined,
                                 nota: row[2] ? Number(row[2]) : undefined
-                            })).filter(r => r.titulo && r.titulo.trim() !== '')
+                            })).filter(r => r.titulo !== '')
                             resolve(data)
                         },
                         error: (err: any) => {
@@ -53,10 +55,10 @@ export function useBulkImport() {
                 try {
                     const rows = await readXlsxFile(file)
                     data = rows.slice(1).map(row => ({
-                        titulo: String(row[0]),
-                        estado: row[1] ? String(row[1]) : undefined,
+                        titulo: row[0] ? String(row[0]).trim() : '',
+                        estado: row[1] ? String(row[1]).trim() : undefined,
                         nota: row[2] ? Number(row[2]) : undefined
-                    })).filter(r => r.titulo && r.titulo.trim() !== '')
+                    })).filter(r => r.titulo !== '')
                     return data
                 } catch (e) {
                     throw e
@@ -99,6 +101,13 @@ export function useBulkImport() {
 
             // Enrichment Logic
             if (type === ItemType.MOVIE || type === ItemType.SERIES) {
+                const TMDB_KEY = import.meta.env.VITE_TMDB_API_KEY
+                if (!TMDB_KEY) {
+                    error.value = 'Configuración incompleta: Falta la API Key de TMDB en el archivo .env.'
+                    isProcessing.value = false
+                    return
+                }
+
                 const tmdbResult = await searchTMDB(row.titulo, type)
                 if (tmdbResult) {
                     item.titulo = tmdbResult.title || tmdbResult.name || row.titulo
@@ -108,6 +117,39 @@ export function useBulkImport() {
 
                     if (tmdbResult.release_date || tmdbResult.first_air_date) {
                         item.fechaInicio = new Date(tmdbResult.release_date || tmdbResult.first_air_date!)
+                    }
+
+                    item.found = true
+                    item.matchConfidence = 'high'
+                }
+            } else if (type === ItemType.BOOK) {
+                const bookResult = await searchGoogleBooks(row.titulo)
+                if (bookResult) {
+                    item.titulo = bookResult.volumeInfo.title
+                    item.descripcion = bookResult.volumeInfo.description
+                    item.imagen = bookResult.volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:')
+                    item.autor = bookResult.volumeInfo.authors?.join(', ')
+                    item.editorial = bookResult.volumeInfo.publisher
+                    item.duracion = bookResult.volumeInfo.pageCount // Pages
+
+                    if (bookResult.volumeInfo.publishedDate) {
+                        item.fechaInicio = new Date(bookResult.volumeInfo.publishedDate)
+                    }
+
+                    item.found = true
+                    item.matchConfidence = 'high'
+                }
+            } else if (type === ItemType.VIDEOGAME) {
+                const gameResult = await searchRawgGames(row.titulo)
+                if (gameResult) {
+                    item.titulo = gameResult.name
+                    item.imagen = gameResult.background_image || undefined
+                    item.rating = gameResult.rating ? Math.round(item.rating || (gameResult.rating)) : item.rating
+                    item.developer = gameResult.developers?.[0]?.name
+                    item.plataforma = gameResult.platforms?.[0]?.platform?.name
+
+                    if (gameResult.released) {
+                        item.fechaInicio = new Date(gameResult.released)
                     }
 
                     item.found = true

@@ -18,10 +18,14 @@ export interface TMDBResult {
 }
 
 export async function searchTMDB(query: string, type: ItemType): Promise<TMDBResult | null> {
+    const trimmedQuery = query.trim()
+
     if (!TMDB_API_KEY) {
-        console.warn('TMDB API Key missing')
+        console.error('TMDB API Key missing. Please add VITE_TMDB_API_KEY to your .env file.')
         return null
     }
+
+    if (!trimmedQuery) return null
 
     const endpoint = type === ItemType.SERIES ? '/search/tv' : '/search/movie'
 
@@ -29,20 +33,20 @@ export async function searchTMDB(query: string, type: ItemType): Promise<TMDBRes
         const response = await axios.get(`${BASE_URL}${endpoint}`, {
             params: {
                 api_key: TMDB_API_KEY,
-                query,
+                query: trimmedQuery,
                 language: 'es-ES', // Spanish results
                 page: 1
             }
         })
 
         const results = response.data.results as TMDBResult[]
-        if (results.length > 0) {
+        if (results && results.length > 0) {
             // Return the best match (first result usually)
             return results[0]
         }
         return null
-    } catch (error) {
-        console.error('Error searching TMDB:', error)
+    } catch (error: any) {
+        console.error('Error searching TMDB:', error?.response?.data || error.message)
         return null
     }
 }
