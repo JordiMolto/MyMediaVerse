@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useItemsStore } from '@/stores/items'
 import { ItemType, ItemStatus } from '@/types'
 import AppInput from '@/components/common/app-input/AppInput.vue'
@@ -11,6 +11,7 @@ import NoteForm from '@/components/notes/NoteForm.vue'
 import { useNotesStore } from '@/stores/notes'
 
 const router = useRouter()
+const route = useRoute()
 const itemsStore = useItemsStore()
 const notesStore = useNotesStore()
 
@@ -22,6 +23,14 @@ const quickNoteItemId = ref<string | null>(null)
 
 onMounted(() => {
   itemsStore.fetchItems()
+  if (route.query.q) {
+    searchQuery.value = route.query.q as string
+  }
+})
+
+// Watch for route changes to update search query (e.g. searching again from navbar or home)
+watch(() => route.query.q, (newQuery) => {
+  searchQuery.value = (newQuery as string) || ''
 })
 
 const filteredResults = computed(() => {
