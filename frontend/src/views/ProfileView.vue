@@ -29,10 +29,22 @@ const stats = computed(() => {
     const completed = itemsStore.completedItems
     return {
         total: completed.length,
-        movies: completed.filter(i => i.tipo === ItemType.MOVIE || i.tipo === ItemType.SERIES || i.tipo === ItemType.ANIME).length,
-        games: completed.filter(i => i.tipo === ItemType.VIDEOGAME).length,
-        books: completed.filter(i => i.tipo === ItemType.BOOK).length,
-        boardgames: completed.filter(i => i.tipo === ItemType.BOARDGAME).length
+        movies: completed.filter(i => {
+            const t = i.tipo.toLowerCase()
+            return [ItemType.MOVIE, ItemType.SERIES, ItemType.ANIME, 'película', 'pelicula', 'serie'].some(v => t.includes(v))
+        }).length,
+        games: completed.filter(i => {
+            const t = i.tipo.toLowerCase()
+            return [ItemType.VIDEOGAME, 'juego', 'game'].filter(v => v !== 'juego de mesa').some(v => t.includes(v))
+        }).length,
+        books: completed.filter(i => {
+            const t = i.tipo.toLowerCase()
+            return [ItemType.BOOK, 'libro', 'book'].some(v => t.includes(v))
+        }).length,
+        boardgames: completed.filter(i => {
+            const t = i.tipo.toLowerCase()
+            return [ItemType.BOARDGAME, 'mesa', 'board'].some(v => t.includes(v))
+        }).length
     }
 })
 
@@ -58,10 +70,16 @@ async function handleSignOut() {
                     <p class="subtitle-text">CIUDADANO DE MYMEDIAVERSE</p>
                 </div>
 
-                <button class="btn btn-glass btn-small" @click="showEditModal = true">
-                    <i class="fas fa-edit"></i>
-                    Editar Perfil
-                </button>
+                <div class="flex gap-4">
+                    <button class="btn btn-glass btn-small" @click="showEditModal = true">
+                        <i class="fas fa-edit"></i>
+                        Editar Perfil
+                    </button>
+                    <button class="btn btn-glass btn-small" @click="router.push('/colecciones')">
+                        <i class="fas fa-layer-group"></i>
+                        Gestionar Colecciones
+                    </button>
+                </div>
             </section>
 
             <!-- Impact Section -->

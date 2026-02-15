@@ -110,17 +110,55 @@ export function useBulkImport() {
 
                 const tmdbResult = await searchTMDB(row.titulo, type)
                 if (tmdbResult) {
-                    item.titulo = tmdbResult.title || tmdbResult.name || row.titulo
-                    item.descripcion = tmdbResult.overview
-                    item.imagen = getTMDBImageUrl(tmdbResult.poster_path)
-                    item.rating = tmdbResult.vote_average ? Math.round(tmdbResult.vote_average / 2) : item.rating // 1-10 to 1-5
+                    // Get detailed information
+                    const { getTMDBDetails, getYouTubeTrailerUrl, getStreamingPlatforms } = await import('@/services/external/tmdb.service')
+                    const details = await getTMDBDetails(tmdbResult.id, type)
 
-                    if (tmdbResult.release_date || tmdbResult.first_air_date) {
-                        item.fechaInicio = new Date(tmdbResult.release_date || tmdbResult.first_air_date!)
+                    if (details) {
+                        item.titulo = details.title || details.name || row.titulo
+                        item.descripcion = details.overview
+                        item.imagen = getTMDBImageUrl(details.poster_path)
+                        item.backdropImage = getTMDBImageUrl(details.backdrop_path)
+                        item.rating = details.vote_average ? Math.round(details.vote_average / 2) : item.rating
+                        item.tagline = details.tagline
+
+                        // Genres
+                        if (details.genres && details.genres.length > 0) {
+                            item.genero = details.genres.map(g => g.name)
+                        }
+
+                        // Runtime/Duration
+                        if (details.runtime) {
+                            item.duracion = details.runtime
+                        } else if (details.episode_run_time && details.episode_run_time.length > 0) {
+                            item.duracion = details.episode_run_time[0]
+                        }
+
+                        // Series specific
+                        if (type === ItemType.SERIES) {
+                            item.numberOfSeasons = details.number_of_seasons
+                            item.numberOfEpisodes = details.number_of_episodes
+                        }
+
+                        // Cast (top 5)
+                        if (details.credits?.cast && details.credits.cast.length > 0) {
+                            item.reparto = details.credits.cast.slice(0, 5).map(c => c.name)
+                        }
+
+                        // Trailer
+                        item.trailer = getYouTubeTrailerUrl(details.videos)
+
+                        // Streaming platforms
+                        item.streamingPlatforms = getStreamingPlatforms(details['watch/providers'])
+
+                        // Release date
+                        if (details.release_date || details.first_air_date) {
+                            item.fechaInicio = new Date(details.release_date || details.first_air_date!)
+                        }
+
+                        item.found = true
+                        item.matchConfidence = 'high'
                     }
-
-                    item.found = true
-                    item.matchConfidence = 'high'
                 }
             } else if (type === ItemType.BOOK) {
                 const bookResult = await searchGoogleBooks(row.titulo)

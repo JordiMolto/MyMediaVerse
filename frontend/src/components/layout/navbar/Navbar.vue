@@ -80,6 +80,11 @@ const handleImportSuccess = (count: number) => {
                         <i class="fas fa-check-circle"></i>
                         <span>Completado</span>
                     </button>
+                    <button class="nav-link" :class="{ active: route.name === 'collections' }"
+                        @click="router.push('/colecciones')">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Colecciones</span>
+                    </button>
                 </div>
 
                 <div class="navbar-actions desktop-only">

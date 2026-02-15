@@ -2,7 +2,7 @@ import { ItemType, ItemStatus, Priority } from './enums'
 
 export interface Item {
   id: string
-  tipo: ItemType
+  tipo: ItemType | string
   titulo: string
   estado: ItemStatus
   prioridad?: Priority
@@ -22,10 +22,18 @@ export interface Item {
   director?: string
   autor?: string
   editorial?: string
-  genero?: string[]
-  reparto?: string[] // solo nombres principales
+  genero?: string[] // Géneros (Acción, Drama, etc.)
+  reparto?: string[] // Nombres del reparto principal
   developer?: string
   tiempoEstimado?: string // HLTB style
+
+  // TMDB Enhanced Data
+  trailer?: string // YouTube URL
+  streamingPlatforms?: string[] // Netflix, HBO, etc.
+  backdropImage?: string // Imagen de fondo
+  numberOfSeasons?: number // Series
+  numberOfEpisodes?: number // Series
+  tagline?: string // Eslogan/tagline
 
   // Personal Stats
   vecesConsumido?: number

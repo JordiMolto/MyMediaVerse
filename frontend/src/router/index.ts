@@ -42,6 +42,66 @@ const routes: RouteRecordRaw[] = [
     path: '/item/:id',
     name: 'item-detail',
     component: () => import('@/views/ItemDetailView.vue'),
+    meta: { requiresAuth: true },
+    beforeEnter: async (to, _, next) => {
+      // Dynamically load the correct detail view based on item type
+      const { useItemsStore } = await import('@/stores/items')
+      const itemsStore = useItemsStore()
+
+      const itemId = to.params.id as string
+      const item = await itemsStore.getItemById(itemId)
+
+      if (!item) {
+        next({ name: 'home' })
+        return
+      }
+
+      // Route to specialized view based on type
+      const typeRoutes: Record<string, string> = {
+        'movie': 'movie-detail',
+        'series': 'series-detail',
+        'book': 'book-detail',
+        'videogame': 'videogame-detail',
+        'boardgame': 'boardgame-detail',
+        'anime': 'movie-detail' // Use movie view for anime
+      }
+
+      const targetRoute = typeRoutes[item.tipo]
+      if (targetRoute && to.name !== targetRoute) {
+        next({ name: targetRoute, params: { id: itemId } })
+      } else {
+        next()
+      }
+    }
+  },
+  {
+    path: '/movie/:id',
+    name: 'movie-detail',
+    component: () => import('@/views/MovieDetailView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/series/:id',
+    name: 'series-detail',
+    component: () => import('@/views/SeriesDetailView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/book/:id',
+    name: 'book-detail',
+    component: () => import('@/views/BookDetailView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/videogame/:id',
+    name: 'videogame-detail',
+    component: () => import('@/views/ItemDetailView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/boardgame/:id',
+    name: 'boardgame-detail',
+    component: () => import('@/views/ItemDetailView.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -54,6 +114,12 @@ const routes: RouteRecordRaw[] = [
     path: '/perfil',
     name: 'profile',
     component: () => import('@/views/ProfileView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/colecciones',
+    name: 'collections',
+    component: () => import('@/views/CollectionsView.vue'),
     meta: { requiresAuth: true }
   }
 ]

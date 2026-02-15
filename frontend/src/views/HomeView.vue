@@ -35,9 +35,14 @@ function handleSearch(query: string) {
   router.push({ name: 'search', query: { q: query } })
 }
 
-function handleSaveItem(item: any) {
-  itemsStore.createItem(item)
-  showCreateModal.value = false
+async function handleSaveItem(item: any) {
+  try {
+    await itemsStore.createItem(item)
+    showCreateModal.value = false
+  } catch (error) {
+    console.error('Error creating item:', error)
+    alert('Error al crear el item. Por favor, verifica la consola.')
+  }
 }
 </script>
 

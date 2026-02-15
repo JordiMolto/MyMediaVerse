@@ -4,6 +4,8 @@ import { Item, ItemType } from '@/types'
 
 interface Props {
     item: Item
+    selectable?: boolean
+    selected?: boolean
 }
 
 const props = defineProps<Props>()
@@ -11,6 +13,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
     click: [id: string]
     quickNote: [id: string]
+    toggleSelect: [id: string]
 }>()
 
 const typeIcon = computed(() => {
@@ -31,10 +34,23 @@ function handleQuickNote(e: Event) {
     e.stopPropagation()
     emit('quickNote', props.item.id)
 }
+
+function handleSelect(e: Event) {
+    e.stopPropagation()
+    emit('toggleSelect', props.item.id)
+}
+
+function handleCardClick() {
+    if (props.selectable) {
+        emit('toggleSelect', props.item.id)
+    } else {
+        emit('click', props.item.id)
+    }
+}
 </script>
 
 <template>
-    <div class="media-card" @click="emit('click', item.id)">
+    <div class="media-card" :class="{ 'selectable': selectable, 'selected': selected }" @click="handleCardClick">
         <div class="card-inner">
             <!-- Poster Image -->
             <div class="poster-wrapper">
@@ -42,6 +58,15 @@ function handleQuickNote(e: Event) {
                 <div v-else class="poster-placeholder">
                     <i class="fas" :class="typeIcon"></i>
                 </div>
+
+                <!-- Selection Checkbox (Top Left) -->
+                <Transition name="fade">
+                    <div v-if="selectable" class="selection-checkbox" @click="handleSelect">
+                        <div class="checkbox-inner" :class="{ 'checked': selected }">
+                            <i v-if="selected" class="fas fa-check"></i>
+                        </div>
+                    </div>
+                </Transition>
 
                 <!-- Type Icon Overlay (Top Right) -->
                 <div class="type-overlay">
@@ -82,16 +107,14 @@ function handleQuickNote(e: Event) {
     position: relative;
     width: 100%;
     padding-top: 135%;
-    /* Slightly taller than 125% but shorter than 150% (3:4 ratio) */
     background: var(--color-bg-surface);
     border-radius: var(--radius-xl);
     overflow: hidden;
     border: 1px solid var(--color-border);
     transition: all var(--transition-base);
     box-shadow: var(--shadow-md);
-    transition: 0.3s;
 
-    &:hover {
+    .media-card:hover & {
         transform: translateY(-8px);
         border-color: rgba(255, 255, 255, 0.15);
         box-shadow: var(--shadow-lg);
@@ -106,6 +129,60 @@ function handleQuickNote(e: Event) {
             transform: scale(1);
         }
     }
+
+    .media-card.selected & {
+        border-color: var(--color-accent);
+        box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.3), var(--shadow-lg);
+    }
+}
+
+.selection-checkbox {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    z-index: 10;
+    cursor: pointer;
+}
+
+.checkbox-inner {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.8);
+        border-color: white;
+        transform: scale(1.1);
+    }
+
+    &.checked {
+        background: var(--color-accent);
+        border-color: var(--color-accent);
+        box-shadow: 0 0 15px rgba(0, 245, 255, 0.5);
+
+        i {
+            color: var(--color-bg-main);
+            font-size: 0.9rem;
+        }
+    }
+}
+
+/* Fade transition for checkbox */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 
 .poster-wrapper {

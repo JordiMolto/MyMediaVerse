@@ -65,7 +65,14 @@ export async function createItem(item: Omit<Item, 'id' | 'fechaCreacion'>): Prom
     veces_consumido: item.vecesConsumido,
     ultima_vez: item.ultimaVez,
     mini_reseña: item.miniReseña,
-    archivos: item.archivos
+    archivos: item.archivos,
+    // TMDB Enhanced Fields
+    trailer: item.trailer,
+    streaming_platforms: item.streamingPlatforms,
+    backdrop_image: item.backdropImage,
+    number_of_seasons: item.numberOfSeasons,
+    number_of_episodes: item.numberOfEpisodes,
+    tagline: item.tagline
   }
 
   const { data, error } = await supabase
@@ -109,6 +116,13 @@ export async function updateItem(id: string, updates: Partial<Item>): Promise<It
   if (updates.ultimaVez !== undefined) supabaseUpdates.ultima_vez = updates.ultimaVez
   if (updates.miniReseña !== undefined) supabaseUpdates.mini_reseña = updates.miniReseña
   if (updates.archivos !== undefined) supabaseUpdates.archivos = updates.archivos
+  // TMDB Enhanced Fields
+  if (updates.trailer !== undefined) supabaseUpdates.trailer = updates.trailer
+  if (updates.streamingPlatforms !== undefined) supabaseUpdates.streaming_platforms = updates.streamingPlatforms
+  if (updates.backdropImage !== undefined) supabaseUpdates.backdrop_image = updates.backdropImage
+  if (updates.numberOfSeasons !== undefined) supabaseUpdates.number_of_seasons = updates.numberOfSeasons
+  if (updates.numberOfEpisodes !== undefined) supabaseUpdates.number_of_episodes = updates.numberOfEpisodes
+  if (updates.tagline !== undefined) supabaseUpdates.tagline = updates.tagline
 
   const { data, error } = await supabase
     .from('items')
@@ -164,6 +178,13 @@ function mapSupabaseItemToLocal(supabaseItem: any): Item {
     vecesConsumido: supabaseItem.veces_consumido,
     ultimaVez: supabaseItem.ultima_vez ? new Date(supabaseItem.ultima_vez) : undefined,
     miniReseña: supabaseItem.mini_reseña,
-    archivos: supabaseItem.archivos
+    archivos: supabaseItem.archivos,
+    // TMDB Enhanced Fields
+    trailer: supabaseItem.trailer,
+    streamingPlatforms: supabaseItem.streaming_platforms,
+    backdropImage: supabaseItem.backdrop_image,
+    numberOfSeasons: supabaseItem.number_of_seasons,
+    numberOfEpisodes: supabaseItem.number_of_episodes,
+    tagline: supabaseItem.tagline
   }
 }

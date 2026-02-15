@@ -2,20 +2,46 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useItemsStore } from '@/stores/items'
-import { ItemType, Item, Priority } from '@/types'
+import { useCategoriesStore } from '@/stores/categories'
+import { Item, Priority, ItemStatus, ItemType } from '@/types'
 import AppModal from '@/components/common/app-modal/AppModal.vue'
 import ItemForm from '@/components/items/ItemForm.vue'
 import MediaCard from '@/components/common/MediaCard.vue'
 import { exportToCSV } from '@/utils/export'
 import AppSelect from '@/components/common/app-select/AppSelect.vue'
 import AppFab from '@/components/common/AppFab.vue'
+import BulkActionsBar from '@/components/common/BulkActionsBar.vue'
+import { useBulkSelection } from '@/composables/useBulkSelection'
+import { useTMDBEnrichment } from '@/composables/useTMDBEnrichment'
 
 const router = useRouter()
 const itemsStore = useItemsStore()
+const categoriesStore = useCategoriesStore()
 
-const selectedType = ref<ItemType | null>(null)
+const selectedType = ref<string | null>(null)
 const sortBy = ref('priority')
 const showCreateModal = ref(false)
+const showEnrichmentModal = ref(false)
+const enrichmentResult = ref<{ total: number; success: number; failed: number; errors: string[] } | null>(null)
+
+// Bulk selection
+const {
+  selectedCount,
+  isSelectionMode,
+  toggleSelection,
+  isSelected,
+  selectAll,
+  clearSelection,
+  getSelectedItems
+} = useBulkSelection()
+
+// TMDB Enrichment
+const {
+  isEnriching,
+  enrichmentProgress,
+  enrichmentTotal,
+  enrichMultipleItems
+} = useTMDBEnrichment()
 
 const sortOptions = [
   { value: 'priority', label: 'Prioridad' },
@@ -25,6 +51,7 @@ const sortOptions = [
 
 onMounted(() => {
   itemsStore.fetchItems()
+  categoriesStore.fetchCategories()
 })
 
 const filteredItems = computed(() => {
@@ -50,14 +77,13 @@ const filteredItems = computed(() => {
   })
 })
 
-const types = [
-  { value: ItemType.MOVIE, label: 'Películas', icon: 'fa-film' },
-  { value: ItemType.SERIES, label: 'Series', icon: 'fa-tv' },
-  { value: ItemType.ANIME, label: 'Anime', icon: 'fa-dragon' },
-  { value: ItemType.BOOK, label: 'Libros', icon: 'fa-book' },
-  { value: ItemType.VIDEOGAME, label: 'Juegos', icon: 'fa-gamepad' },
-  { value: ItemType.BOARDGAME, label: 'Juegos de Mesa', icon: 'fa-dice' }
-]
+const types = computed(() => {
+  return categoriesStore.categories.map(cat => ({
+    value: cat.nombre,
+    label: cat.nombre,
+    icon: cat.icono
+  }))
+})
 
 function handleExport() {
   exportToCSV(filteredItems.value, 'lista-pendiente.csv')
@@ -122,6 +148,13 @@ watch([selectedType, sortBy], () => {
   currentPage.value = 1
 })
 
+// Clear selection when exiting selection mode
+watch(isSelectionMode, (newValue) => {
+  if (!newValue) {
+    clearSelection()
+  }
+})
+
 function goToDetail(id: string) {
   router.push(`/item/${id}`)
 }
@@ -135,6 +168,72 @@ async function handleCreateItem(itemData: Partial<Item>) {
     console.error('Error creating item:', error)
   }
 }
+
+// Bulk actions
+async function handleBulkChangeStatus(status: ItemStatus) {
+  const items = getSelectedItems(filteredItems.value)
+  try {
+    await Promise.all(items.map(item => itemsStore.changeStatus(item.id, status)))
+    clearSelection()
+  } catch (error) {
+    console.error('Error changing status:', error)
+    alert('Error al cambiar el estado de los items')
+  }
+}
+
+async function handleBulkDelete() {
+  const items = getSelectedItems(filteredItems.value)
+  if (!confirm(`¿Estás seguro de que quieres eliminar ${items.length} items?`)) return
+
+  try {
+    await Promise.all(items.map(item => itemsStore.deleteItem(item.id)))
+    clearSelection()
+  } catch (error) {
+    console.error('Error deleting items:', error)
+    alert('Error al eliminar los items')
+  }
+}
+
+function handleSelectAll() {
+  selectAll(filteredItems.value)
+}
+
+async function handleEnrichWithTMDB() {
+  console.log('handleEnrichWithTMDB called')
+  const items = getSelectedItems(filteredItems.value)
+  console.log('Selected items:', items)
+
+  // Filter only movies, series, and anime (robust check)
+  const enrichableItems = items.filter(item => {
+    const t = (item.tipo || '').toLowerCase()
+    const enrichable = [ItemType.MOVIE, ItemType.SERIES, ItemType.ANIME, 'película', 'pelicula', 'serie', 'anime']
+      .some(v => t.includes(v.toLowerCase()))
+    console.log(`Checking item "${item.titulo}" type "${item.tipo}": enrichable=${enrichable}`)
+    return enrichable
+  })
+
+  if (enrichableItems.length === 0) {
+    console.warn('No enrichable items selected')
+    alert('Selecciona al menos una película, serie o anime para enriquecer con TMDB')
+    return
+  }
+
+  console.log('Enrichable items total:', enrichableItems.length)
+  if (!confirm(`¿Quieres enriquecer ${enrichableItems.length} items con datos de TMDB? Esto puede tardar unos minutos.`)) {
+    console.log('Enrichment cancelled by user')
+    return
+  }
+
+  console.log('Opening enrichment modal')
+  showEnrichmentModal.value = true
+  const result = await enrichMultipleItems(enrichableItems)
+  console.log('Enrichment finished result:', result)
+  enrichmentResult.value = result
+
+  // Refresh items to show updated data
+  await itemsStore.fetchItems()
+  clearSelection()
+}
 </script>
 
 <template>
@@ -145,10 +244,17 @@ async function handleCreateItem(itemData: Partial<Item>) {
         <h1 class="text-4xl fw-black text-white tracking-tighter">Lista Pendiente</h1>
         <p class="text-secondary opacity-70">Tienes {{ filteredItems.length }} aventuras esperándote</p>
       </div>
-      <button class="btn btn-glass btn-small" @click="handleExport">
-        <i class="fas fa-download"></i>
-        Exportar CSV
-      </button>
+      <div class="header-actions flex gap-3">
+        <button class="btn btn-glass btn-small" :class="{ 'active': isSelectionMode }"
+          @click="isSelectionMode = !isSelectionMode">
+          <i class="fas" :class="isSelectionMode ? 'fa-times' : 'fa-check-square'"></i>
+          {{ isSelectionMode ? 'Cancelar' : 'Seleccionar' }}
+        </button>
+        <button class="btn btn-glass btn-small" @click="handleExport">
+          <i class="fas fa-download"></i>
+          Exportar CSV
+        </button>
+      </div>
     </header>
 
     <!-- Filter & Sort Bar -->
@@ -195,7 +301,8 @@ async function handleCreateItem(itemData: Partial<Item>) {
 
       <div v-else class="content-wrapper flex flex-col gap-16">
         <div class="items-grid">
-          <MediaCard v-for="item in paginatedItems" :key="item.id" :item="item" @click="goToDetail" />
+          <MediaCard v-for="item in paginatedItems" :key="item.id" :item="item" :selectable="isSelectionMode"
+            :selected="isSelected(item.id)" @click="goToDetail" @toggle-select="toggleSelection" />
         </div>
 
         <!-- Pagination -->
@@ -220,9 +327,61 @@ async function handleCreateItem(itemData: Partial<Item>) {
     <!-- Global App FAB -->
     <AppFab @click="showCreateModal = true" />
 
+    <!-- Bulk Actions Bar -->
+    <BulkActionsBar :selected-count="selectedCount" :total-count="filteredItems.length" @select-all="handleSelectAll"
+      @clear-selection="clearSelection" @change-status="handleBulkChangeStatus" @delete-selected="handleBulkDelete"
+      @enrich-with-tmdb="handleEnrichWithTMDB" />
+
     <!-- Create Item Modal -->
     <AppModal :is-open="showCreateModal" title="Crear Nuevo Item" size="large" @close="showCreateModal = false">
       <ItemForm mode="create" @save="handleCreateItem" @cancel="showCreateModal = false" />
+    </AppModal>
+
+    <!-- TMDB Enrichment Progress Modal -->
+    <AppModal :is-open="showEnrichmentModal" title="Enriqueciendo con TMDB" size="medium"
+      @close="!isEnriching && (showEnrichmentModal = false)">
+      <div class="enrichment-modal">
+        <div v-if="isEnriching" class="enrichment-progress">
+          <div class="progress-info">
+            <i class="fas fa-film fa-spin"></i>
+            <p>Enriqueciendo items con datos de TMDB...</p>
+            <p class="progress-text">{{ enrichmentProgress }} / {{ enrichmentTotal }}</p>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: `${(enrichmentProgress / enrichmentTotal) * 100}%` }"></div>
+          </div>
+        </div>
+
+        <div v-else-if="enrichmentResult" class="enrichment-result">
+          <div class="result-icon success">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h3>Enriquecimiento Completado</h3>
+          <div class="result-stats">
+            <div class="stat">
+              <span class="stat-value">{{ enrichmentResult.total }}</span>
+              <span class="stat-label">Total</span>
+            </div>
+            <div class="stat success">
+              <span class="stat-value">{{ enrichmentResult.success }}</span>
+              <span class="stat-label">Exitosos</span>
+            </div>
+            <div class="stat error">
+              <span class="stat-value">{{ enrichmentResult.failed }}</span>
+              <span class="stat-label">Fallidos</span>
+            </div>
+          </div>
+
+          <div v-if="enrichmentResult.errors.length > 0" class="errors-list">
+            <h4>Errores:</h4>
+            <ul>
+              <li v-for="(error, index) in enrichmentResult.errors" :key="index">{{ error }}</li>
+            </ul>
+          </div>
+
+          <button class="btn btn-primary" @click="showEnrichmentModal = false">Cerrar</button>
+        </div>
+      </div>
     </AppModal>
   </div>
 </template>
@@ -351,6 +510,142 @@ async function handleCreateItem(itemData: Partial<Item>) {
   .category-tabs {
     flex-wrap: nowrap;
     min-width: min-content;
+  }
+}
+
+/* TMDB Enrichment Modal Styles */
+.enrichment-modal {
+  padding: var(--space-6);
+}
+
+.enrichment-progress {
+  text-align: center;
+}
+
+.progress-info {
+  margin-bottom: var(--space-6);
+
+  i {
+    font-size: 3rem;
+    color: var(--color-accent);
+    margin-bottom: var(--space-4);
+  }
+
+  p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-2);
+  }
+
+  .progress-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+  }
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
+  transition: width 0.3s ease;
+}
+
+.enrichment-result {
+  text-align: center;
+
+  .result-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-4);
+
+    &.success {
+      color: var(--color-success);
+    }
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: var(--space-6);
+  }
+}
+
+.result-stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    background: var(--color-bg-surface);
+    border-radius: var(--radius-lg);
+    min-width: 100px;
+
+    &.success .stat-value {
+      color: var(--color-success);
+    }
+
+    &.error .stat-value {
+      color: var(--color-danger);
+    }
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--color-accent);
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+.errors-list {
+  text-align: left;
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  border-radius: var(--radius-md);
+
+  h4 {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-danger);
+    margin-bottom: var(--space-3);
+    text-transform: uppercase;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  li {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+    &:last-child {
+      border-bottom: none;
+    }
   }
 }
 </style>
