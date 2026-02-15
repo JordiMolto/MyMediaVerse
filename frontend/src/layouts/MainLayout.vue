@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import Navbar from '@/components/layout/navbar/Navbar.vue'
+import SideMenu from '@/components/layout/SideMenu.vue'
 import QuickAddModal from '@/components/common/QuickAddModal.vue'
 import { useUIStore } from '@/stores/ui'
 
@@ -9,6 +10,7 @@ const uiStore = useUIStore()
 
 <template>
     <div class="app-layout">
+        <SideMenu />
         <Navbar />
         <main class="main-content">
             <RouterView />

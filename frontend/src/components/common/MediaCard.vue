@@ -69,8 +69,15 @@ function handleCardClick() {
                 </Transition>
 
                 <!-- Type Icon Overlay (Top Right) -->
-                <div class="type-overlay">
-                    <i class="fas" :class="typeIcon"></i>
+                <div class="overlays-wrapper absolute top-3 right-3 flex flex-col gap-2 z-10">
+                    <div v-if="item.favorito"
+                        class="favorite-pill bg-pink-500/80 backdrop-blur-md px-2 py-1 rounded text-[10px] text-white flex items-center gap-1 shadow-lg animate-pulse">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div
+                        class="type-overlay-mini bg-black/50 backdrop-blur-md w-8 h-8 rounded flex items-center justify-center text-white border border-white/10">
+                        <i class="fas" :class="typeIcon"></i>
+                    </div>
                 </div>
 
                 <!-- Action Button -->

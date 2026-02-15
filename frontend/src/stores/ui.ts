@@ -27,13 +27,25 @@ export const useUIStore = defineStore('ui', () => {
     modalProps.value = {}
   }
 
+  const isSideMenuOpen = ref(false)
+
+  function toggleSideMenu(value?: boolean) {
+    if (value !== undefined) {
+      isSideMenuOpen.value = value
+    } else {
+      isSideMenuOpen.value = !isSideMenuOpen.value
+    }
+  }
+
   return {
     isModalOpen,
     isQuickAddOpen,
+    isSideMenuOpen,
     modalComponent,
     modalProps,
     openModal,
     closeModal,
-    toggleQuickAdd
+    toggleQuickAdd,
+    toggleSideMenu
   }
 })

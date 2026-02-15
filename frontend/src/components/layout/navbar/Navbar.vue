@@ -29,78 +29,27 @@ const handleImportSuccess = (count: number) => {
 </script>
 
 <template>
-    <div v-if="!isAuthPage">
-        <!-- Mobile Top Header -->
-        <header class="mobile-header">
-            <div class="navbar-brand" @click="goToHome">
-                <i class="fas fa-rocket"></i>
-                <span class="brand-text">MyMediaVerse</span>
-            </div>
-
-            <div class="mobile-actions">
-                <button class="icon-btn highlight" @click="uiStore.toggleQuickAdd(true)" title="Añadir rápido">
-                    <i class="fas fa-plus"></i>
-                </button>
-                <button class="icon-btn" @click="showImportModal = true">
-                    <i class="fas fa-file-import"></i>
-                </button>
-                <button class="icon-btn">
-                    <i class="fas fa-bell"></i>
-                </button>
-                <div v-if="authStore.isAuthenticated" class="user-profile-trigger" @click="router.push('/perfil')">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User Avatar"
-                        class="avatar-img shadow-sm" />
-                </div>
-                <button v-else class="login-btn-mobile" @click="router.push('/login')">
-                    <i class="fas fa-sign-in-alt"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- Main Desktop / Mobile Bottom Nav -->
+    <div v-if="!isAuthPage" class="navbar-wrapper">
         <nav class="navbar">
             <div class="navbar-container">
-                <div class="navbar-brand desktop-only" @click="goToHome">
+                <!-- Left: Hamburger -->
+                <button class="hamburger-btn" @click="uiStore.toggleSideMenu(true)" title="Menú">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <!-- Center: Brand -->
+                <div class="navbar-brand" @click="goToHome">
                     <i class="fas fa-rocket"></i>
-                    <span>MyMediaVerse</span>
+                    <span class="desktop-only">MyMediaVerse</span>
                 </div>
 
-                <div class="navbar-menu">
-                    <button class="nav-link" :class="{ active: route.name === 'home' }" @click="router.push('/')">
-                        <i class="fas fa-home"></i>
-                        <span>Inicio</span>
-                    </button>
-                    <button class="nav-link" :class="{ active: route.name === 'pending' }"
-                        @click="router.push('/pendiente')">
-                        <i class="fas fa-clock"></i>
-                        <span>Pendiente</span>
-                    </button>
-                    <button class="nav-link" :class="{ active: route.name === 'in-progress' }"
-                        @click="router.push('/en-progreso')">
-                        <i class="fas fa-play"></i>
-                        <span>En Progreso</span>
-                    </button>
-                    <button class="nav-link" :class="{ active: route.name === 'completed' }"
-                        @click="router.push('/hecho')">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Completado</span>
-                    </button>
-                    <button class="nav-link" :class="{ active: route.name === 'collections' }"
-                        @click="router.push('/colecciones')">
-                        <i class="fas fa-layer-group"></i>
-                        <span>Colecciones</span>
-                    </button>
-                </div>
-
-                <div class="navbar-actions desktop-only">
+                <!-- Right: Actions -->
+                <div class="navbar-actions">
                     <button class="icon-btn highlight" title="Añadir rápido" @click="uiStore.toggleQuickAdd(true)">
                         <i class="fas fa-plus"></i>
                     </button>
-                    <button class="icon-btn" title="Importar Masiva" @click="showImportModal = true">
+                    <button class="icon-btn desktop-only" title="Importar Masiva" @click="showImportModal = true">
                         <i class="fas fa-file-import"></i>
-                    </button>
-                    <button class="icon-btn" title="Notificaciones">
-                        <i class="fas fa-bell"></i>
                     </button>
                     <div v-if="authStore.isAuthenticated" class="user-profile-trigger" @click="router.push('/perfil')"
                         title="Mi Perfil">

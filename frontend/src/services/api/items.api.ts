@@ -72,7 +72,8 @@ export async function createItem(item: Omit<Item, 'id' | 'fechaCreacion'>): Prom
     backdrop_image: item.backdropImage,
     number_of_seasons: item.numberOfSeasons,
     number_of_episodes: item.numberOfEpisodes,
-    tagline: item.tagline
+    tagline: item.tagline,
+    favorito: item.favorito || false
   }
 
   const { data, error } = await supabase
@@ -123,6 +124,7 @@ export async function updateItem(id: string, updates: Partial<Item>): Promise<It
   if (updates.numberOfSeasons !== undefined) supabaseUpdates.number_of_seasons = updates.numberOfSeasons
   if (updates.numberOfEpisodes !== undefined) supabaseUpdates.number_of_episodes = updates.numberOfEpisodes
   if (updates.tagline !== undefined) supabaseUpdates.tagline = updates.tagline
+  if (updates.favorito !== undefined) supabaseUpdates.favorito = updates.favorito
 
   const { data, error } = await supabase
     .from('items')
@@ -185,6 +187,7 @@ function mapSupabaseItemToLocal(supabaseItem: any): Item {
     backdropImage: supabaseItem.backdrop_image,
     numberOfSeasons: supabaseItem.number_of_seasons,
     numberOfEpisodes: supabaseItem.number_of_episodes,
-    tagline: supabaseItem.tagline
+    tagline: supabaseItem.tagline,
+    favorito: supabaseItem.favorito
   }
 }

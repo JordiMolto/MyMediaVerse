@@ -191,6 +191,16 @@ async function handleSingleEnrich() {
         await loadItem()
     }
 }
+
+async function toggleFavorite() {
+    if (!item.value) return
+    try {
+        await itemsStore.toggleFavorite(item.value.id)
+        await loadItem()
+    } catch (error) {
+        console.error('Error toggling favorite:', error)
+    }
+}
 </script>
 
 <template>
@@ -199,10 +209,17 @@ async function handleSingleEnrich() {
         <div class="backdrop-hero" :style="backdropStyle">
             <div class="backdrop-overlay">
                 <div class="container-detail">
-                    <button class="back-btn" @click="router.back()">
-                        <i class="fas fa-arrow-left"></i>
-                        Volver
-                    </button>
+                    <div class="top-nav-actions flex justify-between items-center w-full mb-8">
+                        <button class="back-btn" @click="router.back()">
+                            <i class="fas fa-arrow-left"></i>
+                            Volver
+                        </button>
+
+                        <button class="favorite-btn detail-page" :class="{ 'is-favorite': item.favorito }"
+                            @click="toggleFavorite" title="Marcar como favorito">
+                            <i class="fa-heart" :class="item.favorito ? 'fas' : 'far'"></i>
+                        </button>
+                    </div>
 
                     <div class="hero-content">
                         <h1 class="detail-title">{{ item.titulo }}</h1>
@@ -898,6 +915,42 @@ async function handleSingleEnrich() {
 
     i {
         font-size: 0.875rem;
+    }
+}
+
+.result-item.error i {
+    color: var(--color-danger);
+}
+
+.favorite-btn.detail-page {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+    }
+
+    &.is-favorite {
+        color: #ff3399;
+        border-color: #ff3399;
+        background: rgba(255, 51, 153, 0.1);
+        filter: drop-shadow(0 0 10px rgba(255, 51, 153, 0.5));
+    }
+
+    &:active {
+        transform: scale(0.9);
     }
 }
 

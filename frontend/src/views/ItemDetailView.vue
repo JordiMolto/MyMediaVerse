@@ -187,6 +187,16 @@ async function updateMiniReview(review: string) {
   }
 }
 
+async function toggleFavorite() {
+  if (!item.value) return
+  try {
+    await itemsStore.toggleFavorite(item.value.id)
+    await loadItem()
+  } catch (error) {
+    console.error('Error toggling favorite:', error)
+  }
+}
+
 async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: HitoType }) {
   if (!item.value) return
 
@@ -224,7 +234,11 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
           <i class="fas fa-arrow-left"></i>
           <span>Volver</span>
         </button>
-        <div class="header-actions flex gap-4">
+        <div class="header-actions flex items-center gap-4">
+          <button class="favorite-btn" :class="{ 'is-favorite': item.favorito }" @click="toggleFavorite"
+            title="Marcar como favorito">
+            <i class="fa-heart" :class="item.favorito ? 'fas' : 'far'"></i>
+          </button>
           <AppButton variant="ghost" icon="fa-edit" size="small" @click="showEditModal = true">Editar</AppButton>
           <AppButton variant="ghost" icon="fa-trash" size="small" class="text-danger-hover"
             @click="showDeleteConfirm = true"></AppButton>
@@ -678,5 +692,35 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
 
 .text-danger-hover:hover {
   color: var(--color-danger) !important;
+}
+
+.favorite-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 50%;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+  }
+
+  &.is-favorite {
+    color: #ff3399;
+    /* Rosa vibrante */
+    filter: drop-shadow(0 0 8px rgba(255, 51, 153, 0.4));
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
 }
 </style>

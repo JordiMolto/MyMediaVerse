@@ -9,16 +9,20 @@ export const useItemsStore = defineStore('items', () => {
   const error = ref<string | null>(null)
 
   // Computed getters
-  const pendingItems = computed(() => 
+  const pendingItems = computed(() =>
     items.value.filter(item => item.estado === ItemStatus.PENDING)
   )
 
-  const inProgressItems = computed(() => 
+  const inProgressItems = computed(() =>
     items.value.filter(item => item.estado === ItemStatus.IN_PROGRESS)
   )
 
-  const completedItems = computed(() => 
+  const completedItems = computed(() =>
     items.value.filter(item => item.estado === ItemStatus.COMPLETED)
+  )
+
+  const favoriteItems = computed(() =>
+    items.value.filter(item => item.favorito)
   )
 
   // Actions
@@ -42,7 +46,15 @@ export const useItemsStore = defineStore('items', () => {
 
     // If not in memory, fetch from storage
     try {
-      return await storage.getItemById(id)
+      const item = await storage.getItemById(id)
+      if (item) {
+        // Add to store if not already there
+        const exists = items.value.some(i => i.id === id)
+        if (!exists) {
+          items.value.push(item)
+        }
+      }
+      return item
     } catch (e: any) {
       console.error('Error fetching item:', e)
       return undefined
@@ -86,19 +98,25 @@ export const useItemsStore = defineStore('items', () => {
 
   async function changeStatus(id: string, status: ItemStatus) {
     const updates: Partial<Item> = { estado: status }
-    
+
     if (status === ItemStatus.IN_PROGRESS) {
       const item = items.value.find(i => i.id === id)
       if (item && !item.fechaInicio) {
         updates.fechaInicio = new Date()
       }
     }
-    
+
     if (status === ItemStatus.COMPLETED) {
       updates.fechaFin = new Date()
     }
-    
+
     return updateItem(id, updates)
+  }
+
+  async function toggleFavorite(id: string) {
+    const item = items.value.find(i => i.id === id)
+    if (!item) return
+    return updateItem(id, { favorito: !item.favorito })
   }
 
   async function deleteItem(id: string) {
@@ -150,11 +168,13 @@ export const useItemsStore = defineStore('items', () => {
     pendingItems,
     inProgressItems,
     completedItems,
+    favoriteItems,
     fetchItems,
     getItemById,
     createItem,
     updateItem,
     changeStatus,
+    toggleFavorite,
     deleteItem,
     filterItems
   }

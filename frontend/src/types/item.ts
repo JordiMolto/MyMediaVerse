@@ -13,6 +13,7 @@ export interface Item {
   tags?: string[]
   imagen?: string
   descripcion?: string
+  favorito?: boolean
 
   // Adaptive Metadata
   duracion?: number // minutos
