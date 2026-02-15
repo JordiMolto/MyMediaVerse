@@ -60,6 +60,14 @@ const openEditModal = (category: any) => {
     showEditModal.value = true
 }
 
+const handleToggleVisibility = async (category: any) => {
+    try {
+        await categoriesStore.updateCategory(category.id, { oculto: !category.oculto })
+    } catch (err) {
+        alert('Error al cambiar la visibilidad')
+    }
+}
+
 const confirmDelete = async (category: any) => {
     if (confirm(`¿Estás seguro de que quieres borrar la colección "${category.nombre}"?`)) {
         try {
@@ -70,26 +78,6 @@ const confirmDelete = async (category: any) => {
     }
 }
 
-const seedDefaultCategories = async () => {
-    const defaults = [
-        { nombre: 'Películas', icono: 'fa-film', color: '#A855F7' },
-        { nombre: 'Series', icono: 'fa-tv', color: '#A855F7' },
-        { nombre: 'Libros', icono: 'fa-book', color: '#4CAF50' },
-        { nombre: 'Videojuegos', icono: 'fa-gamepad', color: '#00F5FF' },
-        { nombre: 'Juegos de Mesa', icono: 'fa-dice', color: '#FFC107' }
-    ]
-
-    try {
-        for (const cat of defaults) {
-            // Check if already exists by name
-            if (!categoriesStore.categories.some(c => c.nombre.toLowerCase() === cat.nombre.toLowerCase())) {
-                await categoriesStore.createCategory(cat)
-            }
-        }
-    } catch (err) {
-        alert('Error al restaurar las categorías')
-    }
-}
 
 const icons = [
     'fa-folder', 'fa-film', 'fa-tv', 'fa-book', 'fa-gamepad', 'fa-dice',
@@ -140,25 +128,31 @@ const colors = [
                 <AppButton variant="primary" icon="fa-plus" @click="showAddModal = true">
                     Crear Colección
                 </AppButton>
-                <AppButton variant="glass" icon="fa-magic" @click="seedDefaultCategories">
-                    Restaurar Predeterminadas
-                </AppButton>
             </div>
         </div>
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div v-for="cat in categoriesStore.categories" :key="cat.id"
-                class="category-card glass-card p-6 flex items-center justify-between group relative overflow-hidden">
+                class="category-card glass-card p-6 flex items-center justify-between group relative overflow-hidden"
+                :class="{ 'opacity-50': cat.oculto }">
                 <div class="flex items-center gap-4 relative z-10">
                     <div class="icon-box shadow-lg" :style="{ backgroundColor: cat.color, color: 'white' }">
                         <i class="fas" :class="cat.icono"></i>
                     </div>
                     <div>
                         <h4 class="text-lg font-bold text-white">{{ cat.nombre }}</h4>
-                        <span class="text-xs text-muted uppercase tracking-widest font-black">Colección</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-muted uppercase tracking-widest font-black">Colección</span>
+                            <span v-if="cat.oculto"
+                                class="text-[10px] bg-white/10 text-white/50 px-2 py-0.5 rounded uppercase font-bold">Oculta</span>
+                        </div>
                     </div>
                 </div>
                 <div class="flex gap-2 relative z-10">
+                    <button class="action-btn visibility" @click="handleToggleVisibility(cat)"
+                        :title="cat.oculto ? 'Mostrar' : 'Ocultar'">
+                        <i class="fas" :class="cat.oculto ? 'fa-eye-slash' : 'fa-eye'"></i>
+                    </button>
                     <button class="action-btn edit" @click="openEditModal(cat)" title="Editar">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -171,17 +165,6 @@ const colors = [
                     <i class="fas text-8xl" :class="cat.icono" :style="{ color: cat.color }"></i>
                 </div>
             </div>
-
-            <!-- Quick Add Card -->
-            <button
-                class="category-card glass-card p-6 flex flex-col items-center justify-center gap-3 border-dashed border-white/10 hover:border-accent/40"
-                @click="showAddModal = true">
-                <div
-                    class="w-12 h-12 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center text-white/20">
-                    <i class="fas fa-plus"></i>
-                </div>
-                <span class="text-xs font-bold text-muted uppercase tracking-widest">Añadir Nueva</span>
-            </button>
         </div>
 
         <!-- Add Modal -->
@@ -300,6 +283,12 @@ const colors = [
     background: rgba(33, 150, 243, 0.1);
     color: #2196F3;
     border-color: #2196F3;
+}
+
+.action-btn.visibility:hover {
+    background: rgba(0, 245, 255, 0.1);
+    color: var(--color-accent);
+    border-color: var(--color-accent);
 }
 
 .action-btn.delete:hover {

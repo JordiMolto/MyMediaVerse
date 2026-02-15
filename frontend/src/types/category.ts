@@ -4,6 +4,7 @@ export interface Category {
     nombre: string;
     icono?: string;
     color?: string;
+    oculto?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 }

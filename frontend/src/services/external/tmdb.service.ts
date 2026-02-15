@@ -61,16 +61,18 @@ export interface TMDBDetailedResult extends TMDBResult {
     }
 }
 
-export async function searchTMDB(query: string, type: ItemType): Promise<TMDBResult | null> {
+export async function searchTMDBResults(query: string, type: ItemType | 'all'): Promise<TMDBResult[]> {
     const trimmedQuery = query.trim()
 
     if (!TMDB_API_KEY) {
-        console.error('TMDB API Key missing. Please add VITE_TMDB_API_KEY to your .env file.')
-        return null
+        console.error('TMDB API Key missing.')
+        return []
     }
 
-    if (!trimmedQuery) return null
+    if (!trimmedQuery) return []
 
+    // If type is 'all', we might want to use multi-search or just default to movie for this specific tool
+    // But let's support tv/movie specifically
     const endpoint = type === ItemType.SERIES ? '/search/tv' : '/search/movie'
 
     try {
@@ -83,15 +85,19 @@ export async function searchTMDB(query: string, type: ItemType): Promise<TMDBRes
             }
         })
 
-        const results = response.data.results as TMDBResult[]
-        if (results && results.length > 0) {
-            return results[0]
-        }
-        return null
+        return (response.data.results as TMDBResult[]).map(r => ({
+            ...r,
+            media_type: type === ItemType.SERIES ? 'tv' : 'movie'
+        }))
     } catch (error: any) {
         console.error('Error searching TMDB:', error?.response?.data || error.message)
-        return null
+        return []
     }
+}
+
+export async function searchTMDB(query: string, type: ItemType): Promise<TMDBResult | null> {
+    const results = await searchTMDBResults(query, type)
+    return results && results.length > 0 ? results[0] : null
 }
 
 export async function getTMDBDetails(id: number, type: ItemType): Promise<TMDBDetailedResult | null> {

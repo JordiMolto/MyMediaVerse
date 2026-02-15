@@ -61,10 +61,12 @@ const errors = ref<Record<string, string>>({})
 
 const typeOptions = computed(() => {
   // Get custom categories from store
-  const customOptions = categoriesStore.categories.map(c => ({
-    value: c.nombre,
-    label: c.nombre
-  }))
+  const customOptions = categoriesStore.categories
+    .filter(c => !c.oculto || c.nombre === props.item?.tipo)
+    .map(c => ({
+      value: c.nombre,
+      label: c.nombre
+    }))
 
   // If there are custom categories, use only those
   if (customOptions.length > 0) {

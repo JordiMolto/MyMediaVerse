@@ -29,7 +29,8 @@ export async function createCategory(category: Omit<Category, 'id' | 'userId' | 
         user_id: user.id,
         nombre: category.nombre,
         icono: category.icono,
-        color: category.color
+        color: category.color,
+        oculto: category.oculto || false
     }
 
     const { data, error } = await supabase
@@ -50,6 +51,7 @@ export async function updateCategory(id: string, updates: Partial<Category>): Pr
     if (updates.nombre) supabaseUpdates.nombre = updates.nombre
     if (updates.icono) supabaseUpdates.icono = updates.icono
     if (updates.color) supabaseUpdates.color = updates.color
+    if (updates.oculto !== undefined) supabaseUpdates.oculto = updates.oculto
 
     const { data, error } = await supabase
         .from('categories')
@@ -84,6 +86,7 @@ function mapSupabaseCategoryToLocal(supabaseCategory: any): Category {
         nombre: supabaseCategory.nombre,
         icono: supabaseCategory.icono,
         color: supabaseCategory.color,
+        oculto: supabaseCategory.oculto,
         createdAt: new Date(supabaseCategory.created_at),
         updatedAt: new Date(supabaseCategory.updated_at)
     }

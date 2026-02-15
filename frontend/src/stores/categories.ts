@@ -9,10 +9,32 @@ export const useCategoriesStore = defineStore('categories', () => {
     const error = ref<string | null>(null)
 
     async function fetchCategories() {
+        if (loading.value) return
         loading.value = true
         error.value = null
         try {
-            categories.value = await categoriesApi.fetchCategories()
+            const data = await categoriesApi.fetchCategories()
+
+            // If user has no categories, seed defaults automatically
+            if (data.length === 0) {
+                console.log('No categories found, seeding defaults...')
+                const defaults = [
+                    { nombre: 'Películas', icono: 'fa-film', color: '#A855F7' },
+                    { nombre: 'Series', icono: 'fa-tv', color: '#A855F7' },
+                    { nombre: 'Libros', icono: 'fa-book', color: '#4CAF50' },
+                    { nombre: 'Videojuegos', icono: 'fa-gamepad', color: '#00F5FF' },
+                    { nombre: 'Juegos de Mesa', icono: 'fa-dice', color: '#FFC107' }
+                ]
+
+                for (const cat of defaults) {
+                    await categoriesApi.createCategory(cat)
+                }
+
+                // Fetch again to get the newly created categories with IDs
+                categories.value = await categoriesApi.fetchCategories()
+            } else {
+                categories.value = data
+            }
         } catch (err: any) {
             error.value = err.message || 'Error al cargar categorías'
             console.error('Error fetching categories:', err)

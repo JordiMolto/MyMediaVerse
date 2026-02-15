@@ -56,17 +56,22 @@ const routes: RouteRecordRaw[] = [
         return
       }
 
-      // Route to specialized view based on type
-      const typeRoutes: Record<string, string> = {
-        'movie': 'movie-detail',
-        'series': 'series-detail',
-        'book': 'book-detail',
-        'videogame': 'videogame-detail',
-        'boardgame': 'boardgame-detail',
-        'anime': 'movie-detail' // Use movie view for anime
+      // Route to specialized view based on type (with robust check)
+      const t = (item.tipo || '').toLowerCase()
+      let targetRoute = ''
+
+      if (t === 'movie' || t === 'película' || t === 'pelicula') {
+        targetRoute = 'movie-detail'
+      } else if (t === 'series' || t === 'serie' || t === 'anime') {
+        targetRoute = 'series-detail'
+      } else if (t === 'book' || t === 'libro') {
+        targetRoute = 'book-detail'
+      } else if (t === 'videogame' || t === 'videojuego' || t === 'juego') {
+        targetRoute = 'videogame-detail'
+      } else if (t === 'boardgame' || t === 'juego de mesa') {
+        targetRoute = 'boardgame-detail'
       }
 
-      const targetRoute = typeRoutes[item.tipo]
       if (targetRoute && to.name !== targetRoute) {
         next({ name: targetRoute, params: { id: itemId } })
       } else {

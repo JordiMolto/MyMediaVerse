@@ -9,6 +9,7 @@ import AppModal from '@/components/common/app-modal/AppModal.vue'
 import ItemForm from '@/components/items/ItemForm.vue'
 import NoteForm from '@/components/notes/NoteForm.vue'
 import NoteCard from '@/components/notes/NoteCard.vue'
+import { useTMDBEnrichment } from '@/composables/useTMDBEnrichment'
 
 const route = useRoute()
 const router = useRouter()
@@ -21,6 +22,13 @@ const showEditModal = ref(false)
 const showNoteModal = ref(false)
 const showDeleteConfirm = ref(false)
 const editingNoteId = ref<string | null>(null)
+const showEnrichmentModal = ref(false)
+const enrichmentResult = ref<any>(null)
+
+const {
+    enrichMultipleItems,
+    isEnriching
+} = useTMDBEnrichment()
 
 const itemId = route.params.id as string
 
@@ -149,6 +157,40 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
         console.error('Error saving note:', error)
     }
 }
+
+const platformLinks: Record<string, string> = {
+    'netflix': 'https://www.netflix.com',
+    'amazon prime video': 'https://www.amazon.com/gp/video/storefront',
+    'prime video': 'https://www.amazon.com/gp/video/storefront',
+    'disney plus': 'https://www.disneyplus.com',
+    'disney+': 'https://www.disneyplus.com',
+    'hbo max': 'https://www.max.com',
+    'max': 'https://www.max.com',
+    'apple tv': 'https://tv.apple.com',
+    'movistar': 'https://ver.movistarplus.es',
+    'filmin': 'https://www.filmin.es',
+    'rakuten': 'https://rakuten.tv',
+    'crunchyroll': 'https://www.crunchyroll.com'
+}
+
+function getPlatformUrl(name: string) {
+    const n = name.toLowerCase()
+    const match = Object.entries(platformLinks).find(([key]) => n.includes(key))
+    return match ? match[1] : `https://www.google.com/search?q=${encodeURIComponent(name)}`
+}
+
+async function handleSingleEnrich() {
+    if (!item.value) return
+    if (!confirm(`¿Quieres enriquecer "${item.value.titulo}" con datos de TMDB?`)) return
+
+    showEnrichmentModal.value = true
+    const result = await enrichMultipleItems([item.value])
+    enrichmentResult.value = result
+
+    if (result.success > 0) {
+        await loadItem()
+    }
+}
 </script>
 
 <template>
@@ -163,7 +205,7 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
                     </button>
 
                     <div class="hero-content">
-                        <h1 class="movie-title">{{ item.titulo }}</h1>
+                        <h1 class="detail-title">{{ item.titulo }}</h1>
                         <p v-if="item.tagline" class="tagline">{{ item.tagline }}</p>
 
                         <div class="hero-meta">
@@ -209,6 +251,10 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
                         <AppButton variant="primary" icon="fa-edit" block @click="showEditModal = true">
                             Editar
                         </AppButton>
+                        <AppButton variant="glass" icon="fa-film" block :loading="isEnriching"
+                            @click="handleSingleEnrich">
+                            Enriquecer TMDB
+                        </AppButton>
                         <AppButton variant="ghost" icon="fa-trash" block @click="showDeleteConfirm = true">
                             Eliminar
                         </AppButton>
@@ -221,9 +267,12 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
                             Disponible en
                         </h3>
                         <div class="platforms-list">
-                            <span v-for="platform in item.streamingPlatforms" :key="platform" class="platform-badge">
+                            <a v-for="platform in item.streamingPlatforms" :key="platform"
+                                :href="getPlatformUrl(platform)" target="_blank" rel="noopener noreferrer"
+                                class="platform-badge clickable">
                                 {{ platform }}
-                            </span>
+                                <i class="fas fa-external-link-alt text-[10px] opacity-50 ml-1"></i>
+                            </a>
                         </div>
                     </div>
 
@@ -367,6 +416,33 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
                 </div>
             </div>
         </AppModal>
+
+        <!-- TMDB Enrichment Progress Modal -->
+        <AppModal :is-open="showEnrichmentModal" title="Enriqueciendo con TMDB" size="medium"
+            @close="!isEnriching && (showEnrichmentModal = false)">
+            <div class="enrichment-modal">
+                <div v-if="isEnriching" class="enrichment-progress">
+                    <div class="progress-info">
+                        <i class="fas fa-film fa-spin"></i>
+                        <p>Enriqueciendo con datos de TMDB...</p>
+                    </div>
+                </div>
+
+                <div v-else-if="enrichmentResult" class="enrichment-result">
+                    <div v-if="enrichmentResult.success > 0" class="result-item success">
+                        <i class="fas fa-check-circle"></i>
+                        <span>¡Completado con éxito!</span>
+                    </div>
+                    <div v-if="enrichmentResult.failed > 0" class="result-item error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>No se pudo encontrar información.</span>
+                    </div>
+                    <AppButton variant="primary" block class="mt-6" @click="showEnrichmentModal = false">
+                        Cerrar
+                    </AppButton>
+                </div>
+            </div>
+        </AppModal>
     </div>
 </template>
 
@@ -423,7 +499,7 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
     max-width: 800px;
 }
 
-.movie-title {
+.detail-title {
     font-size: clamp(2.5rem, 5vw, 4rem);
     font-weight: 900;
     color: white;
@@ -578,6 +654,16 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
     &:hover {
         border-color: var(--color-accent);
         color: var(--color-accent);
+    }
+
+    &.clickable {
+        text-decoration: none;
+        cursor: pointer;
+
+        &:hover {
+            background: rgba(0, 245, 255, 0.1);
+            transform: translateY(-2px);
+        }
     }
 }
 

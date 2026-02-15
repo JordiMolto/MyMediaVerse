@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useItemsStore } from '@/stores/items'
 import { useCategoriesStore } from '@/stores/categories'
@@ -49,9 +49,20 @@ const sortOptions = [
   { value: 'alpha', label: 'Alfabético' }
 ]
 
+function handleKeyDown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && selectedCount.value > 0) {
+    clearSelection()
+  }
+}
+
 onMounted(() => {
   itemsStore.fetchItems()
   categoriesStore.fetchCategories()
+  window.addEventListener('keydown', handleKeyDown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
 })
 
 const filteredItems = computed(() => {
@@ -78,11 +89,13 @@ const filteredItems = computed(() => {
 })
 
 const types = computed(() => {
-  return categoriesStore.categories.map(cat => ({
-    value: cat.nombre,
-    label: cat.nombre,
-    icon: cat.icono
-  }))
+  return categoriesStore.categories
+    .filter(cat => !cat.oculto)
+    .map(cat => ({
+      value: cat.nombre,
+      label: cat.nombre,
+      icon: cat.icono
+    }))
 })
 
 function handleExport() {

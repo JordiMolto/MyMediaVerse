@@ -2,12 +2,14 @@
 import { computed, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useUIStore } from '@/stores/ui'
 import BulkImportModal from '@/components/common/app-modal/BulkImportModal.vue'
 import AppButton from '@/components/common/app-button/AppButton.vue'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const uiStore = useUIStore()
 
 const isAuthPage = computed(() => {
     return route.name === 'login' || route.name === 'register'
@@ -36,6 +38,9 @@ const handleImportSuccess = (count: number) => {
             </div>
 
             <div class="mobile-actions">
+                <button class="icon-btn highlight" @click="uiStore.toggleQuickAdd(true)" title="Añadir rápido">
+                    <i class="fas fa-plus"></i>
+                </button>
                 <button class="icon-btn" @click="showImportModal = true">
                     <i class="fas fa-file-import"></i>
                 </button>
@@ -88,6 +93,9 @@ const handleImportSuccess = (count: number) => {
                 </div>
 
                 <div class="navbar-actions desktop-only">
+                    <button class="icon-btn highlight" title="Añadir rápido" @click="uiStore.toggleQuickAdd(true)">
+                        <i class="fas fa-plus"></i>
+                    </button>
                     <button class="icon-btn" title="Importar Masiva" @click="showImportModal = true">
                         <i class="fas fa-file-import"></i>
                     </button>
