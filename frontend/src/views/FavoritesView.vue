@@ -228,51 +228,52 @@ async function handleEnrichWithTMDB() {
 </script>
 
 <template>
-    <div class="collection-view">
-        <header class="app-section collection-header flex justify-between items-start">
-            <div class="header-info">
-                <h1 class="text-4xl fw-black text-pink-500 tracking-tighter">Favoritos</h1>
-                <p class="text-secondary opacity-70">Tus {{ filteredItems.length }} tesoros mejor guardados</p>
+    <div class="favorites-view">
+        <header class="favorites-header">
+            <div class="header-content">
+                <h1 class="header-title">Favoritos</h1>
+                <p class="header-subtitle">Tus {{ filteredItems.length }} tesoros mejor guardados</p>
             </div>
-            <div class="header-actions flex gap-3">
-                <button class="btn btn-glass btn-small" :class="{ 'active': isSelectionMode }"
+            <div class="header-actions">
+                <button class="action-btn-small" :class="{ 'active': isSelectionMode }"
                     @click="isSelectionMode = !isSelectionMode">
                     <i class="fas" :class="isSelectionMode ? 'fa-times' : 'fa-check-square'"></i>
                     {{ isSelectionMode ? 'Cancelar' : 'Seleccionar' }}
                 </button>
-                <button class="btn btn-glass btn-small" @click="handleExport">
+                <button class="action-btn-small" @click="handleExport">
                     <i class="fas fa-download"></i>
                     Exportar CSV
                 </button>
             </div>
         </header>
 
-        <section class="app-section filter-bar-section">
-            <div class="filter-bar flex justify-between items-center gap-6">
-                <div class="category-tabs-wrapper">
-                    <div class="category-tabs flex gap-2">
-                        <button class="tab-btn" :class="{ active: selectedType === null }" @click="selectedType = null">
+        <section class="filter-section">
+            <div class="filter-bar">
+                <div class="category-filters-scroll">
+                    <div class="category-tabs">
+                        <button class="type-tab-btn" :class="{ active: selectedType === null }"
+                            @click="selectedType = null">
                             <i class="fas fa-th-large"></i> Todo
                         </button>
-                        <button v-for="type in types" :key="type.value" class="tab-btn"
+                        <button v-for="type in types" :key="type.value" class="type-tab-btn"
                             :class="{ active: selectedType === type.value }" @click="selectedType = type.value">
                             <i class="fas" :class="type.icon"></i> {{ type.label }}
                         </button>
                     </div>
                 </div>
 
-                <div class="filters-wrapper flex items-center gap-6">
-                    <div class="filter-item flex items-center gap-4">
-                        <span class="sort-label">ESTADO</span>
-                        <div class="sort-select-container">
+                <div class="dropdown-filters">
+                    <div class="filter-group">
+                        <span class="filter-label">ESTADO</span>
+                        <div class="select-wrapper">
                             <AppSelect v-model="selectedStatus" :options="statusOptions" pill placeholder="Todos"
                                 show-clear />
                         </div>
                     </div>
 
-                    <div class="filter-item flex items-center gap-4">
-                        <span class="sort-label">ORDENAR POR</span>
-                        <div class="sort-select-container">
+                    <div class="filter-group">
+                        <span class="filter-label">ORDENAR POR</span>
+                        <div class="select-wrapper">
                             <AppSelect v-model="sortBy" :options="sortOptions" pill />
                         </div>
                     </div>
@@ -280,37 +281,36 @@ async function handleEnrichWithTMDB() {
             </div>
         </section>
 
-        <section class="app-section content-grid-section">
-            <div v-if="itemsStore.loading" class="loading-state flex flex-col items-center py-20 gap-4">
-                <i class="fas fa-circle-notch fa-spin text-3xl text-pink-500"></i>
-                <span class="text-secondary">Buscando tus favoritos...</span>
+        <section class="items-section">
+            <div v-if="itemsStore.loading" class="loading-state">
+                <i class="fas fa-circle-notch fa-spin loading-spinner"></i>
+                <span class="loading-text">Buscando tus favoritos...</span>
             </div>
 
-            <div v-else-if="filteredItems.length === 0"
-                class="empty-state py-32 flex flex-col items-center text-center gap-4">
-                <i class="fas fa-heart text-6xl opacity-10 text-pink-500"></i>
-                <div class="empty-info">
-                    <h3 class="text-xl fw-bold text-white">No hay nada por aquí... todavía</h3>
-                    <p class="text-muted">Marca tus items con el corazón para verlos en esta lista</p>
+            <div v-else-if="filteredItems.length === 0" class="empty-state">
+                <i class="fas fa-heart empty-icon"></i>
+                <div class="empty-content">
+                    <h3 class="empty-title">No hay nada por aquí... todavía</h3>
+                    <p class="empty-description">Marca tus items con el corazón para verlos en esta lista</p>
                 </div>
             </div>
 
-            <div v-else class="content-wrapper flex flex-col gap-16">
-                <div class="items-grid">
+            <div v-else class="results-layout">
+                <div class="favorites-grid">
                     <MediaCard v-for="item in paginatedItems" :key="item.id" :item="item" :selectable="isSelectionMode"
                         :selected="isSelected(item.id)" @click="goToDetail" @toggle-select="toggleSelection" />
                 </div>
 
-                <div v-if="totalPages > 1" class="pagination-controls flex justify-center gap-2">
-                    <button class="page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)">
+                <div v-if="totalPages > 1" class="pagination-container">
+                    <button class="page-nav-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)">
                         <i class="fas fa-chevron-left"></i>
                     </button>
-                    <button v-for="(page, index) in visiblePages" :key="index" class="page-btn"
+                    <button v-for="(page, index) in visiblePages" :key="index" class="page-nav-btn"
                         :class="{ active: currentPage === page, 'dots': page === '...' }" @click="changePage(page)"
                         :disabled="page === '...'">
                         {{ page }}
                     </button>
-                    <button class="page-btn" :disabled="currentPage === totalPages"
+                    <button class="page-nav-btn" :disabled="currentPage === totalPages"
                         @click="changePage(currentPage + 1)">
                         <i class="fas fa-chevron-right"></i>
                     </button>
@@ -369,31 +369,95 @@ async function handleEnrichWithTMDB() {
 </template>
 
 <style scoped>
-.collection-view {
+.favorites-view {
     width: 100%;
 }
 
-.tab-btn {
+.favorites-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 32px 0;
+}
+
+.header-title {
+    font-size: 48px;
+    font-weight: 900;
+    color: #ec4899;
+    letter-spacing: -0.05em;
+    margin-bottom: 4px;
+}
+
+.header-subtitle {
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+    font-size: 16px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.action-btn-small {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--color-border);
+    border-radius: 99px;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-2) var(--space-5);
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-full);
-    color: var(--color-text-secondary);
-    font-size: var(--fs-sm);
-    font-weight: 700;
-    transition: all var(--transition-base);
-    white-space: nowrap;
-
-    i {
-        font-size: 0.9rem;
-        opacity: 0.7;
-    }
+    gap: 8px;
+    transition: all 0.2s;
 
     &:hover {
         background: rgba(255, 255, 255, 0.08);
+        color: white;
+    }
+
+    &.active {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+    }
+}
+
+.filter-section {
+    margin-bottom: 40px;
+}
+
+.filter-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+}
+
+.category-tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.type-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 20px;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 99px;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.2s;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.05);
         color: white;
     }
 
@@ -402,32 +466,100 @@ async function handleEnrichWithTMDB() {
         color: var(--color-bg-main);
         border-color: var(--color-accent);
         box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
-
-        i {
-            opacity: 1;
-        }
     }
 }
 
-.sort-label {
+.dropdown-filters {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.filter-label {
     font-size: 10px;
     font-weight: 800;
     color: var(--color-text-muted);
     letter-spacing: 0.1em;
 }
 
-.sort-select-container {
+.select-wrapper {
     width: 180px;
 }
 
-.items-grid {
+.items-section {
+    padding-bottom: 64px;
+}
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 80px 0;
+    gap: 16px;
+}
+
+.loading-spinner {
+    font-size: 32px;
+    color: #ec4899;
+}
+
+.loading-text {
+    color: var(--color-text-secondary);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 120px 0;
+    gap: 16px;
+}
+
+.empty-icon {
+    font-size: 48px;
+    opacity: 0.1;
+    color: #ec4899;
+}
+
+.empty-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.empty-description {
+    color: var(--color-text-muted);
+    font-size: 14px;
+}
+
+.results-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+}
+
+.favorites-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--space-6);
+    gap: 24px;
     width: 100%;
 }
 
-.page-btn {
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.page-nav-btn {
     width: 40px;
     height: 40px;
     display: flex;
@@ -435,10 +567,11 @@ async function handleEnrichWithTMDB() {
     justify-content: center;
     background: var(--color-bg-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-full);
+    border-radius: 50%;
     color: var(--color-text-secondary);
     font-weight: 700;
-    transition: all var(--transition-base);
+    transition: all 0.2s;
+    cursor: pointer;
 
     &:hover:not(:disabled):not(.dots) {
         background: var(--color-bg-card-hover);
@@ -452,7 +585,7 @@ async function handleEnrichWithTMDB() {
     }
 
     &:disabled {
-        opacity: 0.5;
+        opacity: 0.4;
         cursor: not-allowed;
     }
 
@@ -465,16 +598,21 @@ async function handleEnrichWithTMDB() {
 }
 
 @media (max-width: 1024px) {
+    .favorites-header {
+        flex-direction: column;
+        gap: 24px;
+    }
+
     .filter-bar {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--space-4);
+        gap: 24px;
     }
 
-    .category-tabs-wrapper {
+    .category-filters-scroll {
         width: 100%;
         overflow-x: auto;
-        padding-bottom: var(--space-2);
+        padding-bottom: 8px;
         scrollbar-width: none;
 
         &::-webkit-scrollbar {
@@ -489,24 +627,29 @@ async function handleEnrichWithTMDB() {
 }
 
 .enrichment-modal {
-    padding: var(--space-6);
+    padding: 24px;
 }
 
 .enrichment-progress {
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .progress-info {
-    margin-bottom: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
 
     i {
-        font-size: 3rem;
+        font-size: 48px;
         color: var(--color-accent);
-        margin-bottom: var(--space-4);
     }
 
     .progress-text {
-        font-size: 1.5rem;
+        font-size: 24px;
         font-weight: 700;
         color: white;
     }
@@ -516,7 +659,7 @@ async function handleEnrichWithTMDB() {
     width: 100%;
     height: 8px;
     background: var(--color-bg-surface);
-    border-radius: var(--radius-full);
+    border-radius: 99px;
     overflow: hidden;
 }
 
@@ -528,39 +671,48 @@ async function handleEnrichWithTMDB() {
 
 .enrichment-result {
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
 
     .result-icon {
-        font-size: 4rem;
+        font-size: 64px;
         color: var(--color-success);
-        margin-bottom: var(--space-4);
     }
 
     h3 {
-        font-size: 1.5rem;
+        font-size: 24px;
         font-weight: 700;
         color: white;
-        margin-bottom: var(--space-6);
     }
 }
 
 .result-stats {
     display: flex;
     justify-content: center;
-    gap: var(--space-6);
-    margin-bottom: var(--space-6);
+    gap: 24px;
 
     .stat {
         display: flex;
         flex-direction: column;
-        gap: var(--space-2);
-        padding: var(--space-4);
+        gap: 8px;
+        padding: 16px;
         background: var(--color-bg-surface);
-        border-radius: var(--radius-lg);
+        border-radius: 12px;
         min-width: 100px;
 
         .stat-value {
-            font-size: 2rem;
+            font-size: 32px;
             font-weight: 900;
+        }
+
+        &.success {
+            color: var(--color-success);
+        }
+
+        &.error {
+            color: var(--color-danger);
         }
     }
 }

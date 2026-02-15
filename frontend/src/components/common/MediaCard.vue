@@ -30,11 +30,6 @@ const typeIcon = computed(() => {
 
 const hasImage = computed(() => !!props.item.imagen)
 
-function handleQuickNote(e: Event) {
-    e.stopPropagation()
-    emit('quickNote', props.item.id)
-}
-
 function handleSelect(e: Event) {
     e.stopPropagation()
     emit('toggleSelect', props.item.id)
@@ -68,30 +63,23 @@ function handleCardClick() {
                     </div>
                 </Transition>
 
-                <!-- Type Icon Overlay (Top Right) -->
-                <div class="overlays-wrapper absolute top-3 right-3 flex flex-col gap-2 z-10">
-                    <div v-if="item.favorito"
-                        class="favorite-pill bg-pink-500/80 backdrop-blur-md px-2 py-1 rounded text-[10px] text-white flex items-center gap-1 shadow-lg animate-pulse">
+                <!-- Status & Type Overlays (Top Right) -->
+                <div class="card-status-overlays">
+                    <div v-if="item.favorito" class="favorite-tag">
                         <i class="fas fa-heart"></i>
                     </div>
-                    <div
-                        class="type-overlay-mini bg-black/50 backdrop-blur-md w-8 h-8 rounded flex items-center justify-center text-white border border-white/10">
-                        <i class="fas" :class="typeIcon"></i>
+                    <div class="type-tag">
+                        <i class="side-link-icon fas" :class="typeIcon"></i>
                     </div>
                 </div>
 
-                <!-- Action Button -->
-                <button class="action-btn" @click="handleQuickNote" title="Añadir nota">
-                    <i class="fas fa-plus"></i>
-                </button>
-
-                <!-- Gradient Overlay & Info -->
+                <!-- Info Overlay -->
                 <div class="info-overlay">
-                    <div class="info-top flex justify-between items-end">
+                    <div class="info-header">
                         <h3 class="item-title">{{ item.titulo }}</h3>
                         <div v-if="item.rating" class="item-rating">
-                            <i class="fas fa-star text-accent"></i>
-                            <span>{{ item.rating }}</span>
+                            <i class="fas fa-star rating-star"></i>
+                            <span class="rating-value">{{ item.rating }}</span>
                         </div>
                     </div>
                     <p v-if="item.descripcion" class="item-description">
@@ -113,7 +101,7 @@ function handleCardClick() {
 .card-inner {
     position: relative;
     width: 100%;
-    padding-top: 135%;
+    aspect-ratio: 2/3;
     background: var(--color-bg-surface);
     border-radius: var(--radius-xl);
     overflow: hidden;
@@ -130,11 +118,6 @@ function handleCardClick() {
             transform: scale(1.05);
             filter: brightness(0.6);
         }
-
-        .action-btn {
-            opacity: 1;
-            transform: scale(1);
-        }
     }
 
     .media-card.selected & {
@@ -143,132 +126,114 @@ function handleCardClick() {
     }
 }
 
-.selection-checkbox {
+.card-status-overlays {
     position: absolute;
-    top: var(--space-3);
-    left: var(--space-3);
-    z-index: 10;
-    cursor: pointer;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 5;
 }
 
-.checkbox-inner {
+.favorite-tag {
+    background: rgba(255, 51, 153, 0.8);
+    backdrop-filter: blur(8px);
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--transition-base);
+    font-size: 12px;
+    box-shadow: 0 4px 12px rgba(255, 51, 153, 0.3);
+    animation: heartPulse 2s infinite;
+}
+
+@keyframes heartPulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.type-tag {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.selection-checkbox {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 10;
+}
+
+.checkbox-inner {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 
     &:hover {
-        background: rgba(0, 0, 0, 0.8);
         border-color: white;
-        transform: scale(1.1);
     }
 
     &.checked {
         background: var(--color-accent);
         border-color: var(--color-accent);
-        box-shadow: 0 0 15px rgba(0, 245, 255, 0.5);
-
-        i {
-            color: var(--color-bg-main);
-            font-size: 0.9rem;
-        }
+        color: var(--color-bg-main);
+        font-size: 12px;
     }
 }
 
-/* Fade transition for checkbox */
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
-
-.poster-wrapper {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
-.poster-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: all 0.5s ease;
-}
-
-.type-overlay {
-    position: absolute;
-    top: var(--space-4);
-    right: var(--space-4);
-    width: 32px;
-    height: 32px;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(8px);
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    color: white;
-    z-index: 2;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.action-btn {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.8);
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: white;
-    color: var(--color-bg-main);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: all var(--transition-base);
-    z-index: 3;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-
-    &:hover {
-        background: var(--color-accent);
-        transform: translate(-50%, -50%) scale(1.1);
-    }
-}
 
 .info-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    padding: var(--space-8) var(--space-4) var(--space-4);
-    background: linear-gradient(to top, rgba(14, 17, 22, 0.98) 0%, rgba(14, 17, 22, 0.7) 60%, transparent 100%);
+    padding: 32px 16px 16px;
+    background: linear-gradient(to top, rgba(14, 17, 22, 0.95) 0%, rgba(14, 17, 22, 0.8) 50%, transparent 100%);
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: 4px;
     z-index: 2;
 }
 
-.info-top {
-    gap: var(--space-2);
+.info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
 }
 
 .item-title {
-    font-size: var(--fs-base);
-    font-weight: 800;
+    font-size: 15px;
+    font-weight: 700;
     color: white;
     margin: 0;
     flex: 1;
@@ -280,8 +245,8 @@ function handleCardClick() {
 .item-rating {
     display: flex;
     align-items: center;
-    gap: var(--space-1);
-    font-size: var(--fs-xs);
+    gap: 4px;
+    font-size: 11px;
     font-weight: 800;
     color: var(--color-accent);
 }
@@ -304,7 +269,7 @@ function handleCardClick() {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 3rem;
+    font-size: 40px;
     background: var(--color-bg-card);
     color: var(--color-text-muted);
 }

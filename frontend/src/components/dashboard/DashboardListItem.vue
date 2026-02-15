@@ -51,17 +51,17 @@ function formatRelativeTime(date: Date) {
 </script>
 
 <template>
-    <div class="dashboard-list-item glass-card">
+    <div class="dashboard-list-item">
         <div class="item-leading">
             <div class="type-icon-box">
                 <i class="fas" :class="typeIcon"></i>
             </div>
-            <div class="item-info">
+            <div class="item-content">
                 <h4 class="item-title">{{ item.titulo }}</h4>
                 <div class="item-meta">
-                    <span class="item-type-label">{{ item.tipo.toUpperCase() }}</span>
-                    <span class="meta-separator">•</span>
-                    <span class="item-time">{{ formatRelativeTime(item.fechaCreacion) }}</span>
+                    <span class="type-badge">{{ item.tipo.toUpperCase() }}</span>
+                    <span class="dot-separator">•</span>
+                    <span class="time-stamp">{{ formatRelativeTime(item.fechaCreacion) }}</span>
                 </div>
             </div>
         </div>
@@ -70,92 +70,93 @@ function formatRelativeTime(date: Date) {
             <div class="status-badge" :class="statusClass">
                 {{ statusLabel }}
             </div>
-            <button class="item-options-btn">
+            <button class="options-btn">
                 <i class="fas fa-ellipsis-h"></i>
             </button>
         </div>
     </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .dashboard-list-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--space-5) var(--space-8);
-    background: rgba(255, 255, 255, 0.02);
+    padding: 16px 24px;
+    background: var(--color-bg-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    transition: all var(--transition-base);
+    border-radius: 16px;
+    transition: all 0.2s ease;
 
     &:hover {
-        background: rgba(255, 255, 255, 0.04);
-        border-color: rgba(255, 255, 255, 0.08);
+        background: var(--color-bg-card-hover);
+        border-color: var(--color-border-hover);
+        transform: translateX(4px);
     }
 }
 
 .item-leading {
     display: flex;
     align-items: center;
-    gap: var(--space-4);
+    gap: 16px;
 }
 
 .type-icon-box {
     width: 48px;
     height: 48px;
     background: rgba(255, 255, 255, 0.03);
-    border-radius: var(--radius-md);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--color-text-muted);
-    font-size: 1.1rem;
+    font-size: 18px;
 }
 
-.item-info {
+.item-content {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
 }
 
 .item-title {
-    font-size: var(--fs-base);
+    font-size: 16px;
     font-weight: 700;
-    color: var(--color-text-primary);
+    color: white;
     margin: 0;
 }
 
 .item-meta {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: 8px;
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 0.05em;
     color: var(--color-text-muted);
 }
 
-.meta-separator {
+.dot-separator {
     opacity: 0.3;
 }
 
 .item-trailing {
     display: flex;
     align-items: center;
-    gap: var(--space-6);
+    gap: 24px;
 }
 
 .status-badge {
-    padding: 2px 12px;
-    border-radius: var(--radius-full);
+    padding: 4px 12px;
+    border-radius: 99px;
     font-size: 9px;
     font-weight: 900;
     letter-spacing: 0.05em;
 
     &.active {
-        background: rgba(168, 85, 247, 0.1);
-        color: #A855F7;
-        border: 1px solid rgba(168, 85, 247, 0.2);
+        background: rgba(var(--color-primary-rgb), 0.1);
+        color: var(--color-primary);
+        border: 1px solid rgba(var(--color-primary-rgb), 0.2);
     }
 
     &.queued {
@@ -165,29 +166,34 @@ function formatRelativeTime(date: Date) {
     }
 
     &.done {
-        background: rgba(0, 245, 255, 0.1);
+        background: rgba(var(--color-accent-rgb), 0.1);
         color: var(--color-accent);
-        border: 1px solid rgba(0, 245, 255, 0.2);
+        border: 1px solid rgba(var(--color-accent-rgb), 0.2);
     }
 }
 
-.item-options-btn {
+.options-btn {
     background: transparent;
     border: none;
     color: var(--color-text-muted);
     cursor: pointer;
-    padding: var(--space-2);
+    padding: 8px;
     opacity: 0.5;
-    transition: opacity var(--transition-base);
+    transition: all 0.2s;
 
     &:hover {
         opacity: 1;
+        color: white;
     }
 }
 
 @media (max-width: 640px) {
+    .dashboard-list-item {
+        padding: 12px 16px;
+    }
+
     .item-trailing {
-        gap: var(--space-3);
+        gap: 12px;
     }
 
     .status-badge {

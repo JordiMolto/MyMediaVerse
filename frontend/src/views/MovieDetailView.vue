@@ -204,165 +204,150 @@ async function toggleFavorite() {
 </script>
 
 <template>
-    <div v-if="item" class="movie-detail-view">
-        <!-- Backdrop Hero -->
-        <div class="backdrop-hero" :style="backdropStyle">
-            <div class="backdrop-overlay">
-                <div class="container-detail">
-                    <div class="top-nav-actions flex justify-between items-center w-full mb-8">
-                        <button class="back-btn" @click="router.back()">
-                            <i class="fas fa-arrow-left"></i>
-                            Volver
+    <div v-if="item" class="movie-view">
+        <header class="movie-hero" :style="backdropStyle">
+            <div class="hero-overlay">
+                <div class="detail-container">
+                    <nav class="hero-nav">
+                        <button class="back-link" @click="router.back()">
+                            <i class="fas fa-arrow-left"></i> Volver
                         </button>
 
-                        <button class="favorite-btn detail-page" :class="{ 'is-favorite': item.favorito }"
-                            @click="toggleFavorite" title="Marcar como favorito">
+                        <button class="favorite-toggle" :class="{ 'active': item.favorito }" @click="toggleFavorite"
+                            title="Marcar como favorito">
                             <i class="fa-heart" :class="item.favorito ? 'fas' : 'far'"></i>
                         </button>
-                    </div>
+                    </nav>
 
-                    <div class="hero-content">
-                        <h1 class="detail-title">{{ item.titulo }}</h1>
-                        <p v-if="item.tagline" class="tagline">{{ item.tagline }}</p>
+                    <div class="hero-main">
+                        <h1 class="movie-title">{{ item.titulo }}</h1>
+                        <p v-if="item.tagline" class="movie-tagline">{{ item.tagline }}</p>
 
-                        <div class="hero-meta">
-                            <span v-if="item.fechaInicio" class="meta-item">
+                        <div class="movie-meta">
+                            <span v-if="item.fechaInicio" class="meta-tag">
                                 <i class="fas fa-calendar"></i>
                                 {{ new Date(item.fechaInicio).getFullYear() }}
                             </span>
-                            <span v-if="item.duracion" class="meta-item">
+                            <span v-if="item.duracion" class="meta-tag">
                                 <i class="fas fa-clock"></i>
                                 {{ item.duracion }} min
                             </span>
-                            <span v-if="item.rating" class="meta-item rating">
+                            <span v-if="item.rating" class="meta-tag rating">
                                 <i class="fas fa-star"></i>
                                 {{ item.rating.toFixed(1) }}
                             </span>
                         </div>
 
-                        <!-- Genres -->
-                        <div v-if="item.genero?.length" class="genres-row">
-                            <span v-for="genre in item.genero" :key="genre" class="genre-badge">
+                        <div v-if="item.genero?.length" class="movie-genres">
+                            <span v-for="genre in item.genero" :key="genre" class="genre-tag">
                                 {{ genre }}
                             </span>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <!-- Main Content -->
-        <div class="container-detail main-content">
-            <div class="content-grid">
+        <div class="detail-container main-content">
+            <div class="detail-layout">
                 <!-- Left Column: Poster & Info -->
-                <aside class="left-column">
-                    <div class="poster-card">
-                        <img v-if="item.imagen" :src="item.imagen" :alt="item.titulo" class="poster-img" />
-                        <div v-else class="poster-placeholder">
+                <aside class="sidebar-column">
+                    <div class="poster-wrap">
+                        <img v-if="item.imagen" :src="item.imagen" :alt="item.titulo" class="poster-image" />
+                        <div v-else class="poster-fallback">
                             <i class="fas fa-film"></i>
                         </div>
                     </div>
 
                     <!-- Quick Actions -->
-                    <div class="quick-actions glass-card">
-                        <AppButton variant="primary" icon="fa-edit" block @click="showEditModal = true">
-                            Editar
+                    <div class="actions-group">
+                        <AppButton variant="primary" icon="fa-edit" block @click="showEditModal = true"> Editar
                         </AppButton>
                         <AppButton variant="glass" icon="fa-film" block :loading="isEnriching"
-                            @click="handleSingleEnrich">
-                            Enriquecer TMDB
-                        </AppButton>
-                        <AppButton variant="ghost" icon="fa-trash" block @click="showDeleteConfirm = true">
-                            Eliminar
+                            @click="handleSingleEnrich"> Enriquecer TMDB </AppButton>
+                        <AppButton variant="ghost" icon="fa-trash" block @click="showDeleteConfirm = true"> Eliminar
                         </AppButton>
                     </div>
 
                     <!-- Streaming Platforms -->
-                    <div v-if="item.streamingPlatforms?.length" class="platforms-card glass-card">
+                    <div v-if="item.streamingPlatforms?.length" class="info-card platforms-card">
                         <h3 class="card-title">
-                            <i class="fas fa-tv"></i>
-                            Disponible en
+                            <i class="fas fa-tv"></i> Disponible en
                         </h3>
-                        <div class="platforms-list">
+                        <div class="platforms-grid">
                             <a v-for="platform in item.streamingPlatforms" :key="platform"
                                 :href="getPlatformUrl(platform)" target="_blank" rel="noopener noreferrer"
-                                class="platform-badge clickable">
+                                class="platform-link">
                                 {{ platform }}
-                                <i class="fas fa-external-link-alt text-[10px] opacity-50 ml-1"></i>
+                                <i class="fas fa-external-link-alt link-icon"></i>
                             </a>
                         </div>
                     </div>
 
                     <!-- Trailer -->
-                    <div v-if="item.trailer" class="trailer-card glass-card">
+                    <div v-if="item.trailer" class="info-card trailer-card">
                         <h3 class="card-title">
-                            <i class="fas fa-play-circle"></i>
-                            Tráiler
+                            <i class="fas fa-play-circle"></i> Tráiler
                         </h3>
-                        <a :href="item.trailer" target="_blank" rel="noopener noreferrer" class="trailer-btn">
-                            <i class="fab fa-youtube"></i>
-                            Ver en YouTube
+                        <a :href="item.trailer" target="_blank" rel="noopener noreferrer" class="youtube-action">
+                            <i class="fab fa-youtube"></i> Ver en YouTube
                         </a>
                     </div>
 
                     <!-- Movie Info -->
-                    <div class="info-card glass-card">
+                    <div class="info-card meta-card">
                         <h3 class="card-title">
-                            <i class="fas fa-info-circle"></i>
-                            Información
+                            <i class="fas fa-info-circle"></i> Información
                         </h3>
-                        <div class="info-list">
-                            <div v-if="item.director" class="info-item">
-                                <span class="info-label">Director</span>
-                                <span class="info-value">{{ item.director }}</span>
+                        <div class="meta-list">
+                            <div v-if="item.director" class="meta-row">
+                                <span class="meta-key">Director</span>
+                                <span class="meta-val">{{ item.director }}</span>
                             </div>
-                            <div v-if="item.fechaInicio" class="info-item">
-                                <span class="info-label">Estreno</span>
-                                <span class="info-value">{{ formatDate(item.fechaInicio) }}</span>
+                            <div v-if="item.fechaInicio" class="meta-row">
+                                <span class="meta-key">Estreno</span>
+                                <span class="meta-val">{{ formatDate(item.fechaInicio) }}</span>
                             </div>
-                            <div v-if="item.duracion" class="info-item">
-                                <span class="info-label">Duración</span>
-                                <span class="info-value">{{ item.duracion }} minutos</span>
+                            <div v-if="item.duracion" class="meta-row">
+                                <span class="meta-key">Duración</span>
+                                <span class="meta-val">{{ item.duracion }} minutos</span>
                             </div>
                         </div>
                     </div>
                 </aside>
 
                 <!-- Right Column: Details & Activity -->
-                <main class="right-column">
-                    <!-- Status & Rating -->
-                    <div class="status-card glass-card">
-                        <div class="status-section">
-                            <span class="label">Estado</span>
+                <main class="main-column">
+                    <div class="info-card status-indicator-card">
+                        <div class="status-group">
+                            <span class="indicator-label">Estado</span>
                             <div class="status-badge" :style="{ color: statusColors[item.estado] }">
-                                <span class="dot" :style="{ background: statusColors[item.estado] }"></span>
+                                <span class="status-dot" :style="{ background: statusColors[item.estado] }"></span>
                                 {{ statusLabels[item.estado] }}
                             </div>
                         </div>
-                        <div class="rating-section">
-                            <span class="label">Tu Valoración</span>
-                            <div class="rating-value">
-                                {{ item.rating?.toFixed(1) || '—' }} <span class="max">/ 10</span>
+                        <div class="rating-group">
+                            <span class="indicator-label">Tu Valoración</span>
+                            <div class="rating-score">
+                                {{ item.rating?.toFixed(1) || '—' }} <span class="rating-max">/ 10</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Synopsis -->
-                    <div v-if="item.descripcion" class="synopsis-card glass-card">
+                    <div v-if="item.descripcion" class="info-card description-card">
                         <h2 class="section-title">
-                            <i class="fas fa-align-left"></i>
-                            Sinopsis
+                            <i class="fas fa-align-left"></i> Sinopsis
                         </h2>
-                        <p class="synopsis-text">{{ item.descripcion }}</p>
+                        <p class="description-text">{{ item.descripcion }}</p>
                     </div>
 
                     <!-- Cast -->
-                    <div v-if="item.reparto?.length" class="cast-card glass-card">
+                    <div v-if="item.reparto?.length" class="info-card cast-card">
                         <h2 class="section-title">
-                            <i class="fas fa-users"></i>
-                            Reparto Principal
+                            <i class="fas fa-users"></i> Reparto Principal
                         </h2>
-                        <div class="cast-list">
+                        <div class="actors-list">
                             <span v-for="(actor, index) in item.reparto" :key="actor" class="actor-name">
                                 {{ actor }}<span v-if="index < item.reparto.length - 1">, </span>
                             </span>
@@ -370,38 +355,36 @@ async function toggleFavorite() {
                     </div>
 
                     <!-- Personal Review -->
-                    <div class="review-card glass-card">
+                    <div class="info-card thoughts-box-card">
                         <h2 class="section-title">
-                            <i class="fas fa-quote-left"></i>
-                            Tus Pensamientos
+                            <i class="fas fa-quote-left"></i> Tus Pensamientos
                         </h2>
                         <textarea v-model="item.miniReseña"
-                            placeholder="Escribe tu opinión personal sobre esta película..." class="review-textarea"
+                            placeholder="Escribe tu opinión personal sobre esta película..." class="thoughts-editor"
                             @change="updateMiniReview(item.miniReseña || '')"></textarea>
-                        <div class="autosave-hint">
-                            <i class="fas fa-check-circle"></i>
-                            Autoguardado
+                        <div class="editor-hint">
+                            <i class="fas fa-check-circle"></i> Autoguardado
                         </div>
                     </div>
+                    <br>
 
                     <!-- Activity Journal -->
-                    <div class="activity-card">
-                        <div class="activity-header">
+                    <div class="activity-section">
+                        <div class="timeline-header">
                             <h2 class="section-title">
-                                <i class="fas fa-stream"></i>
-                                Diario de Actividad
+                                <i class="fas fa-stream"></i> Diario de Actividad
                             </h2>
                             <AppButton variant="glass" icon="fa-plus" size="small" @click="openNoteModal()">
                                 Nueva Entrada
                             </AppButton>
                         </div>
 
-                        <div v-if="itemNotes.length === 0" class="empty-state">
-                            <i class="fas fa-feather-alt"></i>
-                            <p>No hay entradas aún. Comienza tu diario.</p>
+                        <div v-if="itemNotes.length === 0" class="empty-timeline">
+                            <i class="fas fa-feather-alt empty-icon"></i>
+                            <p class="empty-text">No hay entradas aún. Comienza tu diario.</p>
                         </div>
 
-                        <div v-else class="notes-timeline">
+                        <div v-else class="timeline-list">
                             <NoteCard v-for="note in itemNotes" :key="note.id" :note="note" @edit="openNoteModal"
                                 @delete="handleDeleteNote" />
                         </div>
@@ -424,10 +407,10 @@ async function toggleFavorite() {
 
         <AppModal :is-open="showDeleteConfirm" title="Confirmar Eliminación" size="small"
             @close="showDeleteConfirm = false">
-            <div class="delete-confirm">
-                <p>¿Estás seguro de que quieres eliminar "<strong>{{ item.titulo }}</strong>"?</p>
-                <p class="warning">Esta acción no se puede deshacer.</p>
-                <div class="actions">
+            <div class="delete-confirmation">
+                <p class="delete-msg">¿Estás seguro de que quieres eliminar "<strong>{{ item.titulo }}</strong>"?</p>
+                <p class="delete-warning">Esta acción no se puede deshacer.</p>
+                <div class="delete-actions">
                     <AppButton variant="ghost" @click="showDeleteConfirm = false">Cancelar</AppButton>
                     <AppButton variant="danger" icon="fa-trash" @click="handleDeleteItem">Eliminar</AppButton>
                 </div>
@@ -437,26 +420,21 @@ async function toggleFavorite() {
         <!-- TMDB Enrichment Progress Modal -->
         <AppModal :is-open="showEnrichmentModal" title="Enriqueciendo con TMDB" size="medium"
             @close="!isEnriching && (showEnrichmentModal = false)">
-            <div class="enrichment-modal">
-                <div v-if="isEnriching" class="enrichment-progress">
-                    <div class="progress-info">
-                        <i class="fas fa-film fa-spin"></i>
-                        <p>Enriqueciendo con datos de TMDB...</p>
-                    </div>
+            <div class="enrich-modal">
+                <div v-if="isEnriching" class="enrich-loading">
+                    <i class="fas fa-film fa-spin loading-icon"></i>
+                    <p class="loading-msg">Enriqueciendo con datos de TMDB...</p>
                 </div>
 
-                <div v-else-if="enrichmentResult" class="enrichment-result">
-                    <div v-if="enrichmentResult.success > 0" class="result-item success">
-                        <i class="fas fa-check-circle"></i>
-                        <span>¡Completado con éxito!</span>
+                <div v-else-if="enrichmentResult" class="enrich-result">
+                    <div v-if="enrichmentResult.success > 0" class="result-box success">
+                        <i class="fas fa-check-circle"></i> <span>¡Completado con éxito!</span>
                     </div>
-                    <div v-if="enrichmentResult.failed > 0" class="result-item error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>No se pudo encontrar información.</span>
+                    <div v-if="enrichmentResult.failed > 0" class="result-box error">
+                        <i class="fas fa-exclamation-circle"></i> <span>No se pudo encontrar información.</span>
                     </div>
-                    <AppButton variant="primary" block class="mt-6" @click="showEnrichmentModal = false">
-                        Cerrar
-                    </AppButton>
+                    <AppButton variant="primary" block class="close-enrich-btn" @click="showEnrichmentModal = false">
+                        Cerrar </AppButton>
                 </div>
             </div>
         </AppModal>
@@ -464,88 +442,123 @@ async function toggleFavorite() {
 </template>
 
 <style scoped>
-.movie-detail-view {
+.movie-view {
     min-height: 100vh;
-    background: var(--color-bg-main);
 }
 
-.backdrop-hero {
+.movie-hero {
     position: relative;
-    min-height: 60vh;
+    min-height: 480px;
     display: flex;
     align-items: flex-end;
-    padding-bottom: var(--space-12);
+    padding-bottom: 48px;
 }
 
-.backdrop-overlay {
+.hero-overlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, rgba(10, 10, 15, 0.4), rgba(10, 10, 15, 0.95));
+    display: flex;
+    align-items: flex-end;
 }
 
-.container-detail {
+.detail-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 var(--space-8);
+    padding: 0 32px;
+    width: 100%;
+}
+
+.hero-nav {
+    position: absolute;
+    top: 32px;
+    left: 32px;
+    right: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(-4px);
+    }
+}
+
+.favorite-toggle {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+    opacity: 0.7;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    &:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    &.active {
+        color: #ff3399;
+        opacity: 1;
+        filter: drop-shadow(0 0 8px rgba(255, 51, 153, 0.4));
+    }
+}
+
+.hero-main {
+    max-width: 800px;
     position: relative;
     z-index: 1;
 }
 
-.back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--space-5);
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-md);
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-base);
-    margin-bottom: var(--space-8);
-}
-
-.back-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateX(-4px);
-}
-
-.hero-content {
-    max-width: 800px;
-}
-
-.detail-title {
-    font-size: clamp(2.5rem, 5vw, 4rem);
+.movie-title {
+    font-size: 64px;
     font-weight: 900;
     color: white;
-    margin-bottom: var(--space-4);
+    margin-bottom: 16px;
     text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
     line-height: 1.1;
+    letter-spacing: -2px;
 }
 
-.tagline {
-    font-size: 1.25rem;
+.movie-tagline {
+    font-size: 20px;
     color: var(--color-accent);
     font-style: italic;
-    margin-bottom: var(--space-6);
+    margin-bottom: 24px;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
 }
 
-.hero-meta {
+.movie-meta {
     display: flex;
-    gap: var(--space-6);
-    margin-bottom: var(--space-6);
+    gap: 24px;
+    margin-bottom: 24px;
     flex-wrap: wrap;
 }
 
-.meta-item {
+.meta-tag {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: 8px;
     color: rgba(255, 255, 255, 0.9);
-    font-size: 1rem;
+    font-size: 16px;
     font-weight: 600;
 
     i {
@@ -561,144 +574,152 @@ async function toggleFavorite() {
     }
 }
 
-.genres-row {
+.movie-genres {
     display: flex;
-    gap: var(--space-3);
+    gap: 12px;
     flex-wrap: wrap;
 }
 
-.genre-badge {
-    padding: var(--space-2) var(--space-4);
-    background: rgba(0, 245, 255, 0.2);
+.genre-tag {
+    padding: 6px 16px;
+    background: rgba(0, 245, 255, 0.1);
     border: 1px solid var(--color-accent);
-    border-radius: var(--radius-full);
+    border-radius: 99px;
     color: var(--color-accent);
-    font-size: 0.875rem;
+    font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 .main-content {
-    margin-top: calc(var(--space-12) * -1);
-    padding-bottom: var(--space-16);
+    margin-top: -32px;
+    padding-bottom: 64px;
 }
 
-.content-grid {
+.detail-layout {
     display: grid;
-    grid-template-columns: 350px 1fr;
-    gap: var(--space-10);
+    grid-template-columns: 320px 1fr;
+    gap: 40px;
 
     @media (max-width: 1024px) {
         grid-template-columns: 1fr;
     }
 }
 
-.poster-card {
+.poster-wrap {
     aspect-ratio: 2/3;
-    border-radius: var(--radius-xl);
+    border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    margin-bottom: var(--space-6);
+    margin-bottom: 24px;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
 
-    .poster-img {
+    .poster-image {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    .poster-placeholder {
+    .poster-fallback {
         width: 100%;
         height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--color-bg-surface);
-        font-size: 5rem;
+        font-size: 80px;
         color: var(--color-text-muted);
         opacity: 0.3;
     }
 }
 
-.quick-actions {
-    padding: var(--space-4);
+.actions-group {
+    padding: 16px;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
-    margin-bottom: var(--space-6);
+    gap: 12px;
+    margin-bottom: 24px;
 }
 
-.platforms-card,
-.trailer-card,
 .info-card {
-    padding: var(--space-5);
-    margin-bottom: var(--space-6);
+    padding: 24px;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    margin-bottom: 24px;
 }
 
 .card-title {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    font-size: 0.875rem;
+    gap: 12px;
+    font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 1px;
     color: var(--color-text-muted);
-    margin-bottom: var(--space-4);
+    margin-bottom: 20px;
 
     i {
         color: var(--color-accent);
     }
 }
 
-.platforms-list {
+.platforms-grid {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: 8px;
 }
 
-.platform-badge {
-    padding: var(--space-3);
+.platform-link {
+    padding: 12px;
     background: var(--color-bg-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: 8px;
     color: var(--color-text-secondary);
-    font-size: 0.875rem;
+    font-size: 14px;
     font-weight: 600;
     text-align: center;
-    transition: all var(--transition-base);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
 
     &:hover {
         border-color: var(--color-accent);
         color: var(--color-accent);
+        background: rgba(0, 245, 255, 0.05);
+        transform: translateY(-2px);
     }
 
-    &.clickable {
-        text-decoration: none;
-        cursor: pointer;
-
-        &:hover {
-            background: rgba(0, 245, 255, 0.1);
-            transform: translateY(-2px);
-        }
+    .link-icon {
+        font-size: 10px;
+        opacity: 0.5;
     }
 }
 
-.trailer-btn {
+.youtube-action {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-3);
-    padding: var(--space-4);
+    gap: 12px;
+    padding: 16px;
     background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
     color: white;
-    border-radius: var(--radius-md);
+    border-radius: 8px;
     font-weight: 700;
     text-decoration: none;
-    transition: all var(--transition-base);
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
 
     i {
-        font-size: 1.25rem;
+        font-size: 20px;
     }
 
     &:hover {
@@ -707,253 +728,254 @@ async function toggleFavorite() {
     }
 }
 
-.info-list {
+.meta-list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: 16px;
 }
 
-.info-item {
+.meta-row {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: 4px;
 }
 
-.info-label {
-    font-size: 0.75rem;
+.meta-key {
+    font-size: 11px;
     color: var(--color-text-muted);
     text-transform: uppercase;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.5px;
 }
 
-.info-value {
+.meta-val {
     color: var(--color-text-secondary);
     font-weight: 500;
+    font-size: 15px;
 }
 
-.status-card {
+.status-indicator-card {
     display: flex;
     justify-content: space-between;
-    padding: var(--space-6);
-    margin-bottom: var(--space-6);
+    align-items: center;
+    padding: 24px;
 
     @media (max-width: 640px) {
         flex-direction: column;
-        gap: var(--space-6);
+        gap: 24px;
+        align-items: flex-start;
     }
 }
 
-.status-section,
-.rating-section {
+.status-group,
+.rating-group {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: 12px;
 }
 
-.label {
-    font-size: 0.75rem;
+.indicator-label {
+    font-size: 11px;
     color: var(--color-text-muted);
     text-transform: uppercase;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 1px;
 }
 
 .status-badge {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    font-size: 1.25rem;
+    gap: 12px;
+    font-size: 20px;
     font-weight: 800;
-
-    .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        box-shadow: 0 0 12px currentColor;
-    }
 }
 
-.rating-value {
-    font-size: 2.5rem;
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 12px currentColor;
+}
+
+.rating-score {
+    font-size: 40px;
     font-weight: 900;
     color: var(--color-warning);
     font-style: italic;
+    line-height: 1;
 
-    .max {
-        font-size: 1rem;
+    .rating-max {
+        font-size: 16px;
         color: var(--color-text-muted);
         font-style: normal;
     }
 }
 
-.synopsis-card,
-.cast-card,
-.review-card {
-    padding: var(--space-6);
-    margin-bottom: var(--space-6);
-}
-
 .section-title {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    font-size: 1.25rem;
+    gap: 12px;
+    font-size: 18px;
     font-weight: 700;
     color: white;
-    margin-bottom: var(--space-5);
+    margin-bottom: 24px;
 
     i {
         color: var(--color-accent);
     }
 }
 
-.synopsis-text {
+.description-text {
     color: var(--color-text-secondary);
     line-height: 1.8;
-    font-size: 1rem;
+    font-size: 16px;
 }
 
-.cast-list {
+.actors-list {
     color: var(--color-text-secondary);
     line-height: 1.8;
-
-    .actor-name {
-        font-size: 1rem;
-    }
+    font-size: 15px;
 }
 
-.review-textarea {
+.thoughts-editor {
     width: 100%;
-    min-height: 150px;
-    background: transparent;
+    background: var(--color-bg-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-4);
+    border-radius: 12px;
+    padding: 16px;
     color: var(--color-text-secondary);
-    font-family: var(--font-main);
-    font-size: 1rem;
+    font-family: inherit;
+    font-size: 15px;
     line-height: 1.7;
     resize: vertical;
-    transition: border-color var(--transition-base);
+    min-height: 140px;
+    outline: none;
+    transition: border-color 0.2s;
 
     &:focus {
-        outline: none;
         border-color: var(--color-accent);
     }
-
-    &::placeholder {
-        color: var(--color-text-muted);
-        font-style: italic;
-    }
 }
 
-.autosave-hint {
+.editor-hint {
+    margin-top: 12px;
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    margin-top: var(--space-3);
-    font-size: 0.75rem;
+    gap: 6px;
+    font-size: 11px;
     color: var(--color-success);
-
-    i {
-        font-size: 0.875rem;
-    }
+    opacity: 0.8;
 }
 
-.result-item.error i {
-    color: var(--color-danger);
+.activity-section {
+    margin-top: 32px;
 }
 
-.favorite-btn.detail-page {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-    &:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
-    }
-
-    &.is-favorite {
-        color: #ff3399;
-        border-color: #ff3399;
-        background: rgba(255, 51, 153, 0.1);
-        filter: drop-shadow(0 0 10px rgba(255, 51, 153, 0.5));
-    }
-
-    &:active {
-        transform: scale(0.9);
-    }
-}
-
-.activity-card {
-    padding: var(--space-6);
-    background: transparent;
-}
-
-.activity-header {
+.timeline-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space-6);
+    margin-bottom: 32px;
 }
 
-.empty-state {
+.empty-timeline {
+    padding: 64px 0;
+    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-12) var(--space-6);
-    text-align: center;
-
-    i {
-        font-size: 3rem;
-        color: var(--color-text-muted);
-        opacity: 0.3;
-    }
-
-    p {
-        color: var(--color-text-muted);
-        font-style: italic;
-    }
+    gap: 16px;
+    opacity: 0.5;
 }
 
-.notes-timeline {
+.empty-icon {
+    font-size: 48px;
+    color: var(--color-text-muted);
+}
+
+.empty-text {
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+.timeline-list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: 24px;
 }
 
-.delete-confirm {
-    padding: var(--space-6);
+.delete-confirmation {
+    padding: 16px;
+}
 
-    p {
-        margin-bottom: var(--space-4);
-        line-height: 1.6;
-        color: var(--color-text-secondary);
+.delete-msg {
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.delete-warning {
+    color: var(--color-danger);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 24px;
+}
+
+.delete-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.enrich-modal {
+    padding: 24px;
+}
+
+.enrich-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 24px 0;
+}
+
+.loading-icon {
+    font-size: 48px;
+    color: var(--color-accent);
+}
+
+.loading-msg {
+    font-size: 16px;
+    color: var(--color-text-secondary);
+}
+
+.result-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    font-weight: 600;
+
+    &.success {
+        background: rgba(var(--color-success-rgb), 0.1);
+        color: var(--color-success);
+        border: 1px solid rgba(var(--color-success-rgb), 0.2);
     }
 
-    .warning {
+    &.error {
+        background: rgba(var(--color-danger-rgb), 0.1);
         color: var(--color-danger);
-        font-weight: 600;
+        border: 1px solid rgba(var(--color-danger-rgb), 0.2);
     }
 
-    .actions {
-        display: flex;
-        gap: var(--space-4);
-        justify-content: flex-end;
-        margin-top: var(--space-6);
+    i {
+        font-size: 24px;
     }
+}
+
+.close-enrich-btn {
+    margin-top: 24px;
 }
 </style>

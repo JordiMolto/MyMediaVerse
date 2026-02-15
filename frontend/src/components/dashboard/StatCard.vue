@@ -14,66 +14,58 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-    <div class="stat-card glass-card" :class="variant">
-        <div class="card-header">
+    <div class="stat-card" :class="variant">
+        <div class="stat-header">
             <h3 class="stat-title">{{ title }}</h3>
             <div class="stat-icon-badge">
                 <i class="fas" :class="icon"></i>
             </div>
         </div>
 
-        <div class="card-body">
-            <div class="value-row">
+        <div class="stat-content">
+            <div class="stat-value-row">
                 <span class="stat-value">{{ value }}</span>
                 <span class="stat-label">{{ label }}</span>
             </div>
 
-            <div class="progress-container">
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" :style="{ width: progress + '%' }"></div>
+            <div class="stat-progress">
+                <div class="stat-progress-bg">
+                    <div class="stat-progress-fill" :style="{ width: progress + '%' }"></div>
                 </div>
             </div>
         </div>
     </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .stat-card {
-    padding: var(--space-6) var(--space-8);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    padding: 24px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: var(--space-8);
+    gap: 32px;
     min-height: 160px;
-    position: relative;
-    overflow: hidden;
-    transition: background var(--transition-base), box-shadow var(--transition-base);
-    border-radius: var(--radius-xl);
+    border-radius: 24px;
+    transition: all 0.3s ease;
 
     &:hover {
-        background: rgba(255, 255, 255, 0.03);
-    }
-
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
-        pointer-events: none;
+        background: var(--color-bg-card-hover);
+        border-color: var(--color-border-hover);
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
     }
 }
 
-.card-header {
+.stat-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .stat-title {
-    font-size: 10px;
+    font-size: 11px;
     text-transform: uppercase;
     font-weight: 800;
     letter-spacing: 0.1em;
@@ -87,80 +79,76 @@ withDefaults(defineProps<Props>(), {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--color-text-secondary);
-    font-size: 0.9rem;
+    font-size: 14px;
 }
 
-.value-row {
+.stat-value-row {
     display: flex;
     align-items: baseline;
-    gap: var(--space-2);
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .stat-value {
-    font-size: var(--fs-4xl);
+    font-size: 48px;
     font-weight: 900;
     line-height: 1;
     letter-spacing: -0.05em;
-    color: var(--color-text-primary);
+    color: white;
 }
 
 .stat-label {
-    font-size: var(--fs-sm);
+    font-size: 14px;
     color: var(--color-text-muted);
-    font-weight: var(--fw-medium);
+    font-weight: 500;
 }
 
-.progress-container {
-    width: 100%;
-}
-
-.progress-bar-bg {
-    height: var(--progress-height);
+.stat-progress-bg {
+    height: 8px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: var(--radius-full);
+    border-radius: 99px;
     overflow: hidden;
 }
 
-.progress-bar-fill {
+.stat-progress-fill {
     height: 100%;
-    border-radius: var(--radius-full);
+    border-radius: 99px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Variants */
 .stat-card.primary {
-    .progress-bar-fill {
+    .stat-progress-fill {
         background: var(--color-primary);
         box-shadow: 0 0 15px var(--color-primary-glow);
     }
 
     .stat-icon-badge {
         color: var(--color-primary);
-        background: var(--color-primary-glow);
+        background: var(--color-primary-alpha);
     }
 }
 
 .stat-card.accent {
-    .progress-bar-fill {
+    .stat-progress-fill {
         background: var(--color-accent);
         box-shadow: 0 0 15px var(--color-accent-glow);
     }
 
     .stat-icon-badge {
         color: var(--color-accent);
-        background: var(--color-accent-glow);
+        background: rgba(var(--color-accent-rgb), 0.1);
     }
 }
 
 @media (max-width: 640px) {
     .stat-card {
-        padding: var(--space-4) var(--space-6);
+        padding: 20px;
         min-height: 140px;
+        gap: 24px;
     }
 
     .stat-value {
-        font-size: var(--fs-3xl);
+        font-size: 36px;
     }
 }
 </style>

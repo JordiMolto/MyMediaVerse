@@ -51,30 +51,27 @@ function handleOverlayClick() {
                             'active': route.path === item.path,
                             [item.color || '']: true
                         }" @click="navigateTo(item.path)">
-                            <i class="fas" :class="item.icon"></i>
-                            <span>{{ item.name }}</span>
-                            <i v-if="route.path === item.path"
-                                class="fas fa-chevron-right ml-auto text-[10px] opacity-30"></i>
+                            <i class="side-link-icon fas" :class="item.icon"></i>
+                            <span class="side-link-text">{{ item.name }}</span>
+                            <i v-if="route.path === item.path" class="active-indicator fas fa-chevron-right"></i>
                         </button>
                     </template>
                 </nav>
 
-                <div class="side-menu-footer mt-auto pt-8">
-                    <div v-if="authStore.isAuthenticated"
-                        class="user-info p-4 rounded-2xl bg-white/5 flex items-center gap-3">
+                <div class="side-menu-footer">
+                    <div v-if="authStore.isAuthenticated" class="user-profile-card">
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar"
-                            class="w-10 h-10 rounded-full" />
-                        <div class="flex-1 overflow-hidden">
-                            <p class="text-sm font-bold text-white truncate">{{ authStore.user?.email?.split('@')[0] }}
-                            </p>
-                            <p class="text-[10px] text-muted truncate">{{ authStore.user?.email }}</p>
+                            class="user-avatar" />
+                        <div class="user-details">
+                            <p class="user-name">{{ authStore.user?.email?.split('@')[0] }}</p>
+                            <p class="user-email">{{ authStore.user?.email }}</p>
                         </div>
-                        <button class="icon-btn" @click="navigateTo('/perfil')">
+                        <button class="settings-btn" @click="navigateTo('/perfil')">
                             <i class="fas fa-cog"></i>
                         </button>
                     </div>
-                    <div v-else class="p-4">
-                        <button class="btn btn-primary w-full" @click="navigateTo('/login')">Entrar</button>
+                    <div v-else class="auth-actions">
+                        <button class="login-btn" @click="navigateTo('/login')">Entrar</button>
                     </div>
                 </div>
             </div>
@@ -115,9 +112,9 @@ function handleOverlayClick() {
     top: 0;
     left: 0;
     bottom: 0;
-    width: 300px;
-    background: #0a0c10;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    width: 280px;
+    background: var(--color-bg-surface);
+    border-right: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
     transform: translateX(-100%);
@@ -130,7 +127,7 @@ function handleOverlayClick() {
 }
 
 .side-menu-header {
-    padding: var(--space-8);
+    padding: 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -138,7 +135,7 @@ function handleOverlayClick() {
 
 .side-menu-body {
     flex: 1;
-    padding: 0 var(--space-4);
+    padding: 0 16px;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
@@ -147,64 +144,147 @@ function handleOverlayClick() {
 .side-nav {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: 8px;
 }
 
 .side-link {
     display: flex;
     align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-4) var(--space-5);
+    gap: 16px;
+    padding: 12px 16px;
     background: transparent;
     border: none;
-    border-radius: var(--radius-xl);
+    border-radius: 12px;
     color: var(--color-text-secondary);
-    font-size: var(--fs-md);
-    font-weight: var(--fw-bold);
+    font-size: 15px;
+    font-weight: 600;
     text-align: left;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.03);
+        color: white;
+        transform: translateX(4px);
+    }
+
+    &.active {
+        background: rgba(168, 85, 247, 0.1);
+        color: var(--color-primary);
+    }
 }
 
-.side-link:hover {
-    background: rgba(255, 255, 255, 0.03);
-    color: white;
-    transform: translateX(5px);
-}
-
-.side-link.active {
-    background: rgba(var(--color-primary-rgb), 0.1);
-    color: var(--color-primary);
-    box-shadow: inset 0 0 20px rgba(var(--color-primary-rgb), 0.05);
-}
-
-.side-link i {
+.side-link-icon {
     width: 20px;
     text-align: center;
+    font-size: 18px;
+}
+
+.active-indicator {
+    margin-left: auto;
+    font-size: 10px;
+    opacity: 0.3;
 }
 
 .close-btn {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-border);
     background: rgba(255, 255, 255, 0.03);
     color: var(--color-text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.2s;
+
+    &:hover {
+        background: var(--color-bg-card);
+        color: white;
+    }
 }
 
-.close-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+.side-menu-footer {
+    margin-top: auto;
+    padding: 24px 16px;
+    border-top: 1px solid var(--color-border);
 }
 
-.user-info .icon-btn {
+.user-profile-card {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-details {
+    flex: 1;
+    overflow: hidden;
+
+    .user-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: white;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .user-email {
+        font-size: 10px;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.settings-btn {
     background: transparent;
     border: none;
     color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 8px;
+    transition: color 0.2s;
+
+    &:hover {
+        color: white;
+    }
+}
+
+.auth-actions {
+    padding: 8px;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 0.9;
+    }
+}
+
+@media (max-width: 768px) {
+    .side-menu {
+        width: 100%;
+    }
 }
 </style>

@@ -9,6 +9,7 @@ import AppModal from '@/components/common/app-modal/AppModal.vue'
 import ItemForm from '@/components/items/ItemForm.vue'
 import NoteForm from '@/components/notes/NoteForm.vue'
 import NoteCard from '@/components/notes/NoteCard.vue'
+import { useBooksEnrichment } from '@/composables/useBooksEnrichment'
 
 const route = useRoute()
 const router = useRouter()
@@ -21,6 +22,13 @@ const showEditModal = ref(false)
 const showNoteModal = ref(false)
 const showDeleteConfirm = ref(false)
 const editingNoteId = ref<string | null>(null)
+const showEnrichmentModal = ref(false)
+const enrichmentResult = ref<any>(null)
+
+const {
+    enrichMultipleBooks,
+    isEnriching
+} = useBooksEnrichment()
 
 const itemId = route.params.id as string
 
@@ -150,146 +158,189 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
         console.error('Error saving note:', error)
     }
 }
+
+async function handleSingleEnrich() {
+    if (!item.value) return
+    if (!confirm(`¿Quieres enriquecer "${item.value.titulo}" con datos de Google Books?`)) return
+
+    showEnrichmentModal.value = true
+    const result = await enrichMultipleBooks([item.value])
+    enrichmentResult.value = result
+
+    if (result.success > 0) {
+        await loadItem()
+    }
+}
+const backdropStyle = computed(() => {
+    if (!item.value?.imagen) return {}
+    return {
+        backgroundImage: `url(${item.value.imagen})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        filter: 'blur(40px)',
+        opacity: '0.4'
+    }
+})
 </script>
 
 <template>
-    <div v-if="item" class="book-detail-view">
-        <div class="container-detail">
-            <!-- Header -->
-            <nav class="detail-nav">
-                <button class="back-btn" @click="router.back()">
-                    <i class="fas fa-arrow-left"></i>
-                    Volver
-                </button>
-                <div class="header-actions flex items-center gap-3">
-                    <button class="favorite-btn" :class="{ 'is-favorite': item.favorito }" @click="toggleFavorite"
-                        title="Marcar como favorito">
-                        <i class="fa-heart" :class="item.favorito ? 'fas' : 'far'"></i>
-                    </button>
-                    <AppButton variant="ghost" icon="fa-edit" size="small" @click="showEditModal = true">Editar
-                    </AppButton>
-                    <AppButton variant="ghost" icon="fa-trash" size="small" @click="showDeleteConfirm = true">
-                    </AppButton>
-                </div>
-            </nav>
+    <div v-if="item" class="book-view">
+        <!-- Backdrop Hero (Uses cover as blurred background) -->
+        <div class="book-hero" :style="backdropStyle">
+            <div class="hero-overlay">
+                <div class="detail-container">
+                    <div class="hero-nav">
+                        <router-link to="/" class="back-link">
+                            <i class="fas fa-arrow-left"></i>
+                            Volver
+                        </router-link>
 
-            <div class="content-grid">
-                <!-- Left: Book Cover -->
-                <aside class="left-column">
-                    <div class="book-cover">
-                        <img v-if="item.imagen" :src="item.imagen" :alt="item.titulo" class="cover-img" />
-                        <div v-else class="cover-placeholder">
+                        <button class="favorite-toggle" :class="{ 'active': item.favorito }" @click="toggleFavorite"
+                            title="Marcar como favorito">
+                            <i class="fa-heart" :class="item.favorito ? 'fas' : 'far'"></i>
+                        </button>
+                    </div>
+
+                    <div class="hero-main">
+                        <h1 class="book-title">{{ item.titulo }}</h1>
+                        <p v-if="item.autor" class="book-author">por {{ item.autor }}</p>
+
+                        <div class="book-meta">
+                            <span v-if="item.fechaInicio" class="meta-tag">
+                                <i class="fas fa-calendar"></i>
+                                {{ new Date(item.fechaInicio).getFullYear() }}
+                            </span>
+                            <span v-if="item.duracion" class="meta-tag">
+                                <i class="fas fa-file-alt"></i>
+                                {{ item.duracion }} páginas
+                            </span>
+                            <span v-if="item.rating" class="meta-tag rating">
+                                <i class="fas fa-star"></i>
+                                {{ item.rating.toFixed(1) }}
+                            </span>
+                        </div>
+
+                        <!-- Genres -->
+                        <div v-if="item.genero?.length" class="book-genres">
+                            <span v-for="genre in item.genero" :key="genre" class="genre-tag">
+                                {{ genre }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="detail-container main-content">
+            <div class="detail-layout">
+                <!-- Sidebar Column -->
+                <aside class="sidebar-column">
+                    <div class="poster-wrap">
+                        <img v-if="item.imagen" :src="item.imagen" :alt="item.titulo" class="poster-image" />
+                        <div v-else class="poster-fallback">
                             <i class="fas fa-book"></i>
                         </div>
                     </div>
 
                     <!-- Quick Actions -->
-                    <div class="quick-actions glass-card">
-                        <AppButton variant="primary" icon="fa-edit" block @click="showEditModal = true">
-                            Editar
+                    <div class="actions-group">
+                        <AppButton variant="primary" icon="fa-magic" block @click="handleSingleEnrich"
+                            :loading="isEnriching">
+                            Enriquecer Libro
+                        </AppButton>
+                        <AppButton variant="ghost" icon="fa-edit" block @click="showEditModal = true">
+                            Editar Libro
                         </AppButton>
                         <AppButton variant="ghost" icon="fa-trash" block @click="showDeleteConfirm = true">
-                            Eliminar
+                            Eliminar Libro
                         </AppButton>
                     </div>
 
                     <!-- Reading Progress -->
-                    <div v-if="item.progresoLectura" class="progress-card glass-card">
+                    <div v-if="item.progresoLectura" class="info-card">
                         <h3 class="card-title">
                             <i class="fas fa-bookmark"></i>
-                            Progreso de Lectura
+                            Progreso
                         </h3>
-                        <div class="progress-display">
-                            <span class="progress-value">{{ item.progresoLectura }}</span>
+                        <div class="status-badge" style="color: var(--color-accent)">
+                            <span class="status-dot" style="background: var(--color-accent)"></span>
+                            {{ item.progresoLectura }}
                         </div>
                     </div>
 
-                    <!-- Book Info -->
-                    <div class="info-card glass-card">
+                    <!-- Book Details -->
+                    <div class="info-card">
                         <h3 class="card-title">
                             <i class="fas fa-info-circle"></i>
-                            Información
+                            Detalles
                         </h3>
-                        <div class="info-list">
-                            <div v-if="item.autor" class="info-item">
-                                <span class="info-label">Autor</span>
-                                <span class="info-value">{{ item.autor }}</span>
+                        <div class="meta-list">
+                            <div v-if="item.autor" class="meta-row">
+                                <span class="meta-key">Autor</span>
+                                <span class="meta-val">{{ item.autor }}</span>
                             </div>
-                            <div v-if="item.editorial" class="info-item">
-                                <span class="info-label">Editorial</span>
-                                <span class="info-value">{{ item.editorial }}</span>
+                            <div v-if="item.editorial" class="meta-row">
+                                <span class="meta-key">Editorial</span>
+                                <span class="meta-val">{{ item.editorial }}</span>
                             </div>
-                            <div v-if="item.fechaInicio" class="info-item">
-                                <span class="info-label">Publicación</span>
-                                <span class="info-value">{{ formatDate(item.fechaInicio) }}</span>
+                            <div v-if="item.fechaInicio" class="meta-row">
+                                <span class="meta-key">Publicación</span>
+                                <span class="meta-val">{{ formatDate(item.fechaInicio) }}</span>
                             </div>
-                            <div v-if="item.duracion" class="info-item">
-                                <span class="info-label">Páginas</span>
-                                <span class="info-value">{{ item.duracion }}</span>
+                            <div v-if="item.duracion" class="meta-row">
+                                <span class="meta-key">Páginas</span>
+                                <span class="meta-val">{{ item.duracion }}</span>
                             </div>
                         </div>
                     </div>
                 </aside>
 
-                <!-- Right: Content -->
-                <main class="right-column">
-                    <!-- Title & Metadata -->
-                    <header class="book-header">
-                        <h1 class="book-title">{{ item.titulo }}</h1>
-                        <p v-if="item.autor" class="book-author">por {{ item.autor }}</p>
-
-                        <!-- Genres -->
-                        <div v-if="item.genero?.length" class="genres-row">
-                            <span v-for="genre in item.genero" :key="genre" class="genre-badge">
-                                {{ genre }}
-                            </span>
-                        </div>
-                    </header>
-
-                    <!-- Status & Rating -->
-                    <div class="status-card glass-card">
-                        <div class="status-section">
-                            <span class="label">Estado</span>
+                <!-- Detail Content -->
+                <main class="content-column">
+                    <!-- Status Indicator -->
+                    <div class="info-card status-indicator-card">
+                        <div class="status-group">
+                            <span class="indicator-label">Estado</span>
                             <div class="status-badge" :style="{ color: statusColors[item.estado] }">
-                                <span class="dot" :style="{ background: statusColors[item.estado] }"></span>
+                                <span class="status-dot" :style="{ background: statusColors[item.estado] }"></span>
                                 {{ statusLabels[item.estado] }}
                             </div>
                         </div>
-                        <div class="rating-section">
-                            <span class="label">Tu Valoración</span>
-                            <div class="rating-value">
-                                {{ item.rating?.toFixed(1) || '—' }} <span class="max">/ 10</span>
+                        <div class="rating-group">
+                            <span class="indicator-label">Tu Valoración</span>
+                            <div class="rating-score">
+                                {{ item.rating?.toFixed(1) || '—' }} <span class="rating-max">/ 10</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Synopsis -->
-                    <div v-if="item.descripcion" class="synopsis-card glass-card">
+                    <!-- Description -->
+                    <div v-if="item.descripcion" class="info-card description-card">
                         <h2 class="section-title">
                             <i class="fas fa-align-left"></i>
                             Sinopsis
                         </h2>
-                        <p class="synopsis-text">{{ item.descripcion }}</p>
+                        <p class="description-text">{{ item.descripcion }}</p>
                     </div>
 
-                    <!-- Personal Review -->
-                    <div class="review-card glass-card">
+                    <!-- Personal Thoughts -->
+                    <div class="info-card thoughts-box-card">
                         <h2 class="section-title">
                             <i class="fas fa-quote-left"></i>
-                            Tus Pensamientos
+                            Tu Reseña
                         </h2>
-                        <textarea v-model="item.miniReseña"
-                            placeholder="Escribe tu opinión personal sobre este libro..." class="review-textarea"
-                            @change="updateMiniReview(item.miniReseña || '')"></textarea>
-                        <div class="autosave-hint">
+                        <textarea v-model="item.miniReseña" placeholder="¿Qué te ha parecido el libro hasta ahora?..."
+                            class="thoughts-editor" @change="updateMiniReview(item.miniReseña || '')"></textarea>
+                        <div class="editor-hint">
                             <i class="fas fa-check-circle"></i>
-                            Autoguardado
+                            Se guarda automáticamente al salir
                         </div>
                     </div>
 
                     <!-- Activity Journal -->
-                    <div class="activity-card">
-                        <div class="activity-header">
+                    <div class="activity-section">
+                        <div class="timeline-header">
                             <h2 class="section-title">
                                 <i class="fas fa-stream"></i>
                                 Diario de Lectura
@@ -299,12 +350,12 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
                             </AppButton>
                         </div>
 
-                        <div v-if="itemNotes.length === 0" class="empty-state">
-                            <i class="fas fa-feather-alt"></i>
-                            <p>No hay entradas aún. Documenta tu experiencia de lectura.</p>
+                        <div v-if="itemNotes.length === 0" class="empty-timeline">
+                            <i class="fas fa-feather-alt empty-icon"></i>
+                            <p class="empty-text">No has registrado ninguna actividad para este libro.</p>
                         </div>
 
-                        <div v-else class="notes-timeline">
+                        <div v-else class="timeline-list">
                             <NoteCard v-for="note in itemNotes" :key="note.id" :note="note" @edit="openNoteModal"
                                 @delete="handleDeleteNote" />
                         </div>
@@ -325,410 +376,513 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
                 @cancel="showNoteModal = false; editingNoteId = null" />
         </AppModal>
 
-        <AppModal :is-open="showDeleteConfirm" title="Confirmar Eliminación" size="small"
-            @close="showDeleteConfirm = false">
-            <div class="delete-confirm">
-                <p>¿Estás seguro de que quieres eliminar "<strong>{{ item.titulo }}</strong>"?</p>
-                <p class="warning">Esta acción no se puede deshacer.</p>
-                <div class="actions">
+        <AppModal :is-open="showDeleteConfirm" title="Eliminar Libro" size="small" @close="showDeleteConfirm = false">
+            <div class="delete-confirmation">
+                <p class="delete-msg">¿Estás seguro de que quieres eliminar "<strong>{{ item.titulo }}</strong>"?</p>
+                <p class="delete-warning">Esta acción eliminará permanentemente el libro y todas sus notas.</p>
+                <div class="delete-actions">
                     <AppButton variant="ghost" @click="showDeleteConfirm = false">Cancelar</AppButton>
-                    <AppButton variant="danger" icon="fa-trash" @click="handleDeleteItem">Eliminar</AppButton>
+                    <AppButton variant="danger" icon="fa-trash" @click="handleDeleteItem">Eliminar Libro</AppButton>
+                </div>
+            </div>
+        </AppModal>
+
+        <!-- Enrichment Progress Modal -->
+        <AppModal :is-open="showEnrichmentModal" title="Enriqueciendo con Google Books" size="medium"
+            @close="!isEnriching && (showEnrichmentModal = false)">
+            <div class="enrich-modal">
+                <div v-if="isEnriching" class="enrich-loading">
+                    <i class="fas fa-book fa-spin loading-icon"></i>
+                    <p class="loading-msg">Enriqueciendo con datos de Google Books...</p>
+                </div>
+
+                <div v-else-if="enrichmentResult" class="enrich-result">
+                    <div v-if="enrichmentResult.success > 0" class="result-box success">
+                        <i class="fas fa-check-circle"></i> <span>¡Completado con éxito!</span>
+                    </div>
+                    <div v-if="enrichmentResult.failed > 0" class="result-box error">
+                        <i class="fas fa-exclamation-circle"></i> <span>No se pudo encontrar información.</span>
+                    </div>
+                    <AppButton variant="primary" block class="close-enrich-btn" @click="showEnrichmentModal = false">
+                        Cerrar </AppButton>
                 </div>
             </div>
         </AppModal>
     </div>
 </template>
 
-<style scoped>
-.book-detail-view {
+<style scoped lang="scss">
+.book-view {
     min-height: 100vh;
-    background: var(--color-bg-main);
-    padding: var(--space-8) var(--space-4);
 }
 
-.container-detail {
-    max-width: 1200px;
+.book-hero {
+    position: relative;
+    min-height: 480px;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 48px;
+    background-size: cover;
+    background-position: center;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(10, 10, 15, 0.4), rgba(10, 10, 15, 0.95));
+        z-index: 1;
+    }
+}
+
+.hero-overlay {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+}
+
+.detail-container {
+    max-width: 1400px;
     margin: 0 auto;
+    padding: 0 32px;
+    width: 100%;
 }
 
-.detail-nav {
+.hero-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space-8);
+    margin-bottom: 40px;
 }
 
-.back-btn {
+.back-link {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--space-5);
-    background: transparent;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    color: var(--color-text-secondary);
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
     font-weight: 600;
     cursor: pointer;
-    transition: all var(--transition-base);
+    transition: all 0.2s;
+    text-decoration: none;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(-4px);
+    }
 }
 
-.back-btn:hover {
-    border-color: var(--color-accent);
+.favorite-toggle {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+    opacity: 0.7;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    &:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    &.active {
+        color: #ff3399;
+        opacity: 1;
+        filter: drop-shadow(0 0 8px rgba(255, 51, 153, 0.4));
+    }
+}
+
+.hero-main {
+    max-width: 800px;
+}
+
+.book-title {
+    font-size: 64px;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 16px;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+    line-height: 1.1;
+    letter-spacing: -2px;
+}
+
+.book-author {
+    font-size: 24px;
     color: var(--color-accent);
-    transform: translateX(-4px);
+    font-style: italic;
+    margin-bottom: 24px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
 }
 
-.header-actions {
+.book-meta {
     display: flex;
-    gap: var(--space-3);
+    gap: 24px;
+    margin-bottom: 24px;
 }
 
-.content-grid {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: var(--space-10);
+.meta-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    font-weight: 600;
 
-    @media (max-width: 900px) {
+    i {
+        color: var(--color-accent);
+    }
+
+    &.rating {
+        color: var(--color-warning);
+
+        i {
+            color: var(--color-warning);
+        }
+    }
+}
+
+.book-genres {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.genre-tag {
+    padding: 6px 16px;
+    background: rgba(0, 245, 255, 0.1);
+    border: 1px solid var(--color-accent);
+    border-radius: 99px;
+    color: var(--color-accent);
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.main-content {
+    margin-top: -32px;
+    padding-bottom: 64px;
+}
+
+.detail-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 40px;
+
+    @media (max-width: 1024px) {
         grid-template-columns: 1fr;
     }
 }
 
-.book-cover {
+.poster-wrap {
     aspect-ratio: 2/3;
-    border-radius: var(--radius-lg);
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    margin-bottom: var(--space-6);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    margin-bottom: 24px;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
 
-    .cover-img {
+    .poster-image {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    .cover-placeholder {
+    .poster-fallback {
         width: 100%;
         height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--color-bg-surface);
-        font-size: 4rem;
+        font-size: 80px;
         color: var(--color-text-muted);
         opacity: 0.3;
     }
 }
 
-.quick-actions {
-    padding: var(--space-4);
+.actions-group {
+    padding: 16px;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
-    margin-bottom: var(--space-6);
+    gap: 12px;
+    margin-bottom: 24px;
 }
 
-.progress-card,
 .info-card {
-    padding: var(--space-5);
-    margin-bottom: var(--space-6);
+    padding: 24px;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    margin-bottom: 24px;
 }
 
 .card-title {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    font-size: 0.875rem;
+    gap: 12px;
+    font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 1px;
     color: var(--color-text-muted);
-    margin-bottom: var(--space-4);
+    margin-bottom: 20px;
 
     i {
         color: var(--color-accent);
     }
 }
 
-.progress-display {
-    text-align: center;
-    padding: var(--space-4);
-    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-primary) 100%);
-    border-radius: var(--radius-md);
-}
-
-.progress-value {
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: var(--color-bg-main);
-}
-
-.info-list {
+.meta-list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: 16px;
 }
 
-.info-item {
+.meta-row {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: 4px;
 }
 
-.info-label {
-    font-size: 0.75rem;
+.meta-key {
+    font-size: 11px;
     color: var(--color-text-muted);
     text-transform: uppercase;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.5px;
 }
 
-.info-value {
+.meta-val {
     color: var(--color-text-secondary);
     font-weight: 500;
+    font-size: 15px;
 }
 
-.book-header {
-    margin-bottom: var(--space-8);
-}
-
-.book-title {
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 900;
-    color: white;
-    margin-bottom: var(--space-3);
-    line-height: 1.2;
-}
-
-.book-author {
-    font-size: 1.25rem;
-    color: var(--color-accent);
-    font-style: italic;
-    margin-bottom: var(--space-5);
-}
-
-.genres-row {
-    display: flex;
-    gap: var(--space-3);
-    flex-wrap: wrap;
-}
-
-.genre-badge {
-    padding: var(--space-2) var(--space-4);
-    background: rgba(0, 245, 255, 0.2);
-    border: 1px solid var(--color-accent);
-    border-radius: var(--radius-full);
-    color: var(--color-accent);
-    font-size: 0.875rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.status-card {
+.status-indicator-card {
     display: flex;
     justify-content: space-between;
-    padding: var(--space-6);
-    margin-bottom: var(--space-6);
+    align-items: center;
+    padding: 24px;
 
     @media (max-width: 640px) {
         flex-direction: column;
-        gap: var(--space-6);
+        gap: 24px;
+        align-items: flex-start;
     }
 }
 
-.status-section,
-.rating-section {
+.status-group,
+.rating-group {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: 12px;
 }
 
-.label {
-    font-size: 0.75rem;
+.indicator-label {
+    font-size: 11px;
     color: var(--color-text-muted);
     text-transform: uppercase;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 1px;
 }
 
 .status-badge {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    font-size: 1.25rem;
+    gap: 12px;
+    font-size: 20px;
     font-weight: 800;
-
-    .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        box-shadow: 0 0 12px currentColor;
-    }
 }
 
-.rating-value {
-    font-size: 2.5rem;
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 12px currentColor;
+}
+
+.rating-score {
+    font-size: 40px;
     font-weight: 900;
     color: var(--color-warning);
     font-style: italic;
+    line-height: 1;
 
-    .max {
-        font-size: 1rem;
+    .rating-max {
+        font-size: 16px;
         color: var(--color-text-muted);
         font-style: normal;
     }
 }
 
-.synopsis-card,
-.review-card {
-    padding: var(--space-6);
-    margin-bottom: var(--space-6);
-}
-
 .section-title {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    font-size: 1.25rem;
+    gap: 12px;
+    font-size: 18px;
     font-weight: 700;
     color: white;
-    margin-bottom: var(--space-5);
+    margin-bottom: 24px;
 
     i {
         color: var(--color-accent);
     }
 }
 
-.synopsis-text {
+.description-text {
     color: var(--color-text-secondary);
     line-height: 1.8;
-    font-size: 1rem;
+    font-size: 16px;
 }
 
-.review-textarea {
+.thoughts-editor {
     width: 100%;
-    min-height: 150px;
-    background: transparent;
+    background: var(--color-bg-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-4);
+    border-radius: 12px;
+    padding: 16px;
     color: var(--color-text-secondary);
-    font-family: var(--font-main);
-    font-size: 1rem;
+    font-family: inherit;
+    font-size: 15px;
     line-height: 1.7;
     resize: vertical;
-    transition: border-color var(--transition-base);
+    min-height: 140px;
+    outline: none;
+    transition: border-color 0.2s;
 
     &:focus {
-        outline: none;
         border-color: var(--color-accent);
     }
-
-    &::placeholder {
-        color: var(--color-text-muted);
-        font-style: italic;
-    }
 }
 
-.autosave-hint {
+.editor-hint {
+    margin-top: 12px;
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    margin-top: var(--space-3);
-    font-size: 0.75rem;
+    gap: 6px;
+    font-size: 11px;
     color: var(--color-success);
-
-    i {
-        font-size: 0.875rem;
-    }
+    opacity: 0.8;
 }
 
-.activity-card {
-    padding: var(--space-6);
-    background: transparent;
+.activity-section {
+    margin-top: 32px;
 }
 
-.activity-header {
+.timeline-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--space-6);
+    margin-bottom: 32px;
 }
 
-.empty-state {
+.empty-timeline {
+    padding: 64px 0;
+    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-12) var(--space-6);
-    text-align: center;
+    gap: 16px;
+    opacity: 0.5;
+}
+
+.empty-icon {
+    font-size: 48px;
+    color: var(--color-text-muted);
+}
+
+.empty-text {
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+.timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.delete-confirmation {
+    padding: 16px;
+}
+
+.delete-msg {
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.delete-warning {
+    color: var(--color-danger);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 24px;
+}
+
+.delete-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Enrichment Modal Styles */
+.enrich-modal {
+    padding: 24px;
+}
+
+.enrich-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 32px 0;
+}
+
+.loading-icon {
+    font-size: 48px;
+    color: var(--color-accent);
+}
+
+.loading-msg {
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.result-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    font-weight: 600;
+
+    &.success {
+        background: rgba(var(--color-success-rgb), 0.1);
+        color: var(--color-success);
+        border: 1px solid rgba(var(--color-success-rgb), 0.2);
+    }
+
+    &.error {
+        background: rgba(var(--color-danger-rgb), 0.1);
+        color: var(--color-danger);
+        border: 1px solid rgba(var(--color-danger-rgb), 0.2);
+    }
 
     i {
-        font-size: 3rem;
-        color: var(--color-text-muted);
-        opacity: 0.3;
-    }
-
-    p {
-        color: var(--color-text-muted);
-        font-style: italic;
+        font-size: 24px;
     }
 }
 
-.notes-timeline {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-}
-
-.delete-confirm {
-    padding: var(--space-6);
-
-    p {
-        margin-bottom: var(--space-4);
-        line-height: 1.6;
-        color: var(--color-text-secondary);
-    }
-
-    .warning {
-        color: var(--color-danger);
-        font-weight: 600;
-    }
-
-    .actions {
-        display: flex;
-        gap: var(--space-4);
-        justify-content: flex-end;
-        margin-top: var(--space-6);
-    }
-}
-
-.favorite-btn {
-    background: transparent;
-    border: none;
-    font-size: 1.4rem;
-    cursor: pointer;
-    color: var(--color-text-muted);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border-radius: 50%;
-
-    &:hover {
-        background: rgba(255, 255, 255, 0.05);
-        color: white;
-    }
-
-    &.is-favorite {
-        color: #ff3399;
-        filter: drop-shadow(0 0 8px rgba(255, 51, 153, 0.4));
-        transform: scale(1.1);
-    }
-
-    &:active {
-        transform: scale(0.9);
-    }
+.close-enrich-btn {
+    margin-top: 24px;
 }
 </style>

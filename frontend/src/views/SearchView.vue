@@ -83,30 +83,30 @@ async function saveQuickNote(data: { texto: string; spoilers: boolean }) {
 </script>
 
 <template>
-  <div class="search-view py-12">
-    <div class="container flex flex-col gap-10">
-      <header class="page-header text-center flex flex-col gap-2">
-        <h1 class="page-title text-3xl fw-bold flex items-center justify-center gap-4">
-          <i class="fas fa-search text-primary"></i>
+  <div class="search-view">
+    <div class="search-container">
+      <header class="search-header">
+        <h1 class="search-title">
+          <i class="fas fa-search"></i>
           Buscar
         </h1>
-        <p class="page-subtitle text-secondary">Encuentra tus items rápidamente</p>
+        <p class="search-subtitle">Encuentra tus items rápidamente</p>
       </header>
 
-      <div class="search-controls flex flex-col gap-6">
-        <div class="search-input-wrapper">
+      <div class="search-controls">
+        <div class="search-input-field">
           <AppInput v-model="searchQuery" placeholder="Buscar por título, descripción o tags..." icon="fa-search"
             type="text" />
         </div>
 
-        <div class="filters-row flex items-end gap-6 flex-wrap">
-          <div class="flex-1 min-w-[200px]">
+        <div class="filters-row">
+          <div class="filter-item">
             <AppSelect v-model="selectedType" :options="typeOptions" label="Tipo" />
           </div>
-          <div class="flex-1 min-w-[200px]">
+          <div class="filter-item">
             <AppSelect v-model="selectedStatus" :options="statusOptions" label="Estado" />
           </div>
-          <button v-if="searchQuery || selectedType !== 'all' || selectedStatus !== 'all'" class="btn-clear"
+          <button v-if="searchQuery || selectedType !== 'all' || selectedStatus !== 'all'" class="clear-filters-btn"
             @click="clearFilters">
             <i class="fas fa-times"></i>
             Limpiar filtros
@@ -114,31 +114,31 @@ async function saveQuickNote(data: { texto: string; spoilers: boolean }) {
         </div>
       </div>
 
-      <div v-if="!searchQuery && selectedType === 'all' && selectedStatus === 'all'" class="empty-state py-12 flex flex-col items-center gap-4">
-        <i class="fas fa-search text-5xl opacity-30"></i>
-        <div class="text-center">
-          <p class="text-xl text-secondary">Comienza a buscar</p>
-          <p class="empty-hint text-muted text-sm">Escribe algo en el campo de búsqueda o selecciona filtros</p>
+      <div v-if="!searchQuery && selectedType === 'all' && selectedStatus === 'all'" class="empty-state">
+        <i class="fas fa-search empty-icon"></i>
+        <div class="empty-text">
+          <p class="empty-primary">Comienza a buscar</p>
+          <p class="empty-secondary">Escribe algo en el campo de búsqueda o selecciona filtros</p>
         </div>
       </div>
 
-      <div v-else-if="filteredResults.length === 0" class="empty-state py-12 flex flex-col items-center gap-4">
-        <i class="fas fa-inbox text-5xl opacity-30"></i>
-        <div class="text-center">
-          <p class="text-xl text-secondary">No se encontraron resultados</p>
-          <p class="empty-hint text-muted text-sm">Intenta con otros términos de búsqueda o filtros</p>
+      <div v-else-if="filteredResults.length === 0" class="empty-state">
+        <i class="fas fa-inbox empty-icon"></i>
+        <div class="empty-text">
+          <p class="empty-primary">No se encontraron resultados</p>
+          <p class="empty-secondary">Intenta con otros términos de búsqueda o filtros</p>
         </div>
       </div>
 
-      <div v-else class="results-section flex flex-col gap-6 animate-fade">
+      <div v-else class="results-section">
         <div class="results-header">
-          <h2 class="results-count text-xl fw-semibold text-secondary">
+          <h2 class="results-count">
             {{ filteredResults.length }} resultado{{ filteredResults.length !== 1 ? 's' : '' }}
           </h2>
         </div>
 
-        <div class="flex flex-wrap gap-x-6 gap-y-10">
-          <div v-for="item in filteredResults" :key="item.id" class="search-item-wrapper">
+        <div class="results-grid">
+          <div v-for="item in filteredResults" :key="item.id" class="result-item">
             <MediaCard :item="item" @click="goToDetail" @quick-note="handleQuickNote" />
           </div>
         </div>
@@ -146,65 +146,164 @@ async function saveQuickNote(data: { texto: string; spoilers: boolean }) {
     </div>
 
     <!-- Quick Note Modal -->
-    <AppModal :is-open="showQuickNoteModal" title="Añadir Nota Rápida" 
+    <AppModal :is-open="showQuickNoteModal" title="Añadir Nota Rápida"
       @close="showQuickNoteModal = false; quickNoteItemId = null">
-      <NoteForm v-if="quickNoteItemId" :item-id="quickNoteItemId" @save="saveQuickNote" @cancel="showQuickNoteModal = false" />
+      <NoteForm v-if="quickNoteItemId" :item-id="quickNoteItemId" @save="saveQuickNote"
+        @cancel="showQuickNoteModal = false" />
     </AppModal>
   </div>
 </template>
 
 <style scoped>
 .search-view {
-  min-height: calc(100vh - var(--header-height));
+  width: 100%;
+  padding-bottom: 48px;
+}
 
-  .btn-clear {
-    padding: var(--space-2) var(--space-4);
-    background: var(--color-bg-card);
-    border: 1px solid var(--color-danger);
-    border-radius: var(--radius-md);
-    color: var(--color-danger);
-    font-size: var(--fs-sm);
-    font-weight: var(--fw-semibold);
-    cursor: pointer;
-    transition: var(--transition-base);
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    white-space: nowrap;
-    height: 44px;
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
 
-    &:hover {
-      background: var(--color-danger);
-      color: white;
-    }
+.search-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-title {
+  font-size: 32px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: white;
+
+  i {
+    color: var(--color-primary);
+  }
+}
+
+.search-subtitle {
+  color: var(--color-text-secondary);
+  font-size: 16px;
+}
+
+.search-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.filters-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.filter-item {
+  flex: 1;
+  min-width: 200px;
+}
+
+.clear-filters-btn {
+  padding: 0 16px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-danger);
+  border-radius: 8px;
+  color: var(--color-danger);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  height: 44px;
+
+  &:hover {
+    background: var(--color-danger);
+    color: white;
+  }
+}
+
+.empty-state {
+  padding: 48px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  opacity: 0.2;
+  color: white;
+}
+
+.empty-text {
+  text-align: center;
+}
+
+.empty-primary {
+  font-size: 20px;
+  color: var(--color-text-secondary);
+}
+
+.empty-secondary {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.results-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.results-count {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.results-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px 24px;
+}
+
+.result-item {
+  width: calc(25% - 18px);
+  min-width: 200px;
+
+  @media (max-width: 1280px) {
+    width: calc(33.333% - 16px);
   }
 
+  @media (max-width: 1024px) {
+    width: calc(50% - 12px);
+  }
+
+  @media (max-width: 640px) {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
   .filters-row {
-    @media (max-width: 768px) {
-      flex-direction: column;
-      align-items: stretch;
-
-      .btn-clear {
-        justify-content: center;
-      }
-    }
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
   }
 
-  .search-item-wrapper {
-    width: calc(25% - 1.25rem);
-    min-width: 200px;
-
-    @media (max-width: 1280px) {
-      width: calc(33.333% - 1rem);
-    }
-
-    @media (max-width: 1024px) {
-      width: calc(50% - 0.75rem);
-    }
-
-    @media (max-width: 640px) {
-      width: 100%;
-    }
+  .clear-filters-btn {
+    justify-content: center;
   }
 }
 </style>

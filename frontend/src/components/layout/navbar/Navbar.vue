@@ -45,16 +45,17 @@ const handleImportSuccess = (count: number) => {
 
                 <!-- Right: Actions -->
                 <div class="navbar-actions">
-                    <button class="icon-btn highlight" title="Añadir rápido" @click="uiStore.toggleQuickAdd(true)">
+                    <button class="action-icon-btn highlight" title="Añadir rápido"
+                        @click="uiStore.toggleQuickAdd(true)">
                         <i class="fas fa-plus"></i>
                     </button>
-                    <button class="icon-btn desktop-only" title="Importar Masiva" @click="showImportModal = true">
+                    <button class="action-icon-btn import-btn" title="Importar Masiva" @click="showImportModal = true">
                         <i class="fas fa-file-import"></i>
                     </button>
                     <div v-if="authStore.isAuthenticated" class="user-profile-trigger" @click="router.push('/perfil')"
                         title="Mi Perfil">
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User Avatar"
-                            class="avatar-img shadow-sm" />
+                            class="avatar-img" />
                     </div>
                     <AppButton v-else variant="primary" size="small" icon="fa-sign-in-alt"
                         @click="router.push('/login')">

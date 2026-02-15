@@ -48,25 +48,25 @@ async function handleSaveItem(item: any) {
 
 <template>
   <div class="home-view">
-    <div class="dashboard-container">
+    <div class="dashboard-layout">
       <!-- Search Section -->
-      <section class="app-section search-section">
+      <section class="search-section">
         <DashboardSearch @search="handleSearch" />
       </section>
 
       <!-- Stats Section -->
-      <section class="app-section stats-section">
-        <StatCard class="flex-1" title="Lista de Tareas" :value="stats.pending" label="esperando por ti"
-          variant="primary" :progress="stats.pendingProgress" icon="fa-hourglass-start" />
-        <StatCard class="flex-1" title="Completado" :value="stats.completed" label="conquistado" variant="accent"
+      <section class="stats-grid">
+        <StatCard title="Lista de Tareas" :value="stats.pending" label="esperando por ti" variant="primary"
+          :progress="stats.pendingProgress" icon="fa-hourglass-start" />
+        <StatCard title="Completado" :value="stats.completed" label="conquistado" variant="accent"
           :progress="stats.completedProgress" icon="fa-check-double" />
       </section>
 
-      <!-- Latest Additions Section -->
-      <section class="app-section latest-section">
+      <!-- Latest Items Section -->
+      <section class="latest-section">
         <div class="section-header">
-          <h2 class="text-2xl fw-bold text-white tracking-tight">Últimas Adiciones</h2>
-          <button class="view-all-link" @click="router.push('/buscar')">Ver Todo</button>
+          <h2 class="section-title">Últimas Adiciones</h2>
+          <button class="view-all-btn" @click="router.push('/buscar')">Ver Todo</button>
         </div>
 
         <div class="items-list">
@@ -91,35 +91,36 @@ async function handleSaveItem(item: any) {
   width: 100%;
 }
 
-.dashboard-container {
+.dashboard-layout {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
-  /* 48px gap instead of 192px/256px */
+  gap: 32px;
 }
 
 .search-section {
   display: flex;
   justify-content: center;
-  width: 100%;
 }
 
-.stats-section {
+.stats-grid {
   display: flex;
-  flex-direction: row;
-  gap: var(--space-12);
+  gap: 24px;
   width: 100%;
+
+  &>* {
+    flex: 1;
+  }
 
   @media (max-width: 900px) {
     flex-direction: column;
-    gap: var(--space-8);
+    gap: 16px;
   }
 }
 
 .latest-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-12);
+  gap: 24px;
 }
 
 .section-header {
@@ -128,37 +129,38 @@ async function handleSaveItem(item: any) {
   align-items: center;
 }
 
-.view-all-link {
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.02em;
+}
+
+.view-all-btn {
   background: transparent;
   border: none;
   color: var(--color-accent);
   font-size: 10px;
   font-weight: 800;
   cursor: pointer;
-  transition: opacity var(--transition-base);
+  transition: opacity 0.2s;
   text-transform: uppercase;
   letter-spacing: 0.15em;
 
   &:hover {
-    opacity: 0.5;
+    opacity: 0.6;
   }
 }
 
 .items-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  width: 100%;
+  gap: 12px;
 }
 
 @media (max-width: 640px) {
-  .dashboard-container {
-    gap: var(--space-6);
-  }
-
-  .stats-section {
-    flex-direction: column;
-    gap: var(--space-6);
+  .dashboard-layout {
+    gap: 24px;
   }
 }
 </style>
