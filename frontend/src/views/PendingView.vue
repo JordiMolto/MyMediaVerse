@@ -1,4 +1,3 @@
-```
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -12,6 +11,7 @@ import BulkActionsBar from '@/components/common/BulkActionsBar.vue'
 import { useBulkSelection } from '@/composables/useBulkSelection'
 import { useTMDBEnrichment } from '@/composables/useTMDBEnrichment'
 import { ItemStatus, ItemType, Priority } from '@/types'
+import AppModal from '@/components/common/app-modal/AppModal.vue'
 import { useUIStore } from '@/stores/ui'
 
 const router = useRouter()
