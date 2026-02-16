@@ -11,7 +11,7 @@
     align-items: center;
     justify-content: center;
     padding: var(--space-4);
-    z-index: var(--z-max);
+    z-index: 3;
 
     .modal-container {
         background: var(--color-bg-surface);
@@ -108,5 +108,38 @@
     .modal-container {
         transform: translateY(10px);
         /* Subtle slide up instead of scale */
+    }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 640px) {
+    .modal-overlay {
+        padding: var(--space-2);
+    }
+
+    .modal-overlay .modal-header {
+        padding: var(--space-5);
+    }
+
+    .modal-overlay .modal-header .modal-title {
+        font-size: var(--fs-lg);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+
+    .modal-overlay .modal-body {
+        padding: var(--space-5);
+    }
+
+    .modal-overlay .modal-footer {
+        padding: var(--space-4) var(--space-5);
+    }
+}
+
+@media (max-width: 380px) {
+    .modal-overlay .modal-header .modal-title {
+        max-width: 150px;
     }
 }

@@ -3,8 +3,9 @@ interface Props {
     title: string
     value: number | string
     label: string
-    variant?: 'primary' | 'accent'
-    progress: number // 0-100
+    subtitle?: string
+    variant?: 'primary' | 'accent' | 'neutral'
+    progress?: number // 0-100
     icon: string
 }
 
@@ -28,7 +29,9 @@ withDefaults(defineProps<Props>(), {
                 <span class="stat-label">{{ label }}</span>
             </div>
 
-            <div class="stat-progress">
+            <p v-if="subtitle" class="stat-subtitle">{{ subtitle }}</p>
+
+            <div v-if="progress !== undefined" class="stat-progress">
                 <div class="stat-progress-bg">
                     <div class="stat-progress-fill" :style="{ width: progress + '%' }"></div>
                 </div>
@@ -45,8 +48,8 @@ withDefaults(defineProps<Props>(), {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 32px;
-    min-height: 160px;
+    gap: 24px;
+    min-height: 140px;
     border-radius: 24px;
     transition: all 0.3s ease;
 
@@ -86,11 +89,11 @@ withDefaults(defineProps<Props>(), {
     display: flex;
     align-items: baseline;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 4px;
 }
 
 .stat-value {
-    font-size: 48px;
+    font-size: 40px;
     font-weight: 900;
     line-height: 1;
     letter-spacing: -0.05em;
@@ -103,11 +106,19 @@ withDefaults(defineProps<Props>(), {
     font-weight: 500;
 }
 
+.stat-subtitle {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-bottom: 12px;
+    opacity: 0.8;
+}
+
 .stat-progress-bg {
-    height: 8px;
+    height: 6px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 99px;
     overflow: hidden;
+    margin-top: 12px;
 }
 
 .stat-progress-fill {
@@ -136,7 +147,14 @@ withDefaults(defineProps<Props>(), {
 
     .stat-icon-badge {
         color: var(--color-accent);
-        background: rgba(var(--color-accent-rgb), 0.1);
+        background: rgba(0, 245, 255, 0.1);
+    }
+}
+
+.stat-card.neutral {
+    .stat-icon-badge {
+        color: var(--color-text-secondary);
+        background: rgba(255, 255, 255, 0.05);
     }
 }
 

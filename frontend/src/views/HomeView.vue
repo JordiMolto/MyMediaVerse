@@ -1,88 +1,93 @@
 <script setup lang="ts">
-import { onMounted, computed, ref } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useItemsStore } from '@/stores/items'
+import { useCategoriesStore } from '@/stores/categories'
+import { useUIStore } from '@/stores/ui'
+import { useDashboardStats } from '@/composables/useDashboardStats'
+import { ItemType } from '@/types'
+
 import DashboardSearch from '@/components/dashboard/DashboardSearch.vue'
 import StatCard from '@/components/dashboard/StatCard.vue'
-import DashboardListItem from '@/components/dashboard/DashboardListItem.vue'
+import DashboardTopRated from '@/components/dashboard/DashboardTopRated.vue'
+import DashboardBacklog from '@/components/dashboard/DashboardBacklog.vue'
 import AppFab from '@/components/common/AppFab.vue'
-import AppModal from '@/components/common/app-modal/AppModal.vue'
-import ItemForm from '@/components/items/ItemForm.vue'
 
 const router = useRouter()
 const itemsStore = useItemsStore()
-const showCreateModal = ref(false)
+const categoriesStore = useCategoriesStore()
+const uiStore = useUIStore()
+const { selectedType, stats, formatType } = useDashboardStats()
 
 onMounted(() => {
   itemsStore.fetchItems()
+  categoriesStore.fetchCategories()
 })
 
-const stats = computed(() => ({
-  pending: itemsStore.pendingItems.length,
-  completed: itemsStore.completedItems.length,
-  // Approximate progress for demo
-  pendingProgress: Math.min(65, (itemsStore.pendingItems.length / (itemsStore.items.length || 1)) * 100),
-  completedProgress: Math.min(85, (itemsStore.completedItems.length / (itemsStore.items.length || 1)) * 100)
-}))
-
-const latestItems = computed(() => {
-  return [...itemsStore.items]
-    .sort((a, b) => new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime())
-    .slice(0, 3)
-})
+const types = [
+  { value: 'all', label: 'Todo', icon: 'fa-th-large' },
+  { value: ItemType.MOVIE, label: 'Películas', icon: 'fa-film' },
+  { value: ItemType.SERIES, label: 'Series', icon: 'fa-tv' },
+  { value: ItemType.BOOK, label: 'Libros', icon: 'fa-book' },
+  { value: ItemType.VIDEOGAME, label: 'Videojuegos', icon: 'fa-gamepad' },
+  { value: ItemType.BOARDGAME, label: 'Juegos de Mesa', icon: 'fa-dice' }
+]
 
 function handleSearch(query: string) {
   router.push({ name: 'search', query: { q: query } })
-}
-
-async function handleSaveItem(item: any) {
-  try {
-    await itemsStore.createItem(item)
-    showCreateModal.value = false
-  } catch (error) {
-    console.error('Error creating item:', error)
-    alert('Error al crear el item. Por favor, verifica la consola.')
-  }
 }
 </script>
 
 <template>
   <div class="home-view">
     <div class="dashboard-layout">
-      <!-- Search Section -->
-      <section class="search-section">
+      <!-- 1️⃣ Search & Filter Section -->
+      <section class="top-nav-section">
         <DashboardSearch @search="handleSearch" />
-      </section>
 
-      <!-- Stats Section -->
-      <section class="stats-grid">
-        <StatCard title="Lista de Tareas" :value="stats.pending" label="esperando por ti" variant="primary"
-          :progress="stats.pendingProgress" icon="fa-hourglass-start" />
-        <StatCard title="Completado" :value="stats.completed" label="conquistado" variant="accent"
-          :progress="stats.completedProgress" icon="fa-check-double" />
-      </section>
-
-      <!-- Latest Items Section -->
-      <section class="latest-section">
-        <div class="section-header">
-          <h2 class="section-title">Últimas Adiciones</h2>
-          <button class="view-all-btn" @click="router.push('/buscar')">Ver Todo</button>
-        </div>
-
-        <div class="items-list">
-          <DashboardListItem v-for="item in latestItems" :key="item.id" :item="item"
-            @click="router.push(`/item/${item.id}`)" />
+        <div class="filter-tabs-wrapper">
+          <div class="filter-tabs">
+            <button v-for="type in types" :key="type.value" class="type-tab"
+              :class="{ active: selectedType === type.value }" @click="selectedType = type.value as any">
+              <i class="fas" :class="type.icon"></i>
+              <span>{{ type.label }}</span>
+            </button>
+          </div>
         </div>
       </section>
+
+      <!-- 2️⃣ Global Summary -->
+      <section class="dashboard-section">
+        <div class="section-label">RESUMEN {{ selectedType === 'all' ? 'GLOBAL' : formatType(selectedType as
+          ItemType).toUpperCase() }}</div>
+        <div class="stats-grid">
+          <StatCard title="Consumido este año" :value="stats.totalThisYear" label="items terminados" variant="primary"
+            icon="fa-calendar-check" />
+          <StatCard title="Total Histórico" :value="stats.totalCompleted" label="en tu colección" variant="accent"
+            icon="fa-archive" />
+          <StatCard title="Valoración Media" :value="stats.avgRating" label="/ 5 puntos" variant="neutral"
+            icon="fa-star" />
+          <StatCard title="Items en Curso" :value="stats.totalInProgress" label="ahora mismo" variant="neutral"
+            icon="fa-play" />
+        </div>
+      </section>
+
+
+      <!-- 4️⃣ Top & Backlog -->
+      <div class="dashboard-columns">
+        <section class="dashboard-section flex-1">
+          <DashboardTopRated :items="stats.topRated" />
+        </section>
+
+        <section class="dashboard-section flex-1">
+          <DashboardBacklog :oldest="stats.backlog.oldestPending" :best="stats.backlog.bestRatedPending"
+            :random="stats.backlog.randomPending" />
+        </section>
+      </div>
     </div>
 
     <!-- Global App FAB -->
-    <AppFab @click="showCreateModal = true" />
-
-    <!-- Create Item Modal -->
-    <AppModal :is-open="showCreateModal" title="Nuevo Item" size="large" @close="showCreateModal = false">
-      <ItemForm mode="create" @save="handleSaveItem" @cancel="showCreateModal = false" />
-    </AppModal>
+    <AppFab @click="uiStore.toggleQuickAdd(true, { type: selectedType })" />
   </div>
 </template>
 
@@ -94,73 +99,99 @@ async function handleSaveItem(item: any) {
 .dashboard-layout {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: var(--space-8);
+  padding-bottom: var(--space-12);
 }
 
-.search-section {
-  display: flex;
-  justify-content: center;
-}
-
-.stats-grid {
-  display: flex;
-  gap: 24px;
-  width: 100%;
-
-  &>* {
-    flex: 1;
-  }
-
-  @media (max-width: 900px) {
-    flex-direction: column;
-    gap: 16px;
-  }
-}
-
-.latest-section {
+.top-nav-section {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
+  gap: var(--space-6);
   align-items: center;
 }
 
-.section-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: white;
-  letter-spacing: -0.02em;
+.filter-tabs-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.view-all-btn {
-  background: transparent;
-  border: none;
-  color: var(--color-accent);
-  font-size: 10px;
-  font-weight: 800;
+.filter-tabs-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  min-width: max-content;
+  margin: 0 auto;
+}
+
+.type-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  transition: all var(--transition-base);
   cursor: pointer;
-  transition: opacity 0.2s;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
 
   &:hover {
-    opacity: 0.6;
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+  }
+
+  &.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-purple);
   }
 }
 
-.items-list {
+.dashboard-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-4);
+}
+
+.section-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  letter-spacing: 0.15em;
+  padding-left: var(--space-2);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.dashboard-columns {
+  display: flex;
+  gap: var(--space-8);
+  align-items: flex-start;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-columns {
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 640px) {
-  .dashboard-layout {
-    gap: 24px;
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

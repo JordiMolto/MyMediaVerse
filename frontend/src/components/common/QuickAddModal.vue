@@ -8,6 +8,8 @@ import AppModal from './app-modal/AppModal.vue'
 import AppButton from './app-button/AppButton.vue'
 import AppSelect from './app-select/AppSelect.vue'
 import AppInput from './app-input/AppInput.vue'
+import ItemForm from '../items/ItemForm.vue'
+import { useUIStore } from '@/stores/ui'
 
 const props = defineProps<{
     isOpen: boolean
@@ -19,9 +21,10 @@ const emit = defineEmits<{
 
 const categoriesStore = useCategoriesStore()
 const itemsStore = useItemsStore()
+const uiStore = useUIStore()
 
 // State
-const step = ref<'setup' | 'search' | 'processing' | 'success'>('setup')
+const step = ref<'setup' | 'search' | 'processing' | 'success' | 'manual'>('setup')
 const selectedType = ref<string>('')
 const selectedStatus = ref<ItemStatus>(ItemStatus.PENDING)
 const searchQuery = ref('')
@@ -197,8 +200,8 @@ const handleClose = () => {
     // Reset state
     setTimeout(() => {
         step.value = 'setup'
-        selectedType.value = ''
-        selectedStatus.value = ItemStatus.PENDING
+        selectedType.value = uiStore.quickAddContext.type || ''
+        selectedStatus.value = (uiStore.quickAddContext.status as ItemStatus) || ItemStatus.PENDING
         searchQuery.value = ''
         results.value = []
         selectedIds.value.clear()
@@ -206,17 +209,31 @@ const handleClose = () => {
     }, 300)
 }
 
+const handleManualMode = () => {
+    step.value = 'manual'
+}
+
+const handleManualSave = async () => {
+    handleClose()
+}
+
 // Watchers
 watch(() => props.isOpen, (val) => {
-    if (val && typeOptions.value.length > 0 && !selectedType.value) {
-        selectedType.value = typeOptions.value[0].value
+    if (val) {
+        if (uiStore.quickAddContext.type) selectedType.value = uiStore.quickAddContext.type
+        if (uiStore.quickAddContext.status) selectedStatus.value = uiStore.quickAddContext.status as ItemStatus
+
+        if (typeOptions.value.length > 0 && !selectedType.value) {
+            selectedType.value = typeOptions.value[0].value
+        }
     }
 })
 
 </script>
 
 <template>
-    <AppModal :is-open="isOpen" title="Selector Modal Universal" @close="handleClose" size="large">
+    <AppModal :is-open="isOpen" :title="step === 'manual' ? 'Añadir Item Manualmente' : 'Selector Modal Universal'"
+        @close="handleClose" size="large">
         <div class="quick-add-container p-6">
             <!-- STEP 1: SETUP -->
             <div v-if="step === 'setup'" class="setup-view space-y-8 py-4">
@@ -225,7 +242,7 @@ watch(() => props.isOpen, (val) => {
                     <p class="text-secondary">Configura el destino de tus nuevos descubrimientos.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div class="space-y-2">
                         <label class="text-xs font-bold text-muted uppercase tracking-widest">Colección</label>
                         <AppSelect v-model="selectedType" :options="typeOptions" pill />
@@ -236,26 +253,33 @@ watch(() => props.isOpen, (val) => {
                     </div>
                 </div>
 
-                <div class="pt-6 flex justify-center">
+                <div class="pt-6 mt-4 border-t border-white/5 flex flex-col items-center gap-4">
                     <AppButton variant="primary" size="large" icon="fa-arrow-right" @click="handleContinue"
                         :disabled="!selectedType">
                         Continuar a la búsqueda
                     </AppButton>
+
+                    <button
+                        class="text-xs font-bold text-muted hover:text-white transition-colors uppercase tracking-widest"
+                        @click="handleManualMode">
+                        Lo haré manualmente
+                    </button>
                 </div>
             </div>
 
             <!-- STEP 2: SEARCH & SELECT -->
             <div v-else-if="step === 'search'" class="search-view space-y-6">
-                <div class="flex flex-col md:flex-row gap-4 items-end">
+                <!-- ... existing search code ... -->
+                <div class="search-bar-row flex gap-3 items-stretch">
                     <div class="flex-1">
                         <AppInput v-model="searchQuery" placeholder="Busca por título, año..." icon="fa-search"
                             @keyup.enter="handleSearch" />
                     </div>
-                    <AppButton variant="primary" @click="handleSearch" :loading="isSearching">Buscar</AppButton>
+                    <AppButton variant="primary" @click="handleSearch" :loading="isSearching" class="search-btn">Buscar
+                    </AppButton>
                 </div>
 
-                <div
-                    class="results-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                <div class="results-grid custom-scrollbar">
                     <div v-if="results.length === 0 && !isSearching" class="col-span-full py-20 text-center">
                         <div class="opacity-30 mb-6">
                             <i class="fas fa-search text-6xl mb-4"></i>
@@ -264,77 +288,59 @@ watch(() => props.isOpen, (val) => {
                         </div>
 
                         <div
-                            class="manual-id-helper glass-card p-6 inline-block max-w-sm mx-auto border-dashed border-white/10">
+                            class="manual-id-helper glass-card p-6 inline-block w-full max-w-sm mx-auto border-dashed border-white/10">
                             <p class="text-xs font-bold text-muted uppercase tracking-widest mb-4">¿No encuentras lo que
                                 buscas?</p>
                             <div class="flex gap-2">
-                                <input v-model="manualId" type="text" placeholder="ID de TMDB (ej: 157336)"
-                                    class="manual-input flex-1" @keyup.enter="handleManualIdAdd" />
-                                <button class="btn btn-primary btn-small" @click="handleManualIdAdd"
+                                <input v-model="manualId" type="text" placeholder="ID de TMDB"
+                                    class="manual-input flex-1 min-w-0" @keyup.enter="handleManualIdAdd" />
+                                <button class="btn btn-primary btn-small shrink-0" @click="handleManualIdAdd"
                                     :disabled="isAddingManual">
                                     <i class="fas" :class="isAddingManual ? 'fa-spinner fa-spin' : 'fa-plus'"></i>
                                 </button>
                             </div>
-                            <p class="text-[10px] text-muted mt-4">
-                                Puedes buscar el ID en <a href="https://www.themoviedb.org/" target="_blank"
+                            <p class="text-[10px] text-muted mt-4 opacity-70">
+                                Busca el ID en <a href="https://www.themoviedb.org/" target="_blank"
                                     class="text-accent underline">TMDB</a>
-                                copiando el número de la URL.
                             </p>
                         </div>
                     </div>
 
-                    <div v-for="item in results" :key="item.id"
-                        class="result-card relative rounded-2xl overflow-hidden cursor-pointer group transition-all duration-500 hover:-translate-y-2"
+                    <div v-for="item in results" :key="item.id" class="result-card group"
                         :class="{ 'selected': selectedIds.has(item.id) }" @click="toggleSelection(item.id)">
 
-                        <div class="aspect-[2/3] bg-surface-light relative overflow-hidden shadow-2xl">
+                        <div class="card-poster">
                             <img v-if="item.poster_path" :src="getTMDBImageUrl(item.poster_path)"
-                                :alt="item.title || item.name"
-                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                            <div v-else class="w-full h-full flex flex-col items-center justify-center p-4 text-center">
-                                <i class="fas fa-image text-4xl mb-2 opacity-10"></i>
-                                <span class="text-[10px] text-muted font-bold uppercase tracking-tighter">{{ item.title
-                                    || item.name }}</span>
+                                :alt="item.title || item.name" class="poster-img" />
+                            <div v-else class="poster-placeholder">
+                                <i class="fas fa-image"></i>
+                                <span>{{ item.title || item.name }}</span>
                             </div>
 
-                            <!-- Year Badge -->
-                            <div class="absolute top-2 right-2 z-10">
-                                <span
-                                    class="bg-black/60 backdrop-blur-md text-[9px] font-black text-white px-2 py-0.5 rounded-full border border-white/10">
-                                    {{ (item.release_date || item.first_air_date || '').split('-')[0] || 'TBA' }}
+                            <!-- Badges -->
+                            <div class="card-badges">
+                                <span v-if="item.release_date || item.first_air_date" class="badge badge-year">
+                                    {{ (item.release_date || item.first_air_date || '').split('-')[0] }}
                                 </span>
-                            </div>
-
-                            <!-- Rating Badge -->
-                            <div v-if="item.vote_average" class="absolute top-2 left-2 z-10">
-                                <span
-                                    class="bg-accent text-[9px] font-black text-white px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
-                                    <i class="fas fa-star text-[7px]"></i>
+                                <span v-if="item.vote_average" class="badge badge-rating">
+                                    <i class="fas fa-star"></i>
                                     {{ item.vote_average.toFixed(1) }}
                                 </span>
                             </div>
 
                             <!-- Selection Overlay -->
-                            <div class="absolute inset-0 bg-accent/60 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
-                                :class="{ 'opacity-100': selectedIds.has(item.id) }">
-                                <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-accent shadow-2xl transform scale-50 group-hover:scale-100 transition-transform duration-500"
-                                    :class="{ 'scale-100': selectedIds.has(item.id) }">
-                                    <i class="fas text-xl"
-                                        :class="selectedIds.has(item.id) ? 'fa-check' : 'fa-plus'"></i>
+                            <div class="selection-overlay">
+                                <div class="selection-icon">
+                                    <i class="fas" :class="selectedIds.has(item.id) ? 'fa-check' : 'fa-plus'"></i>
                                 </div>
                             </div>
                         </div>
 
-                        <div
-                            class="p-3 bg-gradient-to-t from-black/90 to-black/40 backdrop-blur-md border-t border-white/5">
-                            <h4 class="text-xs font-bold text-white truncate leading-tight mb-1">{{ item.title ||
-                                item.name }}</h4>
-                            <div class="flex items-center justify-between">
-                                <span class="text-[9px] text-muted font-black uppercase tracking-widest">
-                                    {{ item.media_type === 'tv' ? 'Serie' : 'Película' }}
-                                </span>
-                                <span v-if="selectedIds.has(item.id)"
-                                    class="text-[9px] text-accent font-black uppercase tracking-widest">Seleccionado</span>
+                        <div class="card-info">
+                            <h4 class="info-title">{{ item.title || item.name }}</h4>
+                            <div class="info-meta">
+                                <span class="meta-type">{{ item.media_type === 'tv' ? 'Serie' : 'Película' }}</span>
+                                <span v-if="selectedIds.has(item.id)" class="meta-selected">Seleccionado</span>
                             </div>
                         </div>
                     </div>
@@ -348,9 +354,8 @@ watch(() => props.isOpen, (val) => {
                                 <input v-model="manualId" type="text" placeholder="Añadir por ID de TMDB"
                                     class="manual-input text-xs py-2 px-4 bg-white/5 border border-white/10 rounded-full flex-1 focus:border-accent outline-none text-white"
                                     @keyup.enter="handleManualIdAdd" />
-                                <button
-                                    class="w-10 h-10 rounded-full bg-white/10 border border-white/10 text-white hover:bg-accent hover:border-accent transition-all flex items-center justify-center"
-                                    @click="handleManualIdAdd" :disabled="isAddingManual">
+                                <button class="btn btn-primary btn-small shrink-0" @click="handleManualIdAdd"
+                                    :disabled="isAddingManual">
                                     <i class="fas" :class="isAddingManual ? 'fa-spinner fa-spin' : 'fa-plus'"></i>
                                 </button>
                             </div>
@@ -358,19 +363,23 @@ watch(() => props.isOpen, (val) => {
                     </div>
                 </div>
 
-                <div class="footer-actions flex justify-between items-center pt-6 border-t border-white/5">
-                    <button class="text-secondary text-sm font-bold hover:text-white transition-colors"
+                <div
+                    class="footer-actions flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-white/5">
+                    <button
+                        class="text-secondary text-sm font-bold hover:text-white transition-colors flex items-center gap-2"
                         @click="step = 'setup'">
-                        <i class="fas fa-chevron-left mr-2"></i> Cambiar destino
+                        <i class="fas fa-chevron-left"></i> Cambiar destino
                     </button>
-                    <AppButton variant="primary" :disabled="selectedIds.size === 0" @click="handleSave">
-                        Añadir {{ selectedIds.size }} items seleccionados
+                    <AppButton variant="primary" :disabled="selectedIds.size === 0" @click="handleSave"
+                        class="w-full sm:w-auto">
+                        {{ selectedIds.size > 0 ? `Añadir ${selectedIds.size} items` : 'Selecciona para añadir' }}
                     </AppButton>
                 </div>
             </div>
 
             <!-- STEP 3: PROCESSING -->
             <div v-else-if="step === 'processing'" class="processing-view py-20 text-center space-y-6">
+                <!-- ... existing processing code ... -->
                 <div class="relative inline-block">
                     <i class="fas fa-circle-notch fa-spin text-6xl text-accent"></i>
                     <div class="absolute inset-0 flex items-center justify-center font-black text-xs">
@@ -394,20 +403,218 @@ watch(() => props.isOpen, (val) => {
                     <p class="text-secondary">Los items se han añadido correctamente a tu lista.</p>
                 </div>
             </div>
+
+            <!-- STEP: MANUAL (Internal ItemForm) -->
+            <div v-else-if="step === 'manual'" class="manual-view">
+                <ItemForm mode="create" :initial-type="selectedType" :initial-status="selectedStatus"
+                    @save="handleManualSave" @cancel="step = 'setup'" />
+            </div>
         </div>
     </AppModal>
 </template>
 
 <style scoped>
+.results-grid {
+    display: grid;
+    grid-template-cols: repeat(2, 1fr);
+    gap: var(--space-4);
+    max-height: 50vh;
+    overflow-y: auto;
+    padding-right: var(--space-2);
+}
+
+@media (min-width: 640px) {
+    .results-grid {
+        grid-template-cols: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .results-grid {
+        grid-template-cols: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .results-grid {
+        grid-template-cols: repeat(5, 1fr);
+    }
+}
+
 .result-card {
+    position: relative;
+    background: var(--color-bg-surface);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     border: 2px solid transparent;
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.result-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .result-card.selected {
     border-color: var(--color-accent);
-    box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
-    transform: scale(0.98);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+}
+
+.card-poster {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    background: var(--color-bg-card);
+}
+
+.poster-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.result-card:hover .poster-img {
+    transform: scale(1.1);
+}
+
+.poster-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
+.poster-placeholder i {
+    font-size: 2rem;
+    margin-bottom: var(--space-2);
+    opacity: 0.2;
+}
+
+.poster-placeholder span {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.card-badges {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    right: var(--space-2);
+    display: flex;
+    justify-content: space-between;
+    z-index: 10;
+}
+
+.badge {
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.65rem;
+    font-weight: 900;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.badge-year {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.badge-rating {
+    background: var(--color-accent);
+    box-shadow: 0 4px 10px rgba(168, 85, 247, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.selection-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(168, 85, 247, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(2px);
+}
+
+.result-card:hover .selection-overlay,
+.result-card.selected .selection-overlay {
+    opacity: 1;
+}
+
+.selection-icon {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-accent);
+    transform: scale(0.5);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.result-card:hover .selection-icon,
+.result-card.selected .selection-icon {
+    transform: scale(1);
+}
+
+.card-info {
+    padding: var(--space-3);
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 60px;
+}
+
+.info-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 4px;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.info-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.meta-type {
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.meta-selected {
+    font-size: 0.6rem;
+    color: var(--color-accent);
+    font-weight: 900;
+    text-transform: uppercase;
 }
 
 .manual-input {
@@ -458,6 +665,33 @@ watch(() => props.isOpen, (val) => {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* Responsive Fixes */
+@media (max-width: 640px) {
+    .quick-add-container {
+        padding: var(--space-4) !important;
+    }
+
+    .results-grid {
+        grid-template-cols: repeat(2, 1fr) !important;
+        gap: var(--space-3) !important;
+    }
+
+    .search-bar-row {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    .search-btn {
+        width: 100%;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .results-grid {
+        grid-template-cols: repeat(3, 1fr) !important;
     }
 }
 </style>

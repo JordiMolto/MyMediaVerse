@@ -9,6 +9,8 @@ import AppButton from '@/components/common/app-button/AppButton.vue'
 interface Props {
   item?: Item
   mode?: 'create' | 'edit'
+  initialType?: string | null
+  initialStatus?: ItemStatus | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -29,15 +31,19 @@ onMounted(async () => {
   isLoadingCategories.value = false
 
   // Set default tipo if creating new item
-  if (!props.item && categoriesStore.categories.length > 0) {
-    formData.value.tipo = categoriesStore.categories[0].nombre
+  if (!props.item) {
+    if (props.initialType && props.initialType !== 'all') {
+      formData.value.tipo = props.initialType
+    } else if (categoriesStore.categories.length > 0) {
+      formData.value.tipo = categoriesStore.categories[0].nombre
+    }
   }
 })
 
 const formData = ref({
-  tipo: props.item?.tipo || '',
+  tipo: props.item?.tipo || props.initialType || '',
   titulo: props.item?.titulo || '',
-  estado: props.item?.estado || ItemStatus.PENDING,
+  estado: props.item?.estado || props.initialStatus || ItemStatus.PENDING,
   prioridad: props.item?.prioridad || Priority.MEDIUM,
   rating: props.item?.rating?.toString() || '',
   descripcion: props.item?.descripcion || '',

@@ -4,10 +4,15 @@ import { ref } from 'vue'
 export const useUIStore = defineStore('ui', () => {
   const isModalOpen = ref(false)
   const isQuickAddOpen = ref(false)
+  const quickAddContext = ref<{ type?: string; status?: string }>({})
   const modalComponent = ref<string | null>(null)
   const modalProps = ref<Record<string, any>>({})
 
-  function toggleQuickAdd(value?: boolean) {
+  function toggleQuickAdd(value?: boolean, context: { type?: string; status?: string } = {}) {
+    if (context.type || context.status) {
+      quickAddContext.value = context
+    }
+
     if (value !== undefined) {
       isQuickAddOpen.value = value
     } else {
@@ -40,6 +45,7 @@ export const useUIStore = defineStore('ui', () => {
   return {
     isModalOpen,
     isQuickAddOpen,
+    quickAddContext,
     isSideMenuOpen,
     modalComponent,
     modalProps,

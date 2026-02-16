@@ -1,11 +1,9 @@
+```
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useItemsStore } from '@/stores/items'
 import { useCategoriesStore } from '@/stores/categories'
-import { Item, Priority, ItemStatus, ItemType } from '@/types'
-import AppModal from '@/components/common/app-modal/AppModal.vue'
-import ItemForm from '@/components/items/ItemForm.vue'
 import MediaCard from '@/components/common/MediaCard.vue'
 import { exportToCSV } from '@/utils/export'
 import AppSelect from '@/components/common/app-select/AppSelect.vue'
@@ -13,14 +11,16 @@ import AppFab from '@/components/common/AppFab.vue'
 import BulkActionsBar from '@/components/common/BulkActionsBar.vue'
 import { useBulkSelection } from '@/composables/useBulkSelection'
 import { useTMDBEnrichment } from '@/composables/useTMDBEnrichment'
+import { ItemStatus, ItemType, Priority } from '@/types'
+import { useUIStore } from '@/stores/ui'
 
 const router = useRouter()
 const itemsStore = useItemsStore()
 const categoriesStore = useCategoriesStore()
+const uiStore = useUIStore()
 
 const selectedType = ref<string | null>(null)
 const sortBy = ref('priority')
-const showCreateModal = ref(false)
 const showEnrichmentModal = ref(false)
 const enrichmentResult = ref<{ total: number; success: number; failed: number; errors: string[] } | null>(null)
 
@@ -170,16 +170,6 @@ watch(isSelectionMode, (newValue) => {
 
 function goToDetail(id: string) {
   router.push(`/item/${id}`)
-}
-
-async function handleCreateItem(itemData: Partial<Item>) {
-  try {
-    const newItem = await itemsStore.createItem(itemData as Omit<Item, 'id' | 'fechaCreacion'>)
-    showCreateModal.value = false
-    router.push(`/item/${newItem.id}`)
-  } catch (error) {
-    console.error('Error creating item:', error)
-  }
 }
 
 // Bulk actions
@@ -333,17 +323,12 @@ async function handleEnrichWithTMDB() {
     </section>
 
     <!-- Global App FAB -->
-    <AppFab @click="showCreateModal = true" />
+    <AppFab @click="uiStore.toggleQuickAdd(true, { type: selectedType || undefined, status: ItemStatus.PENDING })" />
 
     <!-- Bulk Actions Bar -->
     <BulkActionsBar :selected-count="selectedCount" :total-count="filteredItems.length" @select-all="handleSelectAll"
       @clear-selection="clearSelection" @change-status="handleBulkChangeStatus" @delete-selected="handleBulkDelete"
       @enrich-with-tmdb="handleEnrichWithTMDB" />
-
-    <!-- Create Item Modal -->
-    <AppModal :is-open="showCreateModal" title="Crear Nuevo Item" size="large" @close="showCreateModal = false">
-      <ItemForm mode="create" @save="handleCreateItem" @cancel="showCreateModal = false" />
-    </AppModal>
 
     <!-- TMDB Enrichment Progress Modal -->
     <AppModal :is-open="showEnrichmentModal" title="Enriqueciendo con TMDB" size="medium"

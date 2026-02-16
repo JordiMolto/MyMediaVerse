@@ -10,12 +10,14 @@ import AppFab from '@/components/common/AppFab.vue'
 import BulkActionsBar from '@/components/common/BulkActionsBar.vue'
 import { useBulkSelection } from '@/composables/useBulkSelection'
 import { useTMDBEnrichment } from '@/composables/useTMDBEnrichment'
+import { useUIStore } from '@/stores/ui'
 import { ItemStatus, ItemType } from '@/types'
 import AppModal from '@/components/common/app-modal/AppModal.vue'
 
 const router = useRouter()
 const itemsStore = useItemsStore()
 const categoriesStore = useCategoriesStore()
+const uiStore = useUIStore()
 
 const selectedType = ref<string | null>(null)
 const sortBy = ref('recent')
@@ -321,7 +323,8 @@ async function handleEnrichWithTMDB() {
     </section>
 
     <!-- Global App FAB -->
-    <AppFab />
+    <AppFab
+      @click="uiStore.toggleQuickAdd(true, { type: selectedType || undefined, status: ItemStatus.IN_PROGRESS })" />
 
     <!-- Bulk Actions Bar -->
     <BulkActionsBar :selected-count="selectedCount" :total-count="filteredItems.length" @select-all="handleSelectAll"

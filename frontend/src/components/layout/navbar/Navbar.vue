@@ -45,10 +45,6 @@ const handleImportSuccess = (count: number) => {
 
                 <!-- Right: Actions -->
                 <div class="navbar-actions">
-                    <button class="action-icon-btn highlight" title="Añadir rápido"
-                        @click="uiStore.toggleQuickAdd(true)">
-                        <i class="fas fa-plus"></i>
-                    </button>
                     <button class="action-icon-btn import-btn" title="Importar Masiva" @click="showImportModal = true">
                         <i class="fas fa-file-import"></i>
                     </button>
