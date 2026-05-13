@@ -5,7 +5,7 @@ import { useItemsStore } from "@/stores/items";
 import { useCategoriesStore } from "@/stores/categories";
 import { Item, Priority, ItemStatus, ItemType } from "@/types";
 import AppModal from "@/components/common/app-modal/AppModal.vue";
-import ItemForm from "@/components/items/ItemForm.vue";
+import ItemForm from "@/components/items/item-form/ItemForm.vue";
 import MediaCard from "@/components/common/media-card/MediaCard.vue";
 import { exportToCSV } from "@/utils/export";
 import AppSelect from "@/components/common/app-select/AppSelect.vue";
@@ -39,6 +39,7 @@ const statusOptions = [
 ];
 
 const {
+  selectedIds,
   selectedCount,
   isSelectionMode,
   toggleSelection,
@@ -108,6 +109,26 @@ const filteredItems = computed(() => {
     return 0;
   });
 });
+
+const TMDB_ENRICHABLE = [
+  ItemType.MOVIE,
+  ItemType.SERIES,
+  ItemType.ANIME,
+  "película",
+  "pelicula",
+  "serie",
+  "anime",
+];
+
+const hasEnrichableSelected = computed(() =>
+  filteredItems.value.some(
+    (item) =>
+      selectedIds.value.has(item.id) &&
+      TMDB_ENRICHABLE.some((t) =>
+        (item.tipo || "").toLowerCase().includes(t.toLowerCase()),
+      ),
+  ),
+);
 
 const types = computed(() => {
   return categoriesStore.categories
@@ -387,6 +408,7 @@ async function handleEnrichWithTMDB() {
     <BulkActionsBar
       :selected-count="selectedCount"
       :total-count="filteredItems.length"
+      :show-tmdb-enrich="hasEnrichableSelected"
       @select-all="handleSelectAll"
       @clear-selection="clearSelection"
       @change-status="handleBulkChangeStatus"

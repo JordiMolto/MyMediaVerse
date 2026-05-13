@@ -6,7 +6,7 @@ import { useNotesStore } from "@/stores/notes";
 import { Item, ItemType, ItemStatus, HitoType } from "@/types";
 import AppButton from "@/components/common/app-button/AppButton.vue";
 import AppModal from "@/components/common/app-modal/AppModal.vue";
-import ItemForm from "@/components/items/ItemForm.vue";
+import ItemForm from "@/components/items/item-form/ItemForm.vue";
 import NoteForm from "@/components/notes/note-form/NoteForm.vue";
 import NoteCard from "@/components/notes/note-card/NoteCard.vue";
 import { useConfirm } from "@/composables/useConfirm";

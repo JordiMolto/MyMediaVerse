@@ -11,13 +11,13 @@
   & .modal-content {
     background: var(--color-bg-card);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-lg);
     width: 90%;
     max-width: 600px;
     max-height: 85vh;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--shadow-xl);
+    box-shadow: var(--shadow-lg);
   }
 
   & .modal-header {
@@ -57,7 +57,19 @@
   & .upload-step {
     display: flex;
     flex-direction: column;
-    gap: var(--space-6);
+    gap: var(--space-5);
+  }
+
+  & .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+
+    & > label {
+      font-size: var(--fs-base);
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
   }
 
   & .drop-zone {
@@ -185,7 +197,7 @@
 
     &::-webkit-scrollbar-thumb {
       background: var(--color-border);
-      border-radius: 4px;
+      border-radius: var(--radius-xs);
     }
   }
 
@@ -220,7 +232,7 @@
     width: 24px;
     height: 24px;
     border: 2px solid var(--color-text-muted);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;

@@ -111,22 +111,17 @@ function goToRegister() {
           <div class="local-mode-notice">
             <i class="fas fa-info-circle"></i>
             <p>También puedes usar la app sin cuenta (solo local)</p>
-            <div class="test-actions">
-              <AppButton variant="ghost" size="small" @click="router.push('/')">
-                Continuar sin cuenta
-              </AppButton>
-              <AppButton
-                variant="ghost"
-                size="small"
-                @click="
-                  email = 'test@example.com';
-                  password = 'password123';
-                  handleLogin();
-                "
-              >
-                <i class="fas fa-vial"></i> Acceso de Test
-              </AppButton>
-            </div>
+            <AppButton
+              variant="ghost"
+              size="small"
+              @click="
+                email = 'test@example.com';
+                password = 'password123';
+                handleLogin();
+              "
+            >
+              <i class="fas fa-vial"></i> Acceso de Test
+            </AppButton>
           </div>
         </div>
       </div>

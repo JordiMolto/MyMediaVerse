@@ -32,6 +32,7 @@ const enrichmentResult = ref<{
 } | null>(null);
 
 const {
+  selectedIds,
   selectedCount,
   isSelectionMode,
   toggleSelection,
@@ -102,6 +103,26 @@ const filteredItems = computed(() => {
     return 0;
   });
 });
+
+const TMDB_ENRICHABLE = [
+  ItemType.MOVIE,
+  ItemType.SERIES,
+  ItemType.ANIME,
+  "película",
+  "pelicula",
+  "serie",
+  "anime",
+];
+
+const hasEnrichableSelected = computed(() =>
+  filteredItems.value.some(
+    (item) =>
+      selectedIds.value.has(item.id) &&
+      TMDB_ENRICHABLE.some((t) =>
+        (item.tipo || "").toLowerCase().includes(t.toLowerCase()),
+      ),
+  ),
+);
 
 const types = computed(() => {
   return categoriesStore.categories
@@ -371,6 +392,7 @@ async function handleEnrichWithTMDB() {
     <BulkActionsBar
       :selected-count="selectedCount"
       :total-count="filteredItems.length"
+      :show-tmdb-enrich="hasEnrichableSelected"
       @select-all="handleSelectAll"
       @clear-selection="clearSelection"
       @change-status="handleBulkChangeStatus"

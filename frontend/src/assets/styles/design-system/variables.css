@@ -28,15 +28,15 @@
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
 
   /* Font Sizes */
-  --fs-xs: 12px;
-  --fs-sm: 14px;
-  --fs-base: 16px;
-  --fs-lg: 18px;
+  --fs-xs: 11px;
+  --fs-sm: 13px;
+  --fs-base: 15px;
+  --fs-lg: 17px;
   --fs-xl: 20px;
-  --fs-2xl: 24px;
-  --fs-3xl: 32px;
-  --fs-4xl: 48px;
-  --fs-5xl: 64px;
+  --fs-2xl: 23px;
+  --fs-3xl: 30px;
+  --fs-4xl: 42px;
+  --fs-5xl: 56px;
 
   /* Font Weights */
   --fw-light: 300;
@@ -61,11 +61,11 @@
   --space-40: 200px;
 
   /* --- Borders --- */
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-xs: 3px;
+  --radius-sm: 5px;
+  --radius-md: 7px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
   --radius-full: 9999px;
 
   /* --- Glassmorphism & Effects --- */
@@ -88,6 +88,12 @@
   /* --- Layout --- */
   --container-max-width: 1280px;
   --header-height: 72px;
+  --navbar-height: 72px;
+
+  /* --- Breakpoints (reference only, use in @media) --- */
+  /* mobile:  < 768px  */
+  /* tablet:  768px – 1024px */
+  /* desktop: > 1024px */
 
   /* --- Backward Compatibility Aliases --- */
   --color-secondary: var(--color-accent);
@@ -103,9 +109,7 @@
   --spacing-md: var(--space-6);
   --spacing-lg: var(--space-8);
   --spacing-xl: var(--space-10);
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
+
   --transition-normal: var(--transition-base);
   --font-family: var(--font-main);
 

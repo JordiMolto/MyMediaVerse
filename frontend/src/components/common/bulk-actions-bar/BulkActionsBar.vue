@@ -6,6 +6,7 @@ import "./bulk-actions-bar.css";
 interface Props {
   selectedCount: number;
   totalCount: number;
+  showTmdbEnrich?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -85,16 +86,18 @@ function handleEnrich() {
 
           <div class="divider"></div>
 
-          <button
-            class="action-btn action-btn--tmdb"
-            @click="handleEnrich"
-            title="Enriquecer con datos de TMDB"
-          >
-            <i class="fas fa-film"></i>
-            <span class="desktop-only">Enriquecer TMDB</span>
-          </button>
+          <template v-if="showTmdbEnrich">
+            <button
+              class="action-btn action-btn--tmdb"
+              @click="handleEnrich"
+              title="Enriquecer con datos de TMDB"
+            >
+              <i class="fas fa-film"></i>
+              <span class="desktop-only">Enriquecer TMDB</span>
+            </button>
 
-          <div class="divider"></div>
+            <div class="divider"></div>
+          </template>
 
           <button
             class="action-btn action-btn--danger"
