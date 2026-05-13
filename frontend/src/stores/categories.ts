@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { Category } from '@/types'
-import * as categoriesApi from '@/services/api/categories.api'
+import * as categoriesStorage from '@/services/storage/categories.storage'
 
 export const useCategoriesStore = defineStore('categories', () => {
     const categories = ref<Category[]>([])
@@ -13,7 +13,7 @@ export const useCategoriesStore = defineStore('categories', () => {
         loading.value = true
         error.value = null
         try {
-            const data = await categoriesApi.fetchCategories()
+            const data = await categoriesStorage.fetchCategories()
 
             // If user has no categories, seed defaults automatically
             if (data.length === 0) {
@@ -27,11 +27,11 @@ export const useCategoriesStore = defineStore('categories', () => {
                 ]
 
                 for (const cat of defaults) {
-                    await categoriesApi.createCategory(cat)
+                    await categoriesStorage.createCategory(cat)
                 }
 
                 // Fetch again to get the newly created categories with IDs
-                categories.value = await categoriesApi.fetchCategories()
+                categories.value = await categoriesStorage.fetchCategories()
             } else {
                 categories.value = data
             }
@@ -47,7 +47,7 @@ export const useCategoriesStore = defineStore('categories', () => {
         loading.value = true
         error.value = null
         try {
-            const newCategory = await categoriesApi.createCategory(category)
+            const newCategory = await categoriesStorage.createCategory(category)
             categories.value.push(newCategory)
             return newCategory
         } catch (err: any) {
@@ -62,7 +62,7 @@ export const useCategoriesStore = defineStore('categories', () => {
         loading.value = true
         error.value = null
         try {
-            const updated = await categoriesApi.updateCategory(id, updates)
+            const updated = await categoriesStorage.updateCategory(id, updates)
             const index = categories.value.findIndex(c => c.id === id)
             if (index !== -1) {
                 categories.value[index] = updated
@@ -80,7 +80,7 @@ export const useCategoriesStore = defineStore('categories', () => {
         loading.value = true
         error.value = null
         try {
-            await categoriesApi.deleteCategory(id)
+            await categoriesStorage.deleteCategory(id)
             categories.value = categories.value.filter(c => c.id !== id)
         } catch (err: any) {
             error.value = err.message || 'Error al eliminar categoría'

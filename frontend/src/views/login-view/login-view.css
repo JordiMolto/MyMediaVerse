@@ -84,6 +84,13 @@
             color: var(--color-text-muted);
             font-size: var(--fs-sm);
         }
+
+        .test-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: var(--space-2);
+        }
     }
 
     @media (max-width: 768px) {

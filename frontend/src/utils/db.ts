@@ -12,10 +12,14 @@ interface MyMediaVerseDB extends DBSchema {
     value: Note
     indexes: { 'by-itemId': string }
   }
+  categories: {
+    key: string
+    value: any
+  }
 }
 
 const DB_NAME = 'MyMediaVerseDB'
-const DB_VERSION = 1
+const DB_VERSION = 2
 
 let dbInstance: IDBPDatabase<MyMediaVerseDB> | null = null
 
@@ -23,7 +27,7 @@ export async function initDB(): Promise<IDBPDatabase<MyMediaVerseDB>> {
   if (dbInstance) return dbInstance
 
   dbInstance = await openDB<MyMediaVerseDB>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
+    upgrade(db, oldVersion) {
       // Create items store
       if (!db.objectStoreNames.contains('items')) {
         const itemStore = db.createObjectStore('items', { keyPath: 'id' })
@@ -35,6 +39,11 @@ export async function initDB(): Promise<IDBPDatabase<MyMediaVerseDB>> {
       if (!db.objectStoreNames.contains('notes')) {
         const noteStore = db.createObjectStore('notes', { keyPath: 'id' })
         noteStore.createIndex('by-itemId', 'itemId')
+      }
+
+      // Create categories store
+      if (!db.objectStoreNames.contains('categories')) {
+        db.createObjectStore('categories', { keyPath: 'id' })
       }
     }
   })
@@ -97,4 +106,25 @@ export async function updateNote(note: Note): Promise<string> {
 export async function deleteNote(id: string): Promise<void> {
   const db = await initDB()
   await db.delete('notes', id)
+}
+
+// Categories CRUD
+export async function getAllCategories(): Promise<any[]> {
+  const db = await initDB()
+  return db.getAll('categories')
+}
+
+export async function addCategory(category: any): Promise<string> {
+  const db = await initDB()
+  return db.add('categories', category)
+}
+
+export async function updateCategory(category: any): Promise<string> {
+  const db = await initDB()
+  return db.put('categories', category)
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  const db = await initDB()
+  await db.delete('categories', id)
 }

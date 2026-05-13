@@ -36,13 +36,26 @@ export async function searchRawgGames(query: string): Promise<RawgGameResult | n
 
         const results = response.data.results as RawgGameResult[]
         if (results && results.length > 0) {
-            // RAWG search results are shallow, we might need to fetch detail if we want more info
-            // but for bulk import, the search result usually has the image and basic info.
             return results[0]
         }
         return null
     } catch (error: any) {
         console.error('Error searching RAWG:', error.message)
         return null
+    }
+}
+
+export async function searchRawgGamesMultiple(query: string, pageSize = 20): Promise<RawgGameResult[]> {
+    const trimmedQuery = query.trim()
+    if (!RAWG_API_KEY || !trimmedQuery) return []
+
+    try {
+        const response = await axios.get(BASE_URL, {
+            params: { key: RAWG_API_KEY, search: trimmedQuery, page_size: pageSize }
+        })
+        return (response.data.results as RawgGameResult[]) || []
+    } catch (error: any) {
+        console.error('Error searching RAWG:', error.message)
+        return []
     }
 }

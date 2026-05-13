@@ -2,7 +2,7 @@
 interface Props {
     isOpen: boolean
     title?: string
-    size?: 'small' | 'medium' | 'large'
+    size?: 'small' | 'medium' | 'large' | 'xl'
     closeOnBackdrop?: boolean
 }
 

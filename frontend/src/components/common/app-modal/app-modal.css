@@ -38,6 +38,11 @@
             width: 100%;
             max-width: 900px;
         }
+
+        &.size-xl {
+            width: 100%;
+            max-width: 1200px;
+        }
     }
 
     .modal-header {

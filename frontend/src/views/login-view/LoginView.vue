@@ -14,6 +14,7 @@ const password = ref('')
 const errors = ref<Record<string, string>>({})
 
 function validate(): boolean {
+    console.log('Validating login form...');
     errors.value = {}
 
     if (!email.value.trim()) {
@@ -28,16 +29,22 @@ function validate(): boolean {
         errors.value.password = 'La contraseña debe tener al menos 6 caracteres'
     }
 
-    return Object.keys(errors.value).length === 0
+    const isValid = Object.keys(errors.value).length === 0;
+    console.log('Form is valid:', isValid, errors.value);
+    return isValid
 }
 
 async function handleLogin() {
+    console.log('handleLogin called');
     if (!validate()) return
 
     try {
+        console.log('Attempting signIn through store...');
         await authStore.signIn(email.value, password.value)
+        console.log('SignIn successful, redirecting to home...');
         router.push('/')
     } catch (error: any) {
+        console.error('Login error in view:', error);
         errors.value.general = error.message || 'Error al iniciar sesión'
     }
 }
@@ -84,9 +91,14 @@ function goToRegister() {
                     <div class="local-mode-notice">
                         <i class="fas fa-info-circle"></i>
                         <p>También puedes usar la app sin cuenta (solo local)</p>
-                        <AppButton variant="ghost" size="small" @click="router.push('/')">
-                            Continuar sin cuenta
-                        </AppButton>
+                        <div class="test-actions">
+                            <AppButton variant="ghost" size="small" @click="router.push('/')">
+                                Continuar sin cuenta
+                            </AppButton>
+                            <AppButton variant="ghost" size="small" @click="email = 'test@example.com'; password = 'password123'; handleLogin()">
+                                <i class="fas fa-vial"></i> Acceso de Test
+                            </AppButton>
+                        </div>
                     </div>
                 </AppCard>
             </div>

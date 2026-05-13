@@ -47,3 +47,19 @@ export async function searchGoogleBooks(query: string): Promise<GoogleBookResult
         return null
     }
 }
+
+export async function searchGoogleBooksMultiple(query: string, maxResults = 20): Promise<GoogleBookResult[]> {
+    const trimmedQuery = query.trim()
+    if (!trimmedQuery) return []
+
+    try {
+        const params: any = { q: trimmedQuery, maxResults }
+        if (GOOGLE_BOOKS_API_KEY) params.key = GOOGLE_BOOKS_API_KEY
+
+        const response = await axios.get(BASE_URL, { params })
+        return (response.data.items as GoogleBookResult[]) || []
+    } catch (error: any) {
+        console.error('Error searching Google Books:', error.message)
+        return []
+    }
+}
