@@ -1,0 +1,126 @@
+.stat-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 140px;
+  border-radius: 24px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: var(--color-bg-card-hover);
+    border-color: var(--color-border-hover);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+  }
+
+  & .stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  & .stat-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+  }
+
+  & .stat-icon-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  & .stat-value-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  & .stat-value {
+    font-size: 40px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: white;
+  }
+
+  & .stat-label {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  & .stat-subtitle {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  & .stat-progress-bg {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+
+  & .stat-progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &.primary {
+    & .stat-progress-fill {
+      background: var(--color-primary);
+      box-shadow: 0 0 15px var(--color-primary-glow);
+    }
+
+    & .stat-icon-badge {
+      color: var(--color-primary);
+      background: var(--color-primary-alpha);
+    }
+  }
+
+  &.accent {
+    & .stat-progress-fill {
+      background: var(--color-accent);
+      box-shadow: 0 0 15px var(--color-accent-glow);
+    }
+
+    & .stat-icon-badge {
+      color: var(--color-accent);
+      background: rgba(0, 245, 255, 0.1);
+    }
+  }
+
+  &.neutral {
+    & .stat-icon-badge {
+      color: var(--color-text-secondary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  @media (max-width: 640px) {
+    padding: 20px;
+    min-height: 140px;
+    gap: 24px;
+
+    & .stat-value {
+      font-size: 36px;
+    }
+  }
+}

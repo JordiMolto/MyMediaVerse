@@ -1,150 +1,150 @@
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.85);
-    /* Darker backdrop */
-    backdrop-filter: blur(8px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  /* Darker backdrop */
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  z-index: 3;
+
+  .modal-container {
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    /* Unified 24px */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    &.size-small {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    &.size-medium {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    &.size-large {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    &.size-xl {
+      width: 100%;
+      max-width: 1200px;
+    }
+  }
+
+  .modal-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: var(--space-4);
-    z-index: 3;
+    justify-content: space-between;
+    padding: var(--space-8);
+    border-bottom: 1px solid var(--color-border);
 
-    .modal-container {
-        background: var(--color-bg-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-xl);
-        /* Unified 24px */
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        max-height: 90vh;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-
-        &.size-small {
-            width: 100%;
-            max-width: 400px;
-        }
-
-        &.size-medium {
-            width: 100%;
-            max-width: 600px;
-        }
-
-        &.size-large {
-            width: 100%;
-            max-width: 900px;
-        }
-
-        &.size-xl {
-            width: 100%;
-            max-width: 1200px;
-        }
+    .modal-title {
+      font-size: var(--fs-xl);
+      font-weight: 800;
+      color: var(--color-text-primary);
+      margin: 0;
+      letter-spacing: -0.02em;
     }
 
-    .modal-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: var(--space-8);
-        border-bottom: 1px solid var(--color-border);
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--color-text-secondary);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
 
-        .modal-title {
-            font-size: var(--fs-xl);
-            font-weight: 800;
-            color: var(--color-text-primary);
-            margin: 0;
-            letter-spacing: -0.02em;
-        }
-
-        .modal-close {
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--color-text-secondary);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-
-            &:hover {
-                background: rgba(255, 255, 255, 0.1);
-                color: var(--color-text-primary);
-            }
-        }
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--color-text-primary);
+      }
     }
+  }
 
-    .modal-body {
-        padding: var(--space-8);
-        overflow-y: auto;
-        flex: 1;
-    }
+  .modal-body {
+    padding: var(--space-8);
+    overflow-y: auto;
+    flex: 1;
+  }
 
-    .modal-footer {
-        padding: var(--space-6) var(--space-8);
-        border-top: 1px solid var(--color-border);
-        display: flex;
-        gap: var(--space-3);
-        justify-content: flex-end;
-    }
+  .modal-footer {
+    padding: var(--space-6) var(--space-8);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+  }
 }
 
 /* Transitions */
 .modal-enter-active,
 .modal-leave-active {
-    transition: opacity var(--transition-base);
+  transition: opacity var(--transition-base);
 
-    .modal-container {
-        transition: all var(--transition-base);
-    }
+  .modal-container {
+    transition: all var(--transition-base);
+  }
 }
 
 .modal-enter-from,
 .modal-leave-to {
-    opacity: 0;
+  opacity: 0;
 
-    .modal-container {
-        transform: translateY(10px);
-        /* Subtle slide up instead of scale */
-    }
+  .modal-container {
+    transform: translateY(10px);
+    /* Subtle slide up instead of scale */
+  }
 }
 
 /* Mobile Responsiveness */
 @media (max-width: 640px) {
-    .modal-overlay {
-        padding: var(--space-2);
-    }
+  .modal-overlay {
+    padding: var(--space-2);
+  }
 
-    .modal-overlay .modal-header {
-        padding: var(--space-5);
-    }
+  .modal-overlay .modal-header {
+    padding: var(--space-5);
+  }
 
-    .modal-overlay .modal-header .modal-title {
-        font-size: var(--fs-lg);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 200px;
-    }
+  .modal-overlay .modal-header .modal-title {
+    font-size: var(--fs-lg);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
 
-    .modal-overlay .modal-body {
-        padding: var(--space-5);
-    }
+  .modal-overlay .modal-body {
+    padding: var(--space-5);
+  }
 
-    .modal-overlay .modal-footer {
-        padding: var(--space-4) var(--space-5);
-    }
+  .modal-overlay .modal-footer {
+    padding: var(--space-4) var(--space-5);
+  }
 }
 
 @media (max-width: 380px) {
-    .modal-overlay .modal-header .modal-title {
-        max-width: 150px;
-    }
+  .modal-overlay .modal-header .modal-title {
+    max-width: 150px;
+  }
 }

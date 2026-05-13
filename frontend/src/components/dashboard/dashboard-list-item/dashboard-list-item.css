@@ -1,0 +1,120 @@
+.dashboard-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--color-bg-card-hover);
+    border-color: var(--color-border-hover);
+    transform: translateX(4px);
+  }
+
+  & .item-leading {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  & .type-icon-box {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: 18px;
+  }
+
+  & .item-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  & .item-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+  }
+
+  & .item-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+  }
+
+  & .dot-separator {
+    opacity: 0.3;
+  }
+
+  & .item-trailing {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  & .status-badge {
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+
+    &.active {
+      background: rgba(var(--color-primary-rgb), 0.1);
+      color: var(--color-primary);
+      border: 1px solid rgba(var(--color-primary-rgb), 0.2);
+    }
+
+    &.queued {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--color-text-muted);
+      border: 1px solid var(--color-border);
+    }
+
+    &.done {
+      background: rgba(var(--color-accent-rgb), 0.1);
+      color: var(--color-accent);
+      border: 1px solid rgba(var(--color-accent-rgb), 0.2);
+    }
+  }
+
+  & .options-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 8px;
+    opacity: 0.5;
+    transition: all 0.2s;
+
+    &:hover {
+      opacity: 1;
+      color: white;
+    }
+  }
+
+  @media (max-width: 640px) {
+    padding: 12px 16px;
+
+    & .item-trailing {
+      gap: 12px;
+    }
+
+    & .status-badge {
+      display: none;
+    }
+  }
+}

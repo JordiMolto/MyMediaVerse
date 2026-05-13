@@ -1,5 +1,5 @@
-import { supabase } from '@/config/supabase'
-import { Note } from '@/types'
+import { supabase } from "@/config/supabase";
+import { Note } from "@/types";
 
 /**
  * Supabase API for notes
@@ -7,74 +7,81 @@ import { Note } from '@/types'
  */
 
 export async function fetchNotesByItemId(itemId: string): Promise<Note[]> {
-  if (!supabase) throw new Error('Supabase not configured')
+  if (!supabase) throw new Error("Supabase not configured");
 
   const { data, error } = await supabase
-    .from('notes')
-    .select('*')
-    .eq('item_id', itemId)
-    .order('created_at', { ascending: false })
+    .from("notes")
+    .select("*")
+    .eq("item_id", itemId)
+    .order("created_at", { ascending: false });
 
-  if (error) throw error
+  if (error) throw error;
 
-  return data.map(mapSupabaseNoteToLocal)
+  return data.map(mapSupabaseNoteToLocal);
 }
 
-export async function createNote(note: Omit<Note, 'id' | 'fechaCreacion'>): Promise<Note> {
-  if (!supabase) throw new Error('Supabase not configured')
+export async function createNote(
+  note: Omit<Note, "id" | "fechaCreacion">,
+): Promise<Note> {
+  if (!supabase) throw new Error("Supabase not configured");
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('User not authenticated')
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated");
 
   const supabaseNote = {
     user_id: user.id,
     item_id: note.itemId,
     contenido: note.contenido,
     es_spoiler: note.esSpoiler,
-    tipo_hito: note.tipoHito
-  }
+    tipo_hito: note.tipoHito,
+  };
 
   const { data, error } = await supabase
-    .from('notes')
+    .from("notes")
     .insert(supabaseNote)
     .select()
-    .single()
+    .single();
 
-  if (error) throw error
+  if (error) throw error;
 
-  return mapSupabaseNoteToLocal(data)
+  return mapSupabaseNoteToLocal(data);
 }
 
-export async function updateNote(id: string, updates: Partial<Note>): Promise<Note> {
-  if (!supabase) throw new Error('Supabase not configured')
+export async function updateNote(
+  id: string,
+  updates: Partial<Note>,
+): Promise<Note> {
+  if (!supabase) throw new Error("Supabase not configured");
 
-  const supabaseUpdates: any = {}
+  const supabaseUpdates: any = {};
 
-  if (updates.contenido !== undefined) supabaseUpdates.contenido = updates.contenido
-  if (updates.esSpoiler !== undefined) supabaseUpdates.es_spoiler = updates.esSpoiler
-  if (updates.tipoHito !== undefined) supabaseUpdates.tipo_hito = updates.tipoHito
+  if (updates.contenido !== undefined)
+    supabaseUpdates.contenido = updates.contenido;
+  if (updates.esSpoiler !== undefined)
+    supabaseUpdates.es_spoiler = updates.esSpoiler;
+  if (updates.tipoHito !== undefined)
+    supabaseUpdates.tipo_hito = updates.tipoHito;
 
   const { data, error } = await supabase
-    .from('notes')
+    .from("notes")
     .update(supabaseUpdates)
-    .eq('id', id)
+    .eq("id", id)
     .select()
-    .single()
+    .single();
 
-  if (error) throw error
+  if (error) throw error;
 
-  return mapSupabaseNoteToLocal(data)
+  return mapSupabaseNoteToLocal(data);
 }
 
 export async function deleteNote(id: string): Promise<void> {
-  if (!supabase) throw new Error('Supabase not configured')
+  if (!supabase) throw new Error("Supabase not configured");
 
-  const { error } = await supabase
-    .from('notes')
-    .delete()
-    .eq('id', id)
+  const { error } = await supabase.from("notes").delete().eq("id", id);
 
-  if (error) throw error
+  if (error) throw error;
 }
 
 /**
@@ -87,6 +94,6 @@ function mapSupabaseNoteToLocal(supabaseNote: any): Note {
     contenido: supabaseNote.contenido,
     esSpoiler: supabaseNote.es_spoiler,
     tipoHito: supabaseNote.tipo_hito as any,
-    fechaCreacion: new Date(supabaseNote.created_at)
-  }
+    fechaCreacion: new Date(supabaseNote.created_at),
+  };
 }

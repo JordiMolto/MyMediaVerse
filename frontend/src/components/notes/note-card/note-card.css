@@ -1,0 +1,145 @@
+.note-card-wrapper {
+  display: flex;
+  gap: var(--space-6);
+  position: relative;
+
+  & .timeline-trail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 32px;
+    flex-shrink: 0;
+
+    & .timeline-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--color-border);
+      margin-top: 14px;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+
+    & .milestone-marker {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+      z-index: 2;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+
+    & .timeline-line {
+      flex: 1;
+      width: 2px;
+      background: linear-gradient(
+        to bottom,
+        var(--color-border),
+        rgba(255, 255, 255, 0.05)
+      );
+      margin-top: var(--space-1);
+    }
+  }
+
+  & .note-content-card {
+    flex: 1;
+    padding: var(--space-4) var(--space-5);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-base);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  & .note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-3);
+    font-size: var(--fs-xs);
+    color: var(--color-text-muted);
+  }
+
+  & .note-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  & .hito-badge {
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  & .note-actions {
+    display: flex;
+    gap: var(--space-3);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+  }
+
+  &:hover .note-actions {
+    opacity: 1;
+  }
+
+  & .action-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: color 0.2s;
+
+    &.action-btn--edit:hover {
+      color: var(--color-primary);
+    }
+
+    &.action-btn--delete:hover {
+      color: var(--color-danger);
+    }
+  }
+
+  & .note-body {
+    & .spoiler-label {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 2px 8px;
+      background: var(--color-danger-alpha);
+      color: var(--color-danger);
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      margin-bottom: var(--space-2);
+    }
+
+    & .note-text {
+      color: var(--color-text-primary);
+      line-height: 1.6;
+      font-size: 0.95rem;
+      white-space: pre-wrap;
+    }
+  }
+
+  &.has-milestone .note-content-card {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  &:last-child .timeline-line {
+    display: none;
+  }
+}

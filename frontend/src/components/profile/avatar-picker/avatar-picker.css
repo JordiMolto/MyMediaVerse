@@ -1,0 +1,204 @@
+.picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+
+  & .picker-panel {
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 680px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.7);
+  }
+
+  & .picker-header {
+    padding: 24px 28px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  & .picker-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: white;
+    margin: 0;
+  }
+
+  & .picker-close-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: var(--color-bg-card);
+      color: white;
+    }
+  }
+
+  & .variant-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 0 28px 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-shrink: 0;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  & .variant-tab {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: white;
+    }
+
+    &.active {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: white;
+    }
+  }
+
+  & .avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    padding: 4px 28px 20px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  & .avatar-option {
+    position: relative;
+    border: 3px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+    background: transparent;
+    aspect-ratio: 1;
+    transition: all 0.18s ease;
+    overflow: visible;
+
+    &:hover {
+      transform: scale(1.12);
+      border-color: rgba(168, 85, 247, 0.45);
+    }
+
+    &.selected {
+      border-color: var(--color-primary);
+      box-shadow:
+        0 0 0 2px var(--color-bg-surface),
+        0 0 0 4px var(--color-primary),
+        0 0 20px rgba(168, 85, 247, 0.5);
+      transform: scale(1.1);
+    }
+  }
+
+  & .avatar-opt-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+  }
+
+  & .selected-check {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    border: 2px solid var(--color-bg-surface);
+    pointer-events: none;
+  }
+
+  & .picker-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding: 16px 28px 24px;
+    border-top: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 640px) {
+    padding: 0;
+    align-items: flex-end;
+
+    & .picker-panel {
+      border-radius: 24px 24px 0 0;
+      max-height: 92vh;
+    }
+
+    & .avatar-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}
+
+.picker-fade-enter-active {
+  transition: opacity 0.22s ease;
+}
+
+.picker-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.picker-fade-enter-from,
+.picker-fade-leave-to {
+  opacity: 0;
+}
+
+.picker-fade-enter-active .picker-panel,
+.picker-fade-leave-active .picker-panel {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.picker-fade-enter-from .picker-panel {
+  transform: scale(0.93) translateY(16px);
+}
+
+.picker-fade-leave-to .picker-panel {
+  transform: scale(0.96) translateY(8px);
+}
