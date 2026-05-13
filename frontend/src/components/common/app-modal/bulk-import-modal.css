@@ -206,7 +206,7 @@
 
     &.selected {
       border-color: var(--color-accent);
-      background: rgba(0, 245, 255, 0.05);
+      background: rgba(79, 133, 163, 0.05);
 
       & .checkbox {
         background: var(--color-accent);

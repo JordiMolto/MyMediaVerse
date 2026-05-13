@@ -223,7 +223,7 @@
     }
 
     &.action-btn--visibility:hover {
-      background: rgba(0, 245, 255, 0.1);
+      background: rgba(79, 133, 163, 0.1);
       color: var(--color-accent);
       border-color: var(--color-accent);
     }
@@ -309,7 +309,7 @@
       background: var(--color-accent);
       color: white;
       border-color: var(--color-accent);
-      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+      box-shadow: none;
     }
   }
 

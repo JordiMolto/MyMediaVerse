@@ -75,9 +75,8 @@
     }
 
     &.active {
-      color: #ff3399;
+      color: #a0546e;
       opacity: 1;
-      filter: drop-shadow(0 0 6px rgba(160, 84, 110, 0.15));
     }
   }
 
@@ -176,7 +175,7 @@
     aspect-ratio: 2/3;
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-lg);
     background: var(--color-bg-card);
     border: 1px solid var(--color-border);
   }
@@ -272,13 +271,13 @@
     justify-content: center;
     gap: 12px;
     padding: 16px;
-    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+    background: #b91c1c;
     color: white;
     border-radius: 8px;
     font-weight: 700;
     text-decoration: none;
     transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
+    box-shadow: var(--shadow-sm);
 
     & i {
       font-size: 20px;
@@ -286,7 +285,8 @@
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(255, 0, 0, 0.4);
+      background: #991b1b;
+      box-shadow: var(--shadow-md);
     }
   }
 

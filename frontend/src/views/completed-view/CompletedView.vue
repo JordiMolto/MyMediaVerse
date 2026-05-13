@@ -13,6 +13,7 @@ import BulkActionsBar from "@/components/common/bulk-actions-bar/BulkActionsBar.
 import { useBulkSelection } from "@/composables/useBulkSelection";
 import { useTMDBEnrichment } from "@/composables/useTMDBEnrichment";
 import { ItemStatus, ItemType } from "@/types";
+import { useConfirm } from "@/composables/useConfirm";
 import "./completed-view.css";
 
 const router = useRouter();
@@ -39,6 +40,7 @@ const {
   clearSelection,
   getSelectedItems,
 } = useBulkSelection();
+const { showConfirm } = useConfirm();
 
 const {
   isEnriching,
@@ -159,8 +161,13 @@ async function handleBulkChangeStatus(status: ItemStatus) {
 
 async function handleBulkDelete() {
   const items = getSelectedItems(filteredItems.value);
-  if (!confirm(`¿Estás seguro de que quieres eliminar ${items.length} items?`))
-    return;
+  const ok = await showConfirm({
+    title: "Eliminar items",
+    message: `¿Estás seguro de que quieres eliminar ${items.length} items? Esta acción no se puede deshacer.`,
+    confirmLabel: "Eliminar",
+    danger: true,
+  });
+  if (!ok) return;
   try {
     await Promise.all(items.map((item) => itemsStore.deleteItem(item.id)));
     clearSelection();
@@ -195,12 +202,12 @@ async function handleEnrichWithTMDB() {
     return;
   }
 
-  if (
-    !confirm(
-      `¿Quieres enriquecer ${enrichableItems.length} items con datos de TMDB?`,
-    )
-  )
-    return;
+  const ok = await showConfirm({
+    title: "Enriquecer con TMDB",
+    message: `¿Quieres enriquecer ${enrichableItems.length} items con datos de TMDB? Esto puede tardar unos minutos.`,
+    confirmLabel: "Enriquecer",
+  });
+  if (!ok) return;
 
   showEnrichmentModal.value = true;
   const result = await enrichMultipleItems(enrichableItems);

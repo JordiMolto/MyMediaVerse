@@ -29,7 +29,7 @@
   &.selected .card-inner {
     border-color: var(--color-accent);
     box-shadow:
-      0 0 0 3px rgba(0, 245, 255, 0.3),
+      0 0 0 2px rgba(79, 133, 163, 0.4),
       var(--shadow-lg);
   }
 
@@ -80,7 +80,7 @@
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    box-shadow: 0 4px 12px rgba(255, 51, 153, 0.3);
+    box-shadow: var(--shadow-sm);
     animation: heartPulse 2s infinite;
   }
 

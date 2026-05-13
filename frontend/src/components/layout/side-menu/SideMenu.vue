@@ -2,6 +2,7 @@
 import { useRouter, useRoute } from "vue-router";
 import { useUIStore } from "@/stores/ui";
 import { useAuthStore } from "@/stores/auth";
+import { useUserAvatar } from "@/composables/useUserAvatar";
 import logoUrl from "@/assets/images/logo_mymediaverse.png";
 import "./side-menu.css";
 
@@ -9,6 +10,7 @@ const router = useRouter();
 const route = useRoute();
 const uiStore = useUIStore();
 const authStore = useAuthStore();
+const { avatarUrl } = useUserAvatar();
 
 const menuItems = [
   { name: "Inicio", icon: "fa-home", path: "/" },
@@ -67,11 +69,7 @@ function handleOverlayClick() {
 
         <div class="side-menu-footer">
           <div v-if="authStore.isAuthenticated" class="user-profile-card">
-            <img
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-              alt="Avatar"
-              class="user-avatar"
-            />
+            <img :src="avatarUrl" alt="Avatar" class="user-avatar" />
             <div class="user-details">
               <p class="user-name">
                 {{ authStore.user?.email?.split("@")[0] }}

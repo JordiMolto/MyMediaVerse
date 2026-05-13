@@ -10,6 +10,7 @@ import ItemForm from "@/components/items/ItemForm.vue";
 import NoteForm from "@/components/notes/note-form/NoteForm.vue";
 import NoteCard from "@/components/notes/note-card/NoteCard.vue";
 import { useTMDBEnrichment } from "@/composables/useTMDBEnrichment";
+import { useConfirm } from "@/composables/useConfirm";
 import "./series-detail-view.css";
 
 const route = useRoute();
@@ -27,6 +28,7 @@ const showEnrichmentModal = ref(false);
 const enrichmentResult = ref<any>(null);
 
 const { enrichMultipleItems, isEnriching } = useTMDBEnrichment();
+const { showConfirm } = useConfirm();
 
 const itemId = route.params.id as string;
 
@@ -89,7 +91,14 @@ function openNoteModal(noteId?: string) {
 }
 
 async function handleDeleteNote(noteId: string) {
-  if (!confirm("¿Estás seguro de que quieres eliminar esta nota?")) return;
+  const ok = await showConfirm({
+    title: "Eliminar nota",
+    message:
+      "¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.",
+    confirmLabel: "Eliminar",
+    danger: true,
+  });
+  if (!ok) return;
   try {
     await notesStore.deleteNote(noteId);
     await loadNotes();
@@ -185,8 +194,12 @@ function getPlatformUrl(name: string) {
 
 async function handleSingleEnrich() {
   if (!item.value) return;
-  if (!confirm(`¿Quieres enriquecer "${item.value.titulo}" con datos de TMDB?`))
-    return;
+  const ok = await showConfirm({
+    title: "Enriquecer con TMDB",
+    message: `¿Quieres enriquecer "${item.value.titulo}" con datos de TMDB?`,
+    confirmLabel: "Enriquecer",
+  });
+  if (!ok) return;
   showEnrichmentModal.value = true;
   const result = await enrichMultipleItems([item.value]);
   enrichmentResult.value = result;

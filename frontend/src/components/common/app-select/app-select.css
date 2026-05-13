@@ -54,7 +54,7 @@
     &:hover {
       border-color: var(--color-accent);
       background: var(--color-bg-card-hover);
-      box-shadow: 0 0 15px rgba(0, 245, 255, 0.1);
+      box-shadow: none;
     }
   }
 

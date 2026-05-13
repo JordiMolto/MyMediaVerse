@@ -35,7 +35,7 @@
       & .overlay {
         background: linear-gradient(
           to top,
-          rgba(168, 85, 247, 0.4) 0%,
+          rgba(112, 104, 184, 0.3) 0%,
           transparent 100%
         );
       }
@@ -57,9 +57,9 @@
 
       &:hover {
         border-style: solid;
-        background: rgba(0, 245, 255, 0.08);
+        background: rgba(79, 133, 163, 0.06);
         border-color: var(--color-accent);
-        box-shadow: 0 0 30px var(--color-accent-glow);
+        box-shadow: none;
       }
     }
   }

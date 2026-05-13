@@ -3,16 +3,20 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useItemsStore } from "@/stores/items";
+import { useUserAvatar } from "@/composables/useUserAvatar";
 import { ItemType } from "@/types";
 import AppModal from "@/components/common/app-modal/AppModal.vue";
 import ProfileEditForm from "@/components/profile/profile-edit-form/ProfileEditForm.vue";
+import AvatarPickerModal from "@/components/profile/avatar-picker/AvatarPickerModal.vue";
 import "./profile-view.css";
 
 const authStore = useAuthStore();
 const itemsStore = useItemsStore();
 const router = useRouter();
+const { avatarUrl } = useUserAvatar();
 
 const showEditModal = ref(false);
+const showAvatarPicker = ref(false);
 
 onMounted(() => {
   itemsStore.fetchItems();
@@ -23,12 +27,6 @@ const userDisplayName = computed(
     authStore.user?.user_metadata?.display_name ||
     authStore.user?.email?.split("@")[0] ||
     "Usuario",
-);
-
-const userAvatar = computed(
-  () =>
-    authStore.user?.user_metadata?.avatar_url ||
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
 );
 
 const stats = computed(() => {
@@ -73,8 +71,11 @@ async function handleSignOut() {
   <div class="profile-view">
     <div class="profile-content">
       <section class="profile-header">
-        <div class="avatar-wrapper">
-          <img :src="userAvatar" alt="Avatar" class="profile-avatar" />
+        <div class="avatar-wrapper" @click="showAvatarPicker = true">
+          <img :src="avatarUrl" alt="Avatar" class="profile-avatar" />
+          <div class="avatar-edit-hint">
+            <i class="fas fa-camera"></i>
+          </div>
           <div class="status-dot"></div>
         </div>
 
@@ -162,6 +163,12 @@ async function handleSignOut() {
         </button>
       </section>
     </div>
+
+    <AvatarPickerModal
+      :is-open="showAvatarPicker"
+      @close="showAvatarPicker = false"
+      @saved="showAvatarPicker = false"
+    />
 
     <AppModal
       :is-open="showEditModal"

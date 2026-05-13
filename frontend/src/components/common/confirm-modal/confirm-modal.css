@@ -1,0 +1,109 @@
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  z-index: 9000;
+}
+
+.confirm-dialog {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.confirm-title {
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.confirm-message {
+  font-size: var(--fs-base);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  padding-top: var(--space-2);
+}
+
+.confirm-btn {
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+
+  &.confirm-btn--cancel {
+    background: transparent;
+    color: var(--color-text-muted);
+    border-color: var(--color-border);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--color-text-secondary);
+      border-color: var(--color-border-hover);
+    }
+  }
+
+  &.confirm-btn--confirm {
+    background: var(--color-primary);
+    color: white;
+
+    &:hover {
+      background: var(--color-primary-hover);
+      transform: translateY(-1px);
+    }
+
+    &.is-danger {
+      background: var(--color-danger);
+
+      &:hover {
+        filter: brightness(1.1);
+        background: var(--color-danger);
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+.confirm-enter-active,
+.confirm-leave-active {
+  transition: opacity 0.2s ease;
+
+  & .confirm-dialog {
+    transition:
+      transform 0.2s ease,
+      opacity 0.2s ease;
+  }
+}
+
+.confirm-enter-from,
+.confirm-leave-to {
+  opacity: 0;
+
+  & .confirm-dialog {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+}

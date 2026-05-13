@@ -4,10 +4,12 @@ import { useRouter } from "vue-router";
 import { useCategoriesStore } from "@/stores/categories";
 import AppModal from "@/components/common/app-modal/AppModal.vue";
 import AppButton from "@/components/common/app-button/AppButton.vue";
+import { useConfirm } from "@/composables/useConfirm";
 import "./collections-view.css";
 
 const router = useRouter();
 const categoriesStore = useCategoriesStore();
+const { showConfirm } = useConfirm();
 
 const showAddModal = ref(false);
 const showEditModal = ref(false);
@@ -74,16 +76,17 @@ const handleToggleVisibility = async (category: any) => {
 };
 
 const confirmDelete = async (category: any) => {
-  if (
-    confirm(
-      `¿Estás seguro de que quieres borrar la colección "${category.nombre}"?`,
-    )
-  ) {
-    try {
-      await categoriesStore.deleteCategory(category.id);
-    } catch (err) {
-      alert("Error al borrar la colección");
-    }
+  const ok = await showConfirm({
+    title: "Eliminar colección",
+    message: `¿Estás seguro de que quieres borrar la colección "${category.nombre}"? Esta acción no se puede deshacer.`,
+    confirmLabel: "Eliminar",
+    danger: true,
+  });
+  if (!ok) return;
+  try {
+    await categoriesStore.deleteCategory(category.id);
+  } catch (err) {
+    alert("Error al borrar la colección");
   }
 };
 

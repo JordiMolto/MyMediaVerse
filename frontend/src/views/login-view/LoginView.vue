@@ -4,7 +4,6 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import AppInput from "@/components/common/app-input/AppInput.vue";
 import AppButton from "@/components/common/app-button/AppButton.vue";
-import AppCard from "@/components/common/app-card/AppCard.vue";
 import "./login-view.css";
 
 const router = useRouter();
@@ -59,7 +58,7 @@ function goToRegister() {
   <div class="login-view">
     <div class="container">
       <div class="login-container">
-        <AppCard padding="large">
+        <div>
           <div class="login-header">
             <h1 class="login-title">Iniciar Sesión</h1>
             <p class="login-subtitle">Accede a tu cuenta de MyMediaVerse</p>
@@ -129,7 +128,7 @@ function goToRegister() {
               </AppButton>
             </div>
           </div>
-        </AppCard>
+        </div>
       </div>
     </div>
   </div>

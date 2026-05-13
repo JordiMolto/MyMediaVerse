@@ -9,6 +9,7 @@ import AppModal from "@/components/common/app-modal/AppModal.vue";
 import ItemForm from "@/components/items/ItemForm.vue";
 import NoteForm from "@/components/notes/note-form/NoteForm.vue";
 import NoteCard from "@/components/notes/note-card/NoteCard.vue";
+import { useConfirm } from "@/composables/useConfirm";
 import "./item-detail-view.css";
 
 const route = useRoute();
@@ -22,6 +23,7 @@ const showEditModal = ref(false);
 const showNoteModal = ref(false);
 const showDeleteConfirm = ref(false);
 const editingNoteId = ref<string | null>(null);
+const { showConfirm } = useConfirm();
 
 const itemId = route.params.id as string;
 
@@ -93,7 +95,14 @@ function openNoteModal(noteId?: string) {
 }
 
 async function handleDeleteNote(noteId: string) {
-  if (!confirm("¿Estás seguro de que quieres eliminar esta nota?")) return;
+  const ok = await showConfirm({
+    title: "Eliminar nota",
+    message:
+      "¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.",
+    confirmLabel: "Eliminar",
+    danger: true,
+  });
+  if (!ok) return;
   try {
     await notesStore.deleteNote(noteId);
     await loadNotes();
