@@ -9,19 +9,30 @@ import ItemForm from "@/components/items/item-form/ItemForm.vue";
 import MediaCard from "@/components/common/media-card/MediaCard.vue";
 import { exportToCSV } from "@/utils/export";
 import AppSelect from "@/components/common/app-select/AppSelect.vue";
-import AppFab from "@/components/common/app-fab/AppFab.vue";
 import BulkActionsBar from "@/components/common/bulk-actions-bar/BulkActionsBar.vue";
 import { useBulkSelection } from "@/composables/useBulkSelection";
 import { useTMDBEnrichment } from "@/composables/useTMDBEnrichment";
+import { useUIStore } from "@/stores/ui";
 import { useConfirm } from "@/composables/useConfirm";
 import "./favorites-view.css";
 
 const router = useRouter();
 const itemsStore = useItemsStore();
+const uiStore = useUIStore();
 const categoriesStore = useCategoriesStore();
 
-const selectedType = ref<string | null>(null);
-const selectedStatus = ref<string>("");
+const selectedType = computed({
+  get: () => uiStore.viewFilters.favorites,
+  set: (val: string | null) => {
+    uiStore.viewFilters.favorites = val;
+  },
+});
+const selectedStatus = computed({
+  get: () => uiStore.viewFilters.favoritesStatus,
+  set: (val: string) => {
+    uiStore.viewFilters.favoritesStatus = val;
+  },
+});
 const sortBy = ref("priority");
 const showCreateModal = ref(false);
 const showEnrichmentModal = ref(false);
@@ -133,7 +144,12 @@ const hasEnrichableSelected = computed(() =>
 const types = computed(() => {
   return categoriesStore.categories
     .filter((cat) => !cat.oculto)
-    .map((cat) => ({ value: cat.nombre, label: cat.nombre, icon: cat.icono }));
+    .map((cat) => ({
+      value: cat.nombre,
+      label: cat.nombre,
+      icon: cat.icono,
+      color: cat.color,
+    }));
 });
 
 function handleExport() {
@@ -281,6 +297,15 @@ async function handleEnrichWithTMDB() {
       </div>
       <div class="header-actions">
         <button
+          class="action-btn action-btn-add"
+          @click="
+            uiStore.toggleQuickAdd(true, { type: selectedType || undefined })
+          "
+        >
+          <i class="fas fa-plus"></i>
+          Añadir
+        </button>
+        <button
           class="action-btn"
           :class="{ active: isSelectionMode }"
           @click="isSelectionMode = !isSelectionMode"
@@ -314,9 +339,19 @@ async function handleEnrichWithTMDB() {
               :key="type.value"
               class="tab-btn"
               :class="{ active: selectedType === type.value }"
+              :style="
+                selectedType === type.value && type.color
+                  ? { borderColor: type.color, background: type.color + '22' }
+                  : {}
+              "
               @click="selectedType = type.value"
             >
-              <i class="fas" :class="type.icon"></i> {{ type.label }}
+              <i
+                class="fas"
+                :class="type.icon"
+                :style="type.color ? { color: type.color } : {}"
+              ></i>
+              {{ type.label }}
             </button>
           </div>
         </div>
@@ -402,8 +437,6 @@ async function handleEnrichWithTMDB() {
         </div>
       </div>
     </section>
-
-    <AppFab @click="showCreateModal = true" />
 
     <BulkActionsBar
       :selected-count="selectedCount"

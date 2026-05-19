@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useItemsStore } from "@/stores/items";
 import { useCategoriesStore } from "@/stores/categories";
 import AppModal from "@/components/common/app-modal/AppModal.vue";
 import MediaCard from "@/components/common/media-card/MediaCard.vue";
 import { exportToCSV } from "@/utils/export";
 import AppSelect from "@/components/common/app-select/AppSelect.vue";
-import AppFab from "@/components/common/app-fab/AppFab.vue";
 import { useUIStore } from "@/stores/ui";
 import BulkActionsBar from "@/components/common/bulk-actions-bar/BulkActionsBar.vue";
 import { useBulkSelection } from "@/composables/useBulkSelection";
@@ -17,11 +16,17 @@ import { useConfirm } from "@/composables/useConfirm";
 import "./completed-view.css";
 
 const router = useRouter();
+const route = useRoute();
 const itemsStore = useItemsStore();
 const categoriesStore = useCategoriesStore();
 const uiStore = useUIStore();
 
-const selectedType = ref<string | null>(null);
+const selectedType = computed({
+  get: () => uiStore.viewFilters.completed,
+  set: (val: string | null) => {
+    uiStore.viewFilters.completed = val;
+  },
+});
 const sortBy = ref("recent");
 const showEnrichmentModal = ref(false);
 const enrichmentResult = ref<{
@@ -112,8 +117,33 @@ const hasEnrichableSelected = computed(() =>
 const types = computed(() => {
   return categoriesStore.categories
     .filter((cat) => !cat.oculto)
-    .map((cat) => ({ value: cat.nombre, label: cat.nombre, icon: cat.icono }));
+    .map((cat) => ({
+      value: cat.nombre,
+      label: cat.nombre,
+      icon: cat.icono,
+      color: cat.color,
+    }));
 });
+
+const GRUPO_MATCH: Record<string, (nombre: string) => boolean> = {
+  audiovisual: (n) => /pel[íi]cula|serie|anime/i.test(n),
+  juegos: (n) => /juego|videojuego/i.test(n) && !/mesa/i.test(n),
+  libros: (n) => /libro/i.test(n),
+  mesa: (n) => /mesa/i.test(n),
+};
+
+watch(
+  () => categoriesStore.categories,
+  (cats) => {
+    const grupo = route.query.grupo as string | undefined;
+    if (!grupo || cats.length === 0 || selectedType.value !== null) return;
+    const matcher = GRUPO_MATCH[grupo.toLowerCase()];
+    if (!matcher) return;
+    const match = cats.find((c: { nombre: string }) => matcher(c.nombre));
+    if (match) selectedType.value = match.nombre;
+  },
+  { immediate: true },
+);
 
 function handleExport() {
   exportToCSV(filteredItems.value, "coleccion-completada.csv");
@@ -249,6 +279,18 @@ async function handleEnrichWithTMDB() {
       </div>
       <div class="header-actions">
         <button
+          class="action-btn action-btn-add"
+          @click="
+            uiStore.toggleQuickAdd(true, {
+              type: selectedType || undefined,
+              status: ItemStatus.COMPLETED,
+            })
+          "
+        >
+          <i class="fas fa-plus"></i>
+          Añadir
+        </button>
+        <button
           class="action-btn"
           :class="{ active: isSelectionMode }"
           @click="isSelectionMode = !isSelectionMode"
@@ -283,9 +325,18 @@ async function handleEnrichWithTMDB() {
               :key="type.value"
               class="tab-btn"
               :class="{ active: selectedType === type.value }"
+              :style="
+                selectedType === type.value && type.color
+                  ? { borderColor: type.color, background: type.color + '22' }
+                  : {}
+              "
               @click="selectedType = type.value"
             >
-              <i class="fas" :class="type.icon"></i>
+              <i
+                class="fas"
+                :class="type.icon"
+                :style="type.color ? { color: type.color } : {}"
+              ></i>
               {{ type.label }}
             </button>
           </div>
@@ -357,15 +408,6 @@ async function handleEnrichWithTMDB() {
         </div>
       </div>
     </section>
-
-    <AppFab
-      @click="
-        uiStore.toggleQuickAdd(true, {
-          type: selectedType || undefined,
-          status: ItemStatus.COMPLETED,
-        })
-      "
-    />
 
     <BulkActionsBar
       :selected-count="selectedCount"

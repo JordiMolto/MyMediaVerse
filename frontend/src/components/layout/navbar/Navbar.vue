@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useUIStore } from "@/stores/ui";
-import BulkImportModal from "@/components/common/app-modal/BulkImportModal.vue";
 import AppButton from "@/components/common/app-button/AppButton.vue";
 import logoUrl from "@/assets/images/logo_mymediaverse.png";
 import { useUserAvatar } from "@/composables/useUserAvatar";
@@ -22,13 +21,6 @@ const isAuthPage = computed(() => {
 function goToHome() {
   router.push("/");
 }
-
-const showImportModal = ref(false);
-
-const handleImportSuccess = (count: number) => {
-  // Ideally use a toast notification here
-  alert(`Se han importado ${count} elementos correctamente.`);
-};
 </script>
 
 <template>
@@ -47,11 +39,13 @@ const handleImportSuccess = (count: number) => {
         <!-- Right: Actions -->
         <div class="navbar-actions">
           <button
-            class="action-icon-btn import-btn"
-            title="Importar Masiva"
-            @click="showImportModal = true"
+            v-if="authStore.isAuthenticated"
+            class="navbar-add-btn"
+            @click="uiStore.toggleQuickAdd(true)"
+            title="Añadir contenido"
           >
-            <i class="fas fa-file-import"></i>
+            <i class="fas fa-plus"></i>
+            <span class="navbar-add-label">Añadir</span>
           </button>
           <div
             v-if="authStore.isAuthenticated"
@@ -73,10 +67,5 @@ const handleImportSuccess = (count: number) => {
         </div>
       </div>
     </nav>
-    <BulkImportModal
-      :is-open="showImportModal"
-      @close="showImportModal = false"
-      @success="handleImportSuccess"
-    />
   </div>
 </template>

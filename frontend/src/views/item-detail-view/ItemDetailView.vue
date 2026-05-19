@@ -354,7 +354,10 @@ async function handleSaveNote(data: {
             </div>
           </div>
 
-          <section class="info-card specs-card">
+          <section
+            v-if="displayedMetadata.length > 0"
+            class="info-card specs-card"
+          >
             <h3 class="card-label">Especificaciones</h3>
             <div class="specs-grid">
               <div
@@ -367,20 +370,6 @@ async function handleSaveNote(data: {
                   <span class="spec-key">{{ meta.label }}</span>
                   <p class="spec-val">{{ meta.value }}</p>
                 </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="info-card stats-card">
-            <h3 class="card-label">Estadísticas</h3>
-            <div class="stats-summary">
-              <div class="stat-item">
-                <span class="stat-key">Veces consumido</span>
-                <p class="stat-val">{{ item.vecesConsumido || 0 }}</p>
-              </div>
-              <div class="stat-item">
-                <span class="stat-key">Última vez</span>
-                <p class="stat-val-date">{{ formatDate(item.ultimaVez) }}</p>
               </div>
             </div>
           </section>

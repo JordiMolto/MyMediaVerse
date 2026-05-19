@@ -1,5 +1,6 @@
 import { computed, ref } from "vue";
 import { useItemsStore } from "@/stores/items";
+import { useUIStore } from "@/stores/ui";
 import { ItemType, Item } from "@/types";
 
 export interface DashboardStats {
@@ -8,6 +9,8 @@ export interface DashboardStats {
   totalThisYear: number;
   avgRating: number;
   totalInProgress: number;
+  inProgressItems: Item[];
+  recentlyAdded: Item[];
   byMonth: { month: string; count: number }[];
   topRated: Item[];
   backlog: {
@@ -19,7 +22,13 @@ export interface DashboardStats {
 
 export function useDashboardStats() {
   const itemsStore = useItemsStore();
-  const selectedType = ref<ItemType | "all">("all");
+  const uiStore = useUIStore();
+  const selectedType = computed({
+    get: () => uiStore.viewFilters.home as ItemType | "all",
+    set: (val: ItemType | "all") => {
+      uiStore.viewFilters.home = val;
+    },
+  });
   const currentYear = new Date().getFullYear();
 
   // Robust mapping for types
@@ -182,12 +191,22 @@ export function useDashboardStats() {
         ? pending[Math.floor(Math.random() * pending.length)]
         : null;
 
+    const recentlyAdded = [...pending]
+      .sort((a, b) => {
+        const dateA = a.fechaCreacion ? new Date(a.fechaCreacion).getTime() : 0;
+        const dateB = b.fechaCreacion ? new Date(b.fechaCreacion).getTime() : 0;
+        return dateB - dateA;
+      })
+      .slice(0, 5);
+
     return {
       totalItems: items.length,
       totalCompleted: completed.length,
       totalThisYear: thisYear.length,
       avgRating: Number(avgRating.toFixed(1)),
       totalInProgress,
+      inProgressItems: inProgress,
+      recentlyAdded,
       byMonth,
       topRated,
       backlog: {
@@ -292,7 +311,7 @@ export function useDashboardStats() {
     return labels[type] || type;
   }
 
-  function formatType(type: ItemType): string {
+  function formatType(type: ItemType | "all" | string): string {
     return formatLabel(type.toString().toLowerCase());
   }
 

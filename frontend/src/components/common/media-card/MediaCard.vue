@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { Item, ItemType } from "@/types";
+import { useCategoriesStore } from "@/stores/categories";
 import "./media-card.css";
 
 interface Props {
@@ -17,7 +18,14 @@ const emit = defineEmits<{
   toggleSelect: [id: string];
 }>();
 
+const categoriesStore = useCategoriesStore();
+
+const category = computed(() =>
+  categoriesStore.categories.find((cat) => cat.nombre === props.item.tipo),
+);
+
 const typeIcon = computed(() => {
+  if (category.value?.icono) return category.value.icono;
   switch (props.item.tipo) {
     case ItemType.MOVIE:
       return "fa-film";
@@ -35,6 +43,8 @@ const typeIcon = computed(() => {
       return "fa-folder";
   }
 });
+
+const typeColor = computed(() => category.value?.color ?? null);
 
 const hasImage = computed(() => !!props.item.imagen);
 
@@ -66,7 +76,11 @@ function handleCardClick() {
           :alt="item.titulo"
           class="poster-image"
         />
-        <div v-else class="poster-placeholder">
+        <div
+          v-else
+          class="poster-placeholder"
+          :style="typeColor ? { color: typeColor } : {}"
+        >
           <i class="fas" :class="typeIcon"></i>
         </div>
 
@@ -86,8 +100,22 @@ function handleCardClick() {
           <div v-if="item.favorito" class="favorite-tag">
             <i class="fas fa-heart"></i>
           </div>
-          <div class="type-tag">
-            <i class="fas" :class="typeIcon"></i>
+          <div
+            class="type-tag"
+            :style="
+              typeColor
+                ? {
+                    background: typeColor + '33',
+                    borderColor: typeColor + '66',
+                  }
+                : {}
+            "
+          >
+            <i
+              class="fas"
+              :class="typeIcon"
+              :style="typeColor ? { color: typeColor } : {}"
+            ></i>
           </div>
         </div>
 

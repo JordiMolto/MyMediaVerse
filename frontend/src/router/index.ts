@@ -137,6 +137,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/collections-view/CollectionsView.vue"),
     meta: { requiresAuth: true },
   },
+  {
+    path: "/coleccion/:nombre",
+    name: "collection",
+    component: () => import("@/views/collection-view/CollectionView.vue"),
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({

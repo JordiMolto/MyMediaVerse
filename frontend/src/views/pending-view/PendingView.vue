@@ -6,7 +6,6 @@ import { useCategoriesStore } from "@/stores/categories";
 import MediaCard from "@/components/common/media-card/MediaCard.vue";
 import { exportToCSV } from "@/utils/export";
 import AppSelect from "@/components/common/app-select/AppSelect.vue";
-import AppFab from "@/components/common/app-fab/AppFab.vue";
 import BulkActionsBar from "@/components/common/bulk-actions-bar/BulkActionsBar.vue";
 import { useBulkSelection } from "@/composables/useBulkSelection";
 import { useTMDBEnrichment } from "@/composables/useTMDBEnrichment";
@@ -21,7 +20,12 @@ const itemsStore = useItemsStore();
 const categoriesStore = useCategoriesStore();
 const uiStore = useUIStore();
 
-const selectedType = ref<string | null>(null);
+const selectedType = computed({
+  get: () => uiStore.viewFilters.pending,
+  set: (val: string | null) => {
+    uiStore.viewFilters.pending = val;
+  },
+});
 const sortBy = ref("priority");
 const showEnrichmentModal = ref(false);
 const enrichmentResult = ref<{
@@ -131,6 +135,7 @@ const types = computed(() => {
       value: cat.nombre,
       label: cat.nombre,
       icon: cat.icono,
+      color: cat.color,
     }));
 });
 
@@ -271,6 +276,18 @@ async function handleEnrichWithTMDB() {
       </div>
       <div class="header-actions">
         <button
+          class="action-btn-small action-btn-add"
+          @click="
+            uiStore.toggleQuickAdd(true, {
+              type: selectedType || undefined,
+              status: ItemStatus.PENDING,
+            })
+          "
+        >
+          <i class="fas fa-plus"></i>
+          Añadir
+        </button>
+        <button
           class="action-btn-small"
           :class="{ active: isSelectionMode }"
           @click="isSelectionMode = !isSelectionMode"
@@ -304,9 +321,19 @@ async function handleEnrichWithTMDB() {
               :key="type.value"
               class="type-tab-btn"
               :class="{ active: selectedType === type.value }"
+              :style="
+                selectedType === type.value && type.color
+                  ? { borderColor: type.color, background: type.color + '22' }
+                  : {}
+              "
               @click="selectedType = type.value"
             >
-              <i class="fas" :class="type.icon"></i> {{ type.label }}
+              <i
+                class="fas"
+                :class="type.icon"
+                :style="type.color ? { color: type.color } : {}"
+              ></i>
+              {{ type.label }}
             </button>
           </div>
         </div>
@@ -379,15 +406,6 @@ async function handleEnrichWithTMDB() {
         </div>
       </div>
     </section>
-
-    <AppFab
-      @click="
-        uiStore.toggleQuickAdd(true, {
-          type: selectedType || undefined,
-          status: ItemStatus.PENDING,
-        })
-      "
-    />
 
     <BulkActionsBar
       :selected-count="selectedCount"

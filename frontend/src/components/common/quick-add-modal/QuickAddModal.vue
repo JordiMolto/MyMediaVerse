@@ -24,6 +24,7 @@ import AppSelect from "../app-select/AppSelect.vue";
 import AppInput from "../app-input/AppInput.vue";
 import ItemForm from "../../items/item-form/ItemForm.vue";
 import { useUIStore } from "@/stores/ui";
+import { useBulkImport } from "@/composables/useBulkImport";
 import "./quick-add-modal.css";
 
 const props = defineProps<{
@@ -37,6 +38,112 @@ const emit = defineEmits<{
 const categoriesStore = useCategoriesStore();
 const itemsStore = useItemsStore();
 const uiStore = useUIStore();
+
+const {
+  isProcessing: isImportProcessing,
+  progress: importProgress,
+  items: importEnrichedItems,
+  error: importError,
+  parseAndEnrich,
+  downloadTemplate,
+} = useBulkImport();
+
+const importFileInput = ref<HTMLInputElement | null>(null);
+const importSelectedFile = ref<File | null>(null);
+const importSubStep = ref<"upload" | "enriching" | "review">("upload");
+const importSelectType = ref<ItemType>(ItemType.MOVIE);
+const importSelectedForImport = ref<Set<string>>(new Set());
+
+const importTypeOptions = [
+  { value: ItemType.MOVIE, label: "Películas" },
+  { value: ItemType.SERIES, label: "Series" },
+  { value: ItemType.VIDEOGAME, label: "Videojuegos" },
+  { value: ItemType.BOOK, label: "Libros" },
+];
+
+const importValidItemsCount = computed(
+  () => importEnrichedItems.value.filter((i) => i.found).length,
+);
+
+const handleImportFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files.length > 0) {
+    importSelectedFile.value = target.files[0];
+  }
+};
+
+const startImportProcess = async () => {
+  if (!importSelectedFile.value) return;
+  importSubStep.value = "enriching";
+  await parseAndEnrich(importSelectedFile.value, importSelectType.value);
+  if (importError.value) {
+    importSubStep.value = "upload";
+    return;
+  }
+  importSelectedForImport.value = new Set();
+  importEnrichedItems.value.forEach((item) => {
+    if (item.found && item.id) importSelectedForImport.value.add(item.id);
+  });
+  importSubStep.value = "review";
+};
+
+const toggleImportSelection = (id: string | undefined) => {
+  if (!id) return;
+  if (importSelectedForImport.value.has(id)) {
+    importSelectedForImport.value.delete(id);
+  } else {
+    importSelectedForImport.value.add(id);
+  }
+};
+
+const importSelectAll = () => {
+  importEnrichedItems.value.forEach((i) => {
+    if (i.id) importSelectedForImport.value.add(i.id);
+  });
+};
+
+const importDeselectAll = () => {
+  importSelectedForImport.value.clear();
+};
+
+const confirmImport = async () => {
+  const itemsToSave = importEnrichedItems.value.filter(
+    (i) => i.id && importSelectedForImport.value.has(i.id),
+  );
+  step.value = "processing";
+  progress.value = { current: 0, total: itemsToSave.length };
+  try {
+    for (const item of itemsToSave) {
+      if (!item.tipo || !item.titulo) continue;
+      await itemsStore.createItem({
+        tipo: item.tipo,
+        titulo: item.titulo,
+        estado: item.estado || ItemStatus.PENDING,
+        rating: item.rating,
+        descripcion: item.descripcion,
+        imagen: item.imagen,
+        fechaInicio: item.fechaInicio,
+      } as any);
+      progress.value.current++;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    step.value = "success";
+    setTimeout(() => {
+      handleClose();
+      itemsStore.fetchItems();
+    }, 2000);
+  } catch (e) {
+    console.error("Error importing items:", e);
+    step.value = "import";
+  }
+};
+
+const resetImport = () => {
+  importSubStep.value = "upload";
+  importSelectedFile.value = null;
+  importSelectedForImport.value.clear();
+  if (importFileInput.value) importFileInput.value.value = "";
+};
 
 type SearchSource = "tmdb_movie" | "tmdb_tv" | "googlebooks" | "rawg";
 
@@ -52,7 +159,7 @@ interface NormalizedResult {
 }
 
 const step = ref<
-  "setup" | "search" | "bulk" | "processing" | "success" | "manual"
+  "setup" | "search" | "bulk" | "processing" | "success" | "manual" | "import"
 >("setup");
 const selectedType = ref<string>("");
 const selectedStatus = ref<ItemStatus>(ItemStatus.PENDING);
@@ -385,6 +492,7 @@ const handleClose = () => {
     hasSearched.value = false;
     bulkTitles.value = [];
     bulkInput.value = "";
+    resetImport();
   }, 300);
 };
 
@@ -417,7 +525,11 @@ watch(
   <AppModal
     :is-open="isOpen"
     :title="
-      step === 'manual' ? 'Añadir Item Manualmente' : 'Selector Modal Universal'
+      step === 'manual'
+        ? 'Añadir manualmente'
+        : step === 'import'
+          ? 'Importar desde archivo'
+          : 'Añadir contenido'
     "
     @close="handleClose"
     size="xl"
@@ -457,6 +569,11 @@ watch(
           <button class="setup-alt-btn" @click="step = 'bulk'">
             <i class="fas fa-list-ul"></i>
             Añadir lista de títulos
+          </button>
+
+          <button class="setup-alt-btn" @click="step = 'import'">
+            <i class="fas fa-file-import"></i>
+            Importar desde archivo (CSV / Excel)
           </button>
 
           <button class="setup-link-btn" @click="handleManualMode">
@@ -728,6 +845,151 @@ watch(
           @save="handleManualSave"
           @cancel="step = 'setup'"
         />
+      </div>
+
+      <!-- STEP: IMPORT -->
+      <div v-else-if="step === 'import'" class="import-view">
+        <!-- Sub-step: Upload -->
+        <div v-if="importSubStep === 'upload'" class="import-upload">
+          <div class="import-type-row">
+            <label class="field-label">¿Qué vas a importar?</label>
+            <AppSelect
+              v-model="importSelectType"
+              :options="importTypeOptions"
+            />
+          </div>
+
+          <div class="import-template-row">
+            <span class="import-hint"
+              >Descarga la plantilla con el formato correcto:</span
+            >
+            <button
+              class="setup-alt-btn import-template-btn"
+              @click="downloadTemplate(importSelectType)"
+            >
+              <i class="fas fa-download"></i> Descargar plantilla
+            </button>
+          </div>
+
+          <div class="import-drop-zone" @click="importFileInput?.click()">
+            <input
+              ref="importFileInput"
+              type="file"
+              accept=".csv, .xlsx, .xls"
+              hidden
+              @change="handleImportFileChange"
+            />
+            <div v-if="!importSelectedFile" class="drop-zone-empty">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <p>Haz clic para seleccionar archivo</p>
+              <span>.xlsx, .csv</span>
+            </div>
+            <div v-else class="drop-zone-selected">
+              <i class="fas fa-file-excel"></i>
+              <p>{{ importSelectedFile.name }}</p>
+              <span>{{ (importSelectedFile.size / 1024).toFixed(1) }} KB</span>
+            </div>
+          </div>
+
+          <div v-if="importError" class="import-error">{{ importError }}</div>
+
+          <div class="footer-actions">
+            <button class="back-btn" @click="step = 'setup'">
+              <i class="fas fa-chevron-left"></i> Atrás
+            </button>
+            <AppButton
+              variant="primary"
+              :disabled="!importSelectedFile"
+              @click="startImportProcess"
+            >
+              Procesar archivo
+            </AppButton>
+          </div>
+        </div>
+
+        <!-- Sub-step: Enriching -->
+        <div v-else-if="importSubStep === 'enriching'" class="processing-view">
+          <div class="progress-spinner">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <div class="progress-percent">{{ importProgress }}%</div>
+          </div>
+          <div class="processing-info">
+            <h3 class="processing-title">Analizando archivo...</h3>
+            <p class="processing-subtitle">Buscando datos en las APIs</p>
+          </div>
+        </div>
+
+        <!-- Sub-step: Review -->
+        <div v-else-if="importSubStep === 'review'" class="import-review">
+          <div class="import-review-header">
+            <p class="empty-sub">
+              <strong>{{ importValidItemsCount }}</strong> coincidencias de
+              {{ importEnrichedItems.length }} filas
+            </p>
+            <div class="import-review-actions">
+              <button class="setup-link-btn" @click="importSelectAll">
+                Seleccionar todo
+              </button>
+              <button class="setup-link-btn" @click="importDeselectAll">
+                Desmarcar todo
+              </button>
+            </div>
+          </div>
+
+          <div class="import-items-list custom-scrollbar">
+            <div
+              v-for="item in importEnrichedItems"
+              :key="item.id"
+              class="import-review-item"
+              :class="{
+                'import-item--selected':
+                  item.id && importSelectedForImport.has(item.id),
+                'import-item--not-found': !item.found,
+              }"
+              @click="toggleImportSelection(item.id)"
+            >
+              <div class="import-item-check">
+                <i
+                  v-if="item.id && importSelectedForImport.has(item.id)"
+                  class="fas fa-check"
+                ></i>
+              </div>
+              <img
+                v-if="item.imagen"
+                :src="item.imagen"
+                class="import-item-cover"
+              />
+              <div v-else class="import-item-no-cover">
+                <i class="fas fa-image"></i>
+              </div>
+              <div class="import-item-info">
+                <span class="import-item-original">{{
+                  item.originalTitle
+                }}</span>
+                <strong v-if="item.found">{{ item.titulo }}</strong>
+                <span v-else class="import-not-found-badge">No encontrado</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-actions">
+            <button class="back-btn" @click="resetImport">
+              <i class="fas fa-chevron-left"></i> Volver
+            </button>
+            <AppButton
+              variant="primary"
+              :disabled="importSelectedForImport.size === 0"
+              @click="confirmImport"
+            >
+              Importar
+              {{
+                importSelectedForImport.size > 0
+                  ? importSelectedForImport.size + " items"
+                  : ""
+              }}
+            </AppButton>
+          </div>
+        </div>
       </div>
     </div>
   </AppModal>

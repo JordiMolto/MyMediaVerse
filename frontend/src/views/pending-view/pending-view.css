@@ -28,7 +28,7 @@
     line-height: 1;
     margin: 0;
 
-    @media (max-width: 768px) {
+    @media (max-width: 1023px) {
       font-size: var(--fs-3xl);
     }
   }
@@ -68,6 +68,16 @@
       background: var(--color-primary);
       color: white;
       border-color: var(--color-primary);
+    }
+
+    &.action-btn-add {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: white;
+
+      &:hover {
+        opacity: 0.85;
+      }
     }
   }
 
@@ -126,7 +136,6 @@
 
     &.active {
       background: var(--color-accent);
-      color: var(--color-bg-main);
       border-color: var(--color-accent);
     }
   }
@@ -184,7 +193,7 @@
     padding: var(--space-16) 0;
     gap: var(--space-4);
 
-    @media (max-width: 768px) {
+    @media (max-width: 1023px) {
       padding: var(--space-10) 0;
     }
   }
@@ -220,8 +229,8 @@
     gap: var(--space-5);
     width: 100%;
 
-    @media (max-width: 768px) {
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    @media (max-width: 1023px) {
+      grid-template-columns: repeat(2, 1fr);
       gap: var(--space-4);
     }
   }
@@ -404,6 +413,78 @@
       &:last-child {
         border-bottom: none;
       }
+    }
+  }
+
+  /* ─── Responsive ─────────────────────────── */
+
+  @media (max-width: 767px) {
+    & .header-actions {
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    & .action-btn-small {
+      flex: 1 1 auto;
+      justify-content: center;
+    }
+
+    & .category-filters-scroll {
+      width: 100%;
+    }
+
+    & .dropdown-filters {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+    }
+
+    & .filter-group {
+      width: 100%;
+    }
+
+    & .select-wrapper {
+      width: 100%;
+    }
+
+    & .result-stats {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    & .header-actions {
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    & .action-btn-small {
+      flex: 1 1 auto;
+      justify-content: center;
+    }
+
+    & .category-filters-scroll {
+      width: 100%;
+    }
+
+    & .dropdown-filters {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+    }
+
+    & .filter-group {
+      width: 100%;
+    }
+
+    & .select-wrapper {
+      width: 100%;
+    }
+
+    & .result-stats {
+      flex-wrap: wrap;
+      justify-content: center;
     }
   }
 }

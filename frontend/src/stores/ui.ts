@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 
 export const useUIStore = defineStore("ui", () => {
   const isModalOpen = ref(false);
@@ -7,6 +7,15 @@ export const useUIStore = defineStore("ui", () => {
   const quickAddContext = ref<{ type?: string; status?: string }>({});
   const modalComponent = ref<string | null>(null);
   const modalProps = ref<Record<string, any>>({});
+
+  const viewFilters = reactive({
+    pending: null as string | null,
+    inProgress: null as string | null,
+    completed: null as string | null,
+    favorites: null as string | null,
+    favoritesStatus: "" as string,
+    home: "all" as string,
+  });
 
   function toggleQuickAdd(
     value?: boolean,
@@ -52,6 +61,7 @@ export const useUIStore = defineStore("ui", () => {
     isSideMenuOpen,
     modalComponent,
     modalProps,
+    viewFilters,
     openModal,
     closeModal,
     toggleQuickAdd,
