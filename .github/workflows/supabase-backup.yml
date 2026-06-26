@@ -1,0 +1,43 @@
+name: Supabase Weekly Backup
+
+on:
+  schedule:
+    - cron: '0 10 * * 0' # cada domingo a las 10:00 UTC
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PostgreSQL client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Export tables to JSON
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          DB_HOST="db.hxlyhnalbhtqhsfztoxl.supabase.co"
+          DB_USER="postgres"
+          DB_NAME="postgres"
+          DATE=$(date +%Y-%m-%d)
+          mkdir -p backup
+
+          TABLES=$(psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -t -c \
+            "SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
+
+          for TABLE in $TABLES; do
+            echo "Backing up table: $TABLE"
+            psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" \
+              -c "COPY (SELECT row_to_json(t) FROM (SELECT * FROM \"$TABLE\") t) TO STDOUT;" \
+              > "backup/${TABLE}_${DATE}.jsonl" || echo "Skipping $TABLE (no access)"
+          done
+
+          echo "Backup complete. Files:"
+          ls -lh backup/
+
+      - name: Upload backup as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ github.run_id }}
+          path: backup/
+          retention-days: 30
