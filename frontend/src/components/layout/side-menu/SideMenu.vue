@@ -142,7 +142,10 @@ function handleOverlayClick() {
             <img :src="avatarUrl" alt="Avatar" class="user-avatar" />
             <div class="user-details">
               <p class="user-name">
-                {{ authStore.user?.email?.split("@")[0] }}
+                {{
+                  authStore.user?.user_metadata?.display_name ||
+                  authStore.user?.email?.split("@")[0]
+                }}
               </p>
               <p class="user-email">{{ authStore.user?.email }}</p>
             </div>

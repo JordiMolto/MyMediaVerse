@@ -13,8 +13,12 @@ const email = ref("");
 const password = ref("");
 const errors = ref<Record<string, string>>({});
 
+const mode = ref<"login" | "forgot">("login");
+const forgotEmail = ref("");
+const forgotSent = ref(false);
+const forgotError = ref("");
+
 function validate(): boolean {
-  console.log("Validating login form...");
   errors.value = {};
 
   if (!email.value.trim()) {
@@ -29,23 +33,31 @@ function validate(): boolean {
     errors.value.password = "La contraseña debe tener al menos 6 caracteres";
   }
 
-  const isValid = Object.keys(errors.value).length === 0;
-  console.log("Form is valid:", isValid, errors.value);
-  return isValid;
+  return Object.keys(errors.value).length === 0;
 }
 
 async function handleLogin() {
-  console.log("handleLogin called");
   if (!validate()) return;
 
   try {
-    console.log("Attempting signIn through store...");
     await authStore.signIn(email.value, password.value);
-    console.log("SignIn successful, redirecting to home...");
     router.push("/");
   } catch (error: any) {
-    console.error("Login error in view:", error);
     errors.value.general = error.message || "Error al iniciar sesión";
+  }
+}
+
+async function handleForgotPassword() {
+  forgotError.value = "";
+  if (!forgotEmail.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotEmail.value)) {
+    forgotError.value = "Introduce un email válido";
+    return;
+  }
+  try {
+    await authStore.resetPassword(forgotEmail.value);
+    forgotSent.value = true;
+  } catch (e: any) {
+    forgotError.value = e.message || "Error al enviar el correo";
   }
 }
 
@@ -58,7 +70,7 @@ function goToRegister() {
   <div class="login-view">
     <div class="container">
       <div class="login-container">
-        <div>
+        <div v-if="mode === 'login'">
           <div class="login-header">
             <h1 class="login-title">Iniciar Sesión</h1>
             <p class="login-subtitle">Accede a tu cuenta de MyMediaVerse</p>
@@ -85,6 +97,10 @@ function goToRegister() {
               required
             />
 
+            <button type="button" class="forgot-link" @click="mode = 'forgot'">
+              ¿Olvidaste tu contraseña?
+            </button>
+
             <div v-if="errors.general" class="error-message">
               <i class="fas fa-exclamation-circle"></i>
               {{ errors.general }}
@@ -103,7 +119,7 @@ function goToRegister() {
 
           <div class="login-footer">
             <p>¿No tienes cuenta?</p>
-            <AppButton variant="ghost" @click="goToRegister"> Regístrate aquí </AppButton>
+            <AppButton variant="ghost" @click="goToRegister">Regístrate aquí</AppButton>
           </div>
 
           <div class="local-mode-notice">
@@ -119,6 +135,46 @@ function goToRegister() {
               "
             >
               <i class="fas fa-vial"></i> Acceso de Test
+            </AppButton>
+          </div>
+        </div>
+
+        <div v-else>
+          <div class="login-header">
+            <h1 class="login-title">Recuperar contraseña</h1>
+            <p class="login-subtitle">Te enviaremos un enlace para restablecerla</p>
+          </div>
+
+          <div v-if="forgotSent" class="success-message">
+            <i class="fas fa-check-circle"></i>
+            Correo enviado a <strong>{{ forgotEmail }}</strong>. Revisa tu bandeja de entrada.
+          </div>
+
+          <form v-else @submit.prevent="handleForgotPassword" class="login-form">
+            <AppInput
+              v-model="forgotEmail"
+              type="email"
+              label="Tu email"
+              placeholder="tu@email.com"
+              icon="fa-envelope"
+              :error="forgotError"
+              required
+            />
+
+            <AppButton
+              type="submit"
+              variant="primary"
+              size="large"
+              :loading="authStore.loading"
+              full-width
+            >
+              Enviar enlace
+            </AppButton>
+          </form>
+
+          <div class="login-footer">
+            <AppButton variant="ghost" @click="mode = 'login'">
+              <i class="fas fa-arrow-left"></i> Volver al inicio de sesión
             </AppButton>
           </div>
         </div>

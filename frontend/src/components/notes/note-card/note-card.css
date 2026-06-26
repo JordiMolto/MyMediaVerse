@@ -83,12 +83,6 @@
   & .note-actions {
     display: flex;
     gap: var(--space-3);
-    opacity: 0;
-    transition: opacity var(--transition-base);
-  }
-
-  &:hover .note-actions {
-    opacity: 1;
   }
 
   & .action-btn {

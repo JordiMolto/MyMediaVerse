@@ -117,6 +117,67 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  async function resetPassword(email: string) {
+    if (!supabase) throw new Error("Supabase not configured");
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/login?mode=reset`,
+      });
+      if (resetError) throw resetError;
+    } catch (e: any) {
+      error.value = e.message || "Error al enviar el correo";
+      throw e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function updateEmail(newEmail: string) {
+    if (isMock.value) throw new Error("No disponible en modo test");
+    if (!supabase) throw new Error("Supabase not configured");
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const { data, error: updateError } = await supabase.auth.updateUser({ email: newEmail });
+      if (updateError) throw updateError;
+      user.value = data.user;
+      return data.user;
+    } catch (e: any) {
+      error.value = e.message || "Error al actualizar el email";
+      throw e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function updatePassword(newPassword: string) {
+    if (isMock.value) throw new Error("No disponible en modo test");
+    if (!supabase) throw new Error("Supabase not configured");
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const { data, error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (updateError) throw updateError;
+      user.value = data.user;
+      return data.user;
+    } catch (e: any) {
+      error.value = e.message || "Error al actualizar la contraseña";
+      throw e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   async function updateUser(updates: { display_name?: string; avatar_url?: string }) {
     if (isMock.value) {
       if (user.value) {
@@ -147,7 +208,6 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   async function initialize() {
-    console.log("Initializing Auth Store...");
     try {
       if (!supabase) {
         console.warn("Supabase not configured. Running in local-only mode.");
@@ -155,24 +215,28 @@ export const useAuthStore = defineStore("auth", () => {
         return;
       }
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      user.value = session?.user ?? null;
-      console.log("Initial auth session:", session ? "User logged in" : "No user");
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        console.log("Auth state change event:", _event);
-        // Only update if not in mock mode or if we're actually getting a real session
-        if (!isMock.value || session) {
-          user.value = session?.user ?? null;
-        }
+      await new Promise<void>((resolve) => {
+        const { data: authListener } = supabase!.auth.onAuthStateChange((event, session) => {
+          if (!isMock.value || session) {
+            user.value = session?.user ?? null;
+          }
+          // INITIAL_SESSION fires once on startup (also handles email change tokens from URL hash)
+          if (event === "INITIAL_SESSION") {
+            authListener.subscription.unsubscribe();
+            // Re-register a persistent listener after init
+            supabase!.auth.onAuthStateChange((_evt, session) => {
+              if (!isMock.value || session) {
+                user.value = session?.user ?? null;
+              }
+            });
+            resolve();
+          }
+        });
       });
     } catch (e) {
       console.error("Auth initialization error:", e);
     } finally {
       initialized.value = true;
-      console.log("Auth Store initialized.");
     }
   }
 
@@ -187,6 +251,9 @@ export const useAuthStore = defineStore("auth", () => {
     signUp,
     signIn,
     signOut,
+    resetPassword,
+    updateEmail,
+    updatePassword,
     updateUser,
     initialize,
   };

@@ -48,4 +48,48 @@
       padding: var(--space-3) var(--space-8);
     }
   }
+
+  & .form-actions--inline {
+    border-top: none;
+    margin-top: var(--space-2);
+    padding-top: 0;
+  }
+
+  & .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  & .section-title {
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
+    color: var(--color-text-primary);
+  }
+
+  & .section-divider {
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  & .form-input--error {
+    border-color: var(--color-danger);
+  }
+
+  & .form-error {
+    font-size: var(--fs-xs);
+    color: var(--color-danger);
+  }
+
+  & .inline-success {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: hsla(140, 70%, 45%, 0.1);
+    border: 1px solid var(--color-success);
+    border-radius: var(--radius-md);
+    color: var(--color-success);
+    font-size: var(--fs-sm);
+  }
 }
