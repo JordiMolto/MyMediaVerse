@@ -1,4 +1,4 @@
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useItemsStore } from "@/stores/items";
 import { useUIStore } from "@/stores/ui";
 import { ItemType, Item } from "@/types";
@@ -67,9 +67,7 @@ export function useDashboardStats() {
       return itemsStore.items;
     }
 
-    return itemsStore.items.filter((item) =>
-      matchesType(item.tipo, typeValue as string),
-    );
+    return itemsStore.items.filter((item) => matchesType(item.tipo, typeValue as string));
   });
 
   const stats = computed((): DashboardStats => {
@@ -83,32 +81,15 @@ export function useDashboardStats() {
       const normalizedStatus = status.toLowerCase();
 
       if (normalizedStatus === "completed") {
-        return [
-          "completed",
-          "completado",
-          "terminado",
-          "leído",
-          "visto",
-        ].includes(s);
+        return ["completed", "completado", "terminado", "leído", "visto"].includes(s);
       }
       if (normalizedStatus === "in_progress") {
-        return [
-          "in_progress",
-          "en progreso",
-          "en curso",
-          "jugando",
-          "leyendo",
-          "viendo",
-        ].includes(s);
+        return ["in_progress", "en progreso", "en curso", "jugando", "leyendo", "viendo"].includes(
+          s,
+        );
       }
       if (normalizedStatus === "pending") {
-        return [
-          "pending",
-          "pendiente",
-          "por ver",
-          "por leer",
-          "backlog",
-        ].includes(s);
+        return ["pending", "pendiente", "por ver", "por leer", "backlog"].includes(s);
       }
       if (normalizedStatus === "abandoned") {
         return ["abandoned", "abandonado", "dejado"].includes(s);
@@ -136,8 +117,7 @@ export function useDashboardStats() {
     const ratedItems = completed.filter((i) => i.rating && i.rating > 0);
     const avgRating =
       ratedItems.length > 0
-        ? ratedItems.reduce((acc, curr) => acc + (curr.rating || 0), 0) /
-          ratedItems.length
+        ? ratedItems.reduce((acc, curr) => acc + (curr.rating || 0), 0) / ratedItems.length
         : 0;
 
     // Total In Progress
@@ -171,9 +151,7 @@ export function useDashboardStats() {
     });
 
     // Top Rated (Top 5)
-    const topRated = [...completed]
-      .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-      .slice(0, 5);
+    const topRated = [...completed].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 5);
 
     // Backlog
     const oldestPending =
@@ -187,9 +165,7 @@ export function useDashboardStats() {
       [...pending].sort((a, b) => (b.rating || 0) - (a.rating || 0))[0] || null;
 
     const randomPending =
-      pending.length > 0
-        ? pending[Math.floor(Math.random() * pending.length)]
-        : null;
+      pending.length > 0 ? pending[Math.floor(Math.random() * pending.length)] : null;
 
     const recentlyAdded = [...pending]
       .sort((a, b) => {
@@ -223,13 +199,7 @@ export function useDashboardStats() {
     // Helper to normalize status comparison for insights
     const isCompleted = (item: Item) => {
       const s = item.estado?.toString().toLowerCase();
-      return [
-        "completed",
-        "completado",
-        "terminado",
-        "leído",
-        "visto",
-      ].includes(s || "");
+      return ["completed", "completado", "terminado", "leído", "visto"].includes(s || "");
     };
 
     const completed = allItems.filter(isCompleted);
@@ -254,13 +224,9 @@ export function useDashboardStats() {
 
       typeCounts[mappedType] = (typeCounts[mappedType] || 0) + 1;
     });
-    const mostConsumed = Object.entries(typeCounts).sort(
-      (a, b) => b[1] - a[1],
-    )[0];
+    const mostConsumed = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0];
     if (mostConsumed) {
-      insightList.push(
-        `Tu formato más consumido es ${formatLabel(mostConsumed[0])}.`,
-      );
+      insightList.push(`Tu formato más consumido es ${formatLabel(mostConsumed[0])}.`);
     }
 
     // Most active month
@@ -273,9 +239,7 @@ export function useDashboardStats() {
         } catch {}
       }
     });
-    const mostActiveMonthIdx = Object.entries(monthCounts).sort(
-      (a, b) => b[1] - a[1],
-    )[0];
+    const mostActiveMonthIdx = Object.entries(monthCounts).sort((a, b) => b[1] - a[1])[0];
     if (mostActiveMonthIdx) {
       const monthsNames = [
         "Enero",

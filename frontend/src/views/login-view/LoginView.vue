@@ -103,9 +103,7 @@ function goToRegister() {
 
           <div class="login-footer">
             <p>¿No tienes cuenta?</p>
-            <AppButton variant="ghost" @click="goToRegister">
-              Regístrate aquí
-            </AppButton>
+            <AppButton variant="ghost" @click="goToRegister"> Regístrate aquí </AppButton>
           </div>
 
           <div class="local-mode-notice">

@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\jordi\\\\Proyectos\\\\MyMediaVerse\\\\frontend\" -Force)",
-      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\jordi\\\\Proyectos\\\\MyMediaVerse\\\\frontend\\\\src\\\\views\\\\collections-view\\\\\" -Force 2>&1)"
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\jordi\\\\Proyectos\\\\MyMediaVerse\\\\frontend\\\\src\\\\views\\\\collections-view\\\\\" -Force 2>&1)",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "mcp__claude_ai_Supabase__list_projects",
+      "Skill(update-config)",
+      "Skill(update-config:*)"
     ]
   }
 }

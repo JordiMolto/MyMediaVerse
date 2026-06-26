@@ -1,0 +1,17 @@
+{
+  "vetur.ignoreProjectWarning": true,
+  "vetur.config.path": "${workspaceFolder}/vetur.config.js",
+  "typescript.tsdk": "frontend/node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "vue.server.hybridMode": true,
+  "eslint.workingDirectories": ["frontend"],
+  "eslint.validate": ["javascript", "typescript", "vue"],
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[vue]": {
+    "editor.defaultFormatter": "Vue.volar"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

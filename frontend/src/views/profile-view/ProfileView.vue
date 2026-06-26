@@ -48,8 +48,7 @@ function filterByCategory(
       return [ItemType.VIDEOGAME, "juego", "game"]
         .filter((v) => v !== "juego de mesa")
         .some((v) => t.includes(v));
-    if (category === "books")
-      return [ItemType.BOOK, "libro", "book"].some((v) => t.includes(v));
+    if (category === "books") return [ItemType.BOOK, "libro", "book"].some((v) => t.includes(v));
     if (category === "boardgames")
       return [ItemType.BOARDGAME, "mesa", "board"].some((v) => t.includes(v));
     return false;
@@ -79,9 +78,7 @@ const stats = computed(() => {
 
 const completionPercent = computed(() => {
   if (stats.value.totalItems === 0) return 0;
-  return Math.round(
-    (stats.value.totalCompleted / stats.value.totalItems) * 100,
-  );
+  return Math.round((stats.value.totalCompleted / stats.value.totalItems) * 100);
 });
 
 async function handleSignOut() {
@@ -112,10 +109,7 @@ async function handleSignOut() {
             <i class="fas fa-edit"></i>
             Editar Perfil
           </button>
-          <button
-            class="btn btn-glass btn-small"
-            @click="router.push('/colecciones')"
-          >
+          <button class="btn btn-glass btn-small" @click="router.push('/colecciones')">
             <i class="fas fa-layer-group"></i>
             Gestionar Colecciones
           </button>
@@ -136,14 +130,9 @@ async function handleSignOut() {
               <span class="impact-value-total">/ {{ stats.totalItems }}</span>
             </h2>
             <div class="progress-bar-track">
-              <div
-                class="progress-bar-fill"
-                :style="{ width: completionPercent + '%' }"
-              ></div>
+              <div class="progress-bar-fill" :style="{ width: completionPercent + '%' }"></div>
             </div>
-            <span class="impact-percent"
-              >{{ completionPercent }}% completado</span
-            >
+            <span class="impact-percent">{{ completionPercent }}% completado</span>
           </div>
           <i class="fas fa-sparkles impact-decoration"></i>
         </div>
@@ -159,9 +148,7 @@ async function handleSignOut() {
             <div class="stat-info">
               <span class="stat-num">{{ stats.movies.completed }}</span>
               <span class="stat-name">Audiovisual</span>
-              <span class="stat-context"
-                >de {{ stats.movies.total }} en total</span
-              >
+              <span class="stat-context">de {{ stats.movies.total }} en total</span>
             </div>
           </div>
 
@@ -175,9 +162,7 @@ async function handleSignOut() {
             <div class="stat-info">
               <span class="stat-num">{{ stats.games.completed }}</span>
               <span class="stat-name">Juegos</span>
-              <span class="stat-context"
-                >de {{ stats.games.total }} en total</span
-              >
+              <span class="stat-context">de {{ stats.games.total }} en total</span>
             </div>
           </div>
 
@@ -191,9 +176,7 @@ async function handleSignOut() {
             <div class="stat-info">
               <span class="stat-num">{{ stats.books.completed }}</span>
               <span class="stat-name">Libros</span>
-              <span class="stat-context"
-                >de {{ stats.books.total }} en total</span
-              >
+              <span class="stat-context">de {{ stats.books.total }} en total</span>
             </div>
           </div>
 
@@ -207,9 +190,7 @@ async function handleSignOut() {
             <div class="stat-info">
               <span class="stat-num">{{ stats.boardgames.completed }}</span>
               <span class="stat-name">Mesa</span>
-              <span class="stat-context"
-                >de {{ stats.boardgames.total }} en total</span
-              >
+              <span class="stat-context">de {{ stats.boardgames.total }} en total</span>
             </div>
           </div>
         </div>
@@ -235,10 +216,7 @@ async function handleSignOut() {
       size="medium"
       @close="showEditModal = false"
     >
-      <ProfileEditForm
-        @save="showEditModal = false"
-        @cancel="showEditModal = false"
-      />
+      <ProfileEditForm @save="showEditModal = false" @cancel="showEditModal = false" />
     </AppModal>
   </div>
 </template>

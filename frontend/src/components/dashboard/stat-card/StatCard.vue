@@ -35,10 +35,7 @@ withDefaults(defineProps<Props>(), {
 
       <div v-if="progress !== undefined" class="stat-progress">
         <div class="stat-progress-bg">
-          <div
-            class="stat-progress-fill"
-            :style="{ width: progress + '%' }"
-          ></div>
+          <div class="stat-progress-fill" :style="{ width: progress + '%' }"></div>
         </div>
       </div>
     </div>

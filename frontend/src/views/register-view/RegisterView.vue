@@ -111,9 +111,7 @@ function goToLogin() {
 
           <div class="register-footer">
             <p>¿Ya tienes cuenta?</p>
-            <AppButton variant="ghost" @click="goToLogin">
-              Inicia sesión aquí
-            </AppButton>
+            <AppButton variant="ghost" @click="goToLogin"> Inicia sesión aquí </AppButton>
           </div>
         </div>
       </div>

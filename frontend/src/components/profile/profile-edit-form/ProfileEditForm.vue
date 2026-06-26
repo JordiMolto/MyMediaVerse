@@ -40,9 +40,7 @@ async function handleSubmit() {
     </div>
 
     <div class="form-actions">
-      <button type="button" class="btn btn-glass" @click="$emit('cancel')">
-        Cancelar
-      </button>
+      <button type="button" class="btn btn-glass" @click="$emit('cancel')">Cancelar</button>
       <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
         {{ isSubmitting ? "Guardando..." : "Guardar Cambios" }}
       </button>

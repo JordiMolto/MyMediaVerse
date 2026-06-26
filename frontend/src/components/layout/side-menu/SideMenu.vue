@@ -22,9 +22,7 @@ const activityLinks = [
   { name: "Favoritos", icon: "fa-heart", path: "/favoritos" },
 ];
 
-const visibleCategories = computed(() =>
-  categoriesStore.categories.filter((cat) => !cat.oculto),
-);
+const visibleCategories = computed(() => categoriesStore.categories.filter((cat) => !cat.oculto));
 
 onMounted(() => {
   categoriesStore.fetchCategories();
@@ -78,10 +76,7 @@ function handleOverlayClick() {
           >
             <i class="side-link-icon fas fa-home"></i>
             <span class="side-link-text">Inicio</span>
-            <i
-              v-if="route.path === '/'"
-              class="active-indicator fas fa-chevron-right"
-            ></i>
+            <i v-if="route.path === '/'" class="active-indicator fas fa-chevron-right"></i>
           </button>
 
           <div class="nav-section">
@@ -95,10 +90,7 @@ function handleOverlayClick() {
             >
               <i class="side-link-icon fas" :class="link.icon"></i>
               <span class="side-link-text">{{ link.name }}</span>
-              <i
-                v-if="route.path === link.path"
-                class="active-indicator fas fa-chevron-right"
-              ></i>
+              <i v-if="route.path === link.path" class="active-indicator fas fa-chevron-right"></i>
             </button>
           </div>
 
@@ -107,9 +99,7 @@ function handleOverlayClick() {
 
             <p v-if="visibleCategories.length === 0" class="nav-empty">
               Sin colecciones.
-              <button class="nav-empty-btn" @click="navigateTo('/colecciones')">
-                Crear una
-              </button>
+              <button class="nav-empty-btn" @click="navigateTo('/colecciones')">Crear una</button>
             </p>
 
             <button
@@ -161,9 +151,7 @@ function handleOverlayClick() {
             </button>
           </div>
           <div v-else class="auth-actions">
-            <button class="login-btn" @click="navigateTo('/login')">
-              Entrar
-            </button>
+            <button class="login-btn" @click="navigateTo('/login')">Entrar</button>
           </div>
         </div>
       </div>

@@ -27,7 +27,7 @@ export async function initDB(): Promise<IDBPDatabase<MyMediaVerseDB>> {
   if (dbInstance) return dbInstance;
 
   dbInstance = await openDB<MyMediaVerseDB>(DB_NAME, DB_VERSION, {
-    upgrade(db, oldVersion) {
+    upgrade(db, _oldVersion) {
       // Create items store
       if (!db.objectStoreNames.contains("items")) {
         const itemStore = db.createObjectStore("items", { keyPath: "id" });

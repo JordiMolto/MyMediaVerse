@@ -61,12 +61,8 @@ const {
 } = useBulkSelection();
 const { showConfirm } = useConfirm();
 
-const {
-  isEnriching,
-  enrichmentProgress,
-  enrichmentTotal,
-  enrichMultipleItems,
-} = useTMDBEnrichment();
+const { isEnriching, enrichmentProgress, enrichmentTotal, enrichMultipleItems } =
+  useTMDBEnrichment();
 
 const sortOptions = [
   { value: "priority", label: "Prioridad" },
@@ -107,15 +103,11 @@ const filteredItems = computed(() => {
         [Priority.LOW]: 1,
       };
       return (
-        priorityScore[b.prioridad || Priority.LOW] -
-        priorityScore[a.prioridad || Priority.LOW]
+        priorityScore[b.prioridad || Priority.LOW] - priorityScore[a.prioridad || Priority.LOW]
       );
     }
     if (sortBy.value === "recent")
-      return (
-        new Date(b.fechaCreacion).getTime() -
-        new Date(a.fechaCreacion).getTime()
-      );
+      return new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime();
     if (sortBy.value === "alpha") return a.titulo.localeCompare(b.titulo);
     return 0;
   });
@@ -135,9 +127,7 @@ const hasEnrichableSelected = computed(() =>
   filteredItems.value.some(
     (item) =>
       selectedIds.value.has(item.id) &&
-      TMDB_ENRICHABLE.some((t) =>
-        (item.tipo || "").toLowerCase().includes(t.toLowerCase()),
-      ),
+      TMDB_ENRICHABLE.some((t) => (item.tipo || "").toLowerCase().includes(t.toLowerCase())),
   ),
 );
 
@@ -158,9 +148,7 @@ function handleExport() {
 
 const currentPage = ref(1);
 const itemsPerPage = 12;
-const totalPages = computed(() =>
-  Math.ceil(filteredItems.value.length / itemsPerPage),
-);
+const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage));
 
 const paginatedItems = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
@@ -205,9 +193,7 @@ function goToDetail(id: string) {
 
 async function handleCreateItem(itemData: Partial<Item>) {
   try {
-    const newItem = await itemsStore.createItem(
-      itemData as Omit<Item, "id" | "fechaCreacion">,
-    );
+    const newItem = await itemsStore.createItem(itemData as Omit<Item, "id" | "fechaCreacion">);
     showCreateModal.value = false;
     router.push(`/item/${newItem.id}`);
   } catch (error) {
@@ -218,9 +204,7 @@ async function handleCreateItem(itemData: Partial<Item>) {
 async function handleBulkChangeStatus(status: ItemStatus) {
   const items = getSelectedItems(filteredItems.value);
   try {
-    await Promise.all(
-      items.map((item) => itemsStore.changeStatus(item.id, status)),
-    );
+    await Promise.all(items.map((item) => itemsStore.changeStatus(item.id, status)));
     clearSelection();
   } catch (error) {
     console.error("Error changing status:", error);
@@ -265,15 +249,13 @@ async function handleEnrichWithTMDB() {
   });
 
   if (enrichableItems.length === 0) {
-    alert(
-      "Selecciona al menos una película, serie o anime para enriquecer con TMDB",
-    );
+    alert("Selecciona al menos una película, serie o anime para enriquecer con TMDB");
     return;
   }
 
   const ok = await showConfirm({
     title: "Enriquecer con TMDB",
-    message: `¿Quieres enriquecer ${enrichableItems.length} items con datos de TMDB? Esto puede tardar unos minutos.`,
+    message: `¿Quieres enriquecer ${enrichableItems.length} títulos con datos de TMDB? Esto puede tardar unos minutos.`,
     confirmLabel: "Enriquecer",
   });
   if (!ok) return;
@@ -291,16 +273,12 @@ async function handleEnrichWithTMDB() {
     <header class="view-header">
       <div class="header-info">
         <h1 class="header-title">Favoritos</h1>
-        <p class="header-subtitle">
-          Tus {{ filteredItems.length }} tesoros mejor guardados
-        </p>
+        <p class="header-subtitle">Tus {{ filteredItems.length }} tesoros mejor guardados</p>
       </div>
       <div class="header-actions">
         <button
           class="action-btn action-btn-add"
-          @click="
-            uiStore.toggleQuickAdd(true, { type: selectedType || undefined })
-          "
+          @click="uiStore.toggleQuickAdd(true, { type: selectedType || undefined })"
         >
           <i class="fas fa-plus"></i>
           Añadir
@@ -310,10 +288,7 @@ async function handleEnrichWithTMDB() {
           :class="{ active: isSelectionMode }"
           @click="isSelectionMode = !isSelectionMode"
         >
-          <i
-            class="fas"
-            :class="isSelectionMode ? 'fa-times' : 'fa-check-square'"
-          ></i>
+          <i class="fas" :class="isSelectionMode ? 'fa-times' : 'fa-check-square'"></i>
           {{ isSelectionMode ? "Cancelar" : "Seleccionar" }}
         </button>
         <button class="action-btn" @click="handleExport">
@@ -390,9 +365,7 @@ async function handleEnrichWithTMDB() {
         <i class="fas fa-heart empty-icon"></i>
         <div class="empty-info">
           <h3 class="empty-title">No hay nada por aquí... todavía</h3>
-          <p class="empty-desc">
-            Marca tus items con el corazón para verlos en esta lista
-          </p>
+          <p class="empty-desc">Marca tus títulos con el corazón para verlos en esta lista</p>
         </div>
       </div>
 
@@ -455,11 +428,7 @@ async function handleEnrichWithTMDB() {
       size="large"
       @close="showCreateModal = false"
     >
-      <ItemForm
-        mode="create"
-        @save="handleCreateItem"
-        @cancel="showCreateModal = false"
-      />
+      <ItemForm mode="create" @save="handleCreateItem" @cancel="showCreateModal = false" />
     </AppModal>
 
     <AppModal
@@ -472,10 +441,8 @@ async function handleEnrichWithTMDB() {
         <div v-if="isEnriching" class="enrichment-progress">
           <div class="progress-info">
             <i class="fas fa-film fa-spin"></i>
-            <p>Enriqueciendo items con datos de TMDB...</p>
-            <p class="progress-text">
-              {{ enrichmentProgress }} / {{ enrichmentTotal }}
-            </p>
+            <p>Enriqueciendo títulos con datos de TMDB...</p>
+            <p class="progress-text">{{ enrichmentProgress }} / {{ enrichmentTotal }}</p>
           </div>
           <div class="progress-bar">
             <div
@@ -507,9 +474,7 @@ async function handleEnrichWithTMDB() {
             </div>
           </div>
 
-          <button class="btn btn-primary" @click="showEnrichmentModal = false">
-            Cerrar
-          </button>
+          <button class="btn btn-primary" @click="showEnrichmentModal = false">Cerrar</button>
         </div>
       </div>
     </AppModal>

@@ -51,19 +51,11 @@
 
 /* Gradients */
 .grad-primary {
-  background: linear-gradient(
-    135deg,
-    var(--color-primary),
-    var(--color-accent)
-  );
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
 }
 
 .grad-dark {
-  background: linear-gradient(
-    135deg,
-    var(--color-bg-surface),
-    var(--color-bg-main)
-  );
+  background: linear-gradient(135deg, var(--color-bg-surface), var(--color-bg-main));
 }
 
 /* Border Colors */

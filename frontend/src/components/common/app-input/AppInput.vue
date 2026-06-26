@@ -3,7 +3,7 @@ import "./app-input.css";
 
 interface Props {
   modelValue: string | number;
-  type?: "text" | "email" | "password" | "number" | "textarea";
+  type?: "text" | "email" | "password" | "number" | "textarea" | "date";
   label?: string;
   placeholder?: string;
   error?: string;
@@ -13,7 +13,7 @@ interface Props {
   rows?: number;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   type: "text",
   disabled: false,
   required: false,

@@ -27,9 +27,7 @@ export async function getItemById(id: string): Promise<Item | undefined> {
   return idb.getItemById(id);
 }
 
-export async function createItem(
-  item: Omit<Item, "id" | "fechaCreacion">,
-): Promise<Item> {
+export async function createItem(item: Omit<Item, "id" | "fechaCreacion">): Promise<Item> {
   const authStore = useAuthStore();
 
   if (authStore.canUseSupabase) {
@@ -54,10 +52,7 @@ export async function createItem(
   return newItem;
 }
 
-export async function updateItem(
-  id: string,
-  updates: Partial<Item>,
-): Promise<Item> {
+export async function updateItem(id: string, updates: Partial<Item>): Promise<Item> {
   const authStore = useAuthStore();
 
   if (authStore.canUseSupabase) {

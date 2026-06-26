@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { Item, ItemType } from "@/types";
 import { useCategoriesStore } from "@/stores/categories";
+import { useItemsStore } from "@/stores/items";
 import "./media-card.css";
 
 interface Props {
@@ -19,6 +20,7 @@ const emit = defineEmits<{
 }>();
 
 const categoriesStore = useCategoriesStore();
+const itemsStore = useItemsStore();
 
 const category = computed(() =>
   categoriesStore.categories.find((cat) => cat.nombre === props.item.tipo),
@@ -53,6 +55,11 @@ function handleSelect(e: Event) {
   emit("toggleSelect", props.item.id);
 }
 
+function handleToggleFavorite(e: Event) {
+  e.stopPropagation();
+  itemsStore.toggleFavorite(props.item.id);
+}
+
 function handleCardClick() {
   if (props.selectable) {
     emit("toggleSelect", props.item.id);
@@ -70,26 +77,13 @@ function handleCardClick() {
   >
     <div class="card-inner">
       <div class="poster-wrapper">
-        <img
-          v-if="hasImage"
-          :src="item.imagen"
-          :alt="item.titulo"
-          class="poster-image"
-        />
-        <div
-          v-else
-          class="poster-placeholder"
-          :style="typeColor ? { color: typeColor } : {}"
-        >
+        <img v-if="hasImage" :src="item.imagen" :alt="item.titulo" class="poster-image" />
+        <div v-else class="poster-placeholder" :style="typeColor ? { color: typeColor } : {}">
           <i class="fas" :class="typeIcon"></i>
         </div>
 
         <Transition name="fade">
-          <div
-            v-if="selectable"
-            class="selection-checkbox"
-            @click="handleSelect"
-          >
+          <div v-if="selectable" class="selection-checkbox" @click="handleSelect">
             <div class="checkbox-inner" :class="{ checked: selected }">
               <i v-if="selected" class="fas fa-check"></i>
             </div>
@@ -97,9 +91,6 @@ function handleCardClick() {
         </Transition>
 
         <div class="card-status-overlays">
-          <div v-if="item.favorito" class="favorite-tag">
-            <i class="fas fa-heart"></i>
-          </div>
           <div
             class="type-tag"
             :style="
@@ -111,11 +102,14 @@ function handleCardClick() {
                 : {}
             "
           >
-            <i
-              class="fas"
-              :class="typeIcon"
-              :style="typeColor ? { color: typeColor } : {}"
-            ></i>
+            <i class="fas" :class="typeIcon" :style="typeColor ? { color: typeColor } : {}"></i>
+          </div>
+          <div
+            class="favorite-tag"
+            :class="{ active: item.favorito }"
+            @click="handleToggleFavorite"
+          >
+            <i class="fas fa-heart"></i>
           </div>
         </div>
 

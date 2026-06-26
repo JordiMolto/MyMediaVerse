@@ -38,10 +38,7 @@ export async function createCategory(
   return newCategory;
 }
 
-export async function updateCategory(
-  id: string,
-  updates: Partial<Category>,
-): Promise<Category> {
+export async function updateCategory(id: string, updates: Partial<Category>): Promise<Category> {
   const authStore = useAuthStore();
 
   if (authStore.canUseSupabase) {

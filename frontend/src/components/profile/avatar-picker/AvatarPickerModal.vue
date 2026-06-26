@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
-import {
-  generateAvatar,
-  PALETTES,
-  type AvatarVariant,
-} from "@/utils/boringAvatars";
+import { generateAvatar, PALETTES, type AvatarVariant } from "@/utils/boringAvatars";
 import "./avatar-picker.css";
 
 defineProps<{ isOpen: boolean }>();
@@ -41,9 +37,7 @@ const allAvatars: AvatarOption[] = VARIANTS.flatMap(({ id: variant }, vi) =>
 );
 
 const activeVariant = ref<"all" | AvatarVariant>("all");
-const selectedUri = ref(
-  authStore.user?.user_metadata?.avatar_url || allAvatars[0].dataUri,
-);
+const selectedUri = ref(authStore.user?.user_metadata?.avatar_url || allAvatars[0].dataUri);
 const isSaving = ref(false);
 
 const filtered = computed(() =>
@@ -96,11 +90,7 @@ async function confirm() {
               :class="{ selected: selectedUri === avatar.dataUri }"
               @click="selectedUri = avatar.dataUri"
             >
-              <img
-                :src="avatar.dataUri"
-                :alt="avatar.id"
-                class="avatar-opt-img"
-              />
+              <img :src="avatar.dataUri" :alt="avatar.id" class="avatar-opt-img" />
               <div v-if="selectedUri === avatar.dataUri" class="selected-check">
                 <i class="fas fa-check"></i>
               </div>
@@ -108,14 +98,8 @@ async function confirm() {
           </div>
 
           <div class="picker-footer">
-            <button class="btn btn-glass" @click="$emit('close')">
-              Cancelar
-            </button>
-            <button
-              class="btn btn-primary"
-              :disabled="isSaving"
-              @click="confirm"
-            >
+            <button class="btn btn-glass" @click="$emit('close')">Cancelar</button>
+            <button class="btn btn-primary" :disabled="isSaving" @click="confirm">
               {{ isSaving ? "Guardando..." : "Guardar Avatar" }}
             </button>
           </div>

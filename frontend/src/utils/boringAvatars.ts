@@ -192,11 +192,7 @@ const GEN: Record<AvatarVariant, (seed: string, p: string[]) => string> = {
   marble,
 };
 
-export function generateAvatar(
-  variant: AvatarVariant,
-  seed: string,
-  paletteIndex: number,
-): string {
+export function generateAvatar(variant: AvatarVariant, seed: string, paletteIndex: number): string {
   return GEN[variant](seed, PALETTES[paletteIndex % PALETTES.length]);
 }
 

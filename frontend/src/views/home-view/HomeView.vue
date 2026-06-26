@@ -120,15 +120,11 @@ function timeAgo(date: Date | string | undefined): string {
       <section class="dashboard-section">
         <div class="section-label">
           RESUMEN
-          {{
-            selectedType === "all"
-              ? "GLOBAL"
-              : formatType(selectedType).toUpperCase()
-          }}
+          {{ selectedType === "all" ? "GLOBAL" : formatType(selectedType).toUpperCase() }}
         </div>
         <div class="stats-grid">
           <StatCard
-            title="Items en Curso"
+            title="En Curso"
             :value="stats.totalInProgress"
             label="ahora mismo"
             variant="primary"
@@ -137,7 +133,7 @@ function timeAgo(date: Date | string | undefined): string {
           <StatCard
             title="Completados este año"
             :value="stats.totalThisYear"
-            label="items terminados"
+            label="títulos terminados"
             variant="accent"
             icon="fa-calendar-check"
           />
@@ -163,9 +159,7 @@ function timeAgo(date: Date | string | undefined): string {
           >
             <div
               class="in-progress-thumb"
-              :style="
-                item.imagen ? { backgroundImage: `url(${item.imagen})` } : {}
-              "
+              :style="item.imagen ? { backgroundImage: `url(${item.imagen})` } : {}"
             >
               <div v-if="!item.imagen" class="in-progress-thumb-placeholder">
                 <i class="fas" :class="typeIcon(item.tipo)"></i>
@@ -191,7 +185,7 @@ function timeAgo(date: Date | string | undefined): string {
       </section>
 
       <section class="dashboard-section">
-        <div class="section-label">AÑADIDOS RECIENTEMENTE AL BACKLOG</div>
+        <div class="section-label">AÑADIDOS RECIENTEMENTE A LA LISTA</div>
 
         <div v-if="stats.recentlyAdded.length > 0" class="recent-list">
           <div
@@ -205,9 +199,7 @@ function timeAgo(date: Date | string | undefined): string {
             </div>
             <div class="recent-info">
               <p class="recent-title">{{ item.titulo }}</p>
-              <span class="recent-meta"
-                >{{ item.tipo }} · {{ timeAgo(item.fechaCreacion) }}</span
-              >
+              <span class="recent-meta">{{ item.tipo }} · {{ timeAgo(item.fechaCreacion) }}</span>
             </div>
             <i class="fas fa-chevron-right recent-arrow"></i>
           </div>
@@ -215,7 +207,7 @@ function timeAgo(date: Date | string | undefined): string {
 
         <div v-else class="empty-state">
           <i class="fas fa-inbox empty-state-icon"></i>
-          <p>Tu backlog está vacío. Añade cosas que quieras consumir.</p>
+          <p>Tu lista de espera está vacía. Añade cosas que quieras consumir.</p>
         </div>
       </section>
 

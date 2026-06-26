@@ -5,16 +5,8 @@
   justify-content: center;
   padding: var(--space-6) var(--space-4);
   background:
-    radial-gradient(
-      circle at top right,
-      var(--color-primary-alpha),
-      transparent
-    ),
-    radial-gradient(
-      circle at bottom left,
-      var(--color-accent-alpha),
-      transparent
-    ),
+    radial-gradient(circle at top right, var(--color-primary-alpha), transparent),
+    radial-gradient(circle at bottom left, var(--color-accent-alpha), transparent),
     var(--color-bg-main);
 
   .login-container {

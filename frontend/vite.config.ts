@@ -16,8 +16,7 @@ export default defineConfig({
       manifest: {
         name: "MyMediaVerse",
         short_name: "MyMediaVerse",
-        description:
-          "Organiza y gestiona tus películas, series, libros y videojuegos",
+        description: "Organiza y gestiona tus películas, series, libros y videojuegos",
         theme_color: "#0F172A",
         background_color: "#0F172A",
         display: "standalone",

@@ -62,9 +62,7 @@ export function useTMDBEnrichment() {
       const details = await getTMDBDetails(tmdbResult.id, type);
 
       if (!details) {
-        enrichmentErrors.value.push(
-          `No se pudieron obtener detalles de "${item.titulo}"`,
-        );
+        enrichmentErrors.value.push(`No se pudieron obtener detalles de "${item.titulo}"`);
         return false;
       }
 
@@ -74,9 +72,7 @@ export function useTMDBEnrichment() {
         descripcion: details.overview || item.descripcion,
         imagen: getTMDBImageUrl(details.poster_path) || item.imagen,
         backdropImage: getTMDBImageUrl(details.backdrop_path),
-        rating: details.vote_average
-          ? Math.round(details.vote_average / 2)
-          : item.rating,
+        rating: details.vote_average ? Math.round(details.vote_average / 2) : item.rating,
         tagline: details.tagline,
       };
 
@@ -88,10 +84,7 @@ export function useTMDBEnrichment() {
       // Runtime/Duration
       if (details.runtime) {
         updates.duracion = details.runtime;
-      } else if (
-        details.episode_run_time &&
-        details.episode_run_time.length > 0
-      ) {
+      } else if (details.episode_run_time && details.episode_run_time.length > 0) {
         updates.duracion = details.episode_run_time[0];
       }
 
@@ -110,15 +103,11 @@ export function useTMDBEnrichment() {
       updates.trailer = getYouTubeTrailerUrl(details.videos);
 
       // Streaming platforms
-      updates.streamingPlatforms = getStreamingPlatforms(
-        details["watch/providers"],
-      );
+      updates.streamingPlatforms = getStreamingPlatforms(details["watch/providers"]);
 
       // Release date
       if (details.release_date || details.first_air_date) {
-        updates.fechaInicio = new Date(
-          details.release_date || details.first_air_date!,
-        );
+        updates.fechaInicio = new Date(details.release_date || details.first_air_date!);
       }
 
       // Update the item
@@ -165,6 +154,7 @@ export function useTMDBEnrichment() {
     enrichmentProgress,
     enrichmentTotal,
     enrichmentErrors,
+    isEnrichable,
     enrichItemWithTMDB,
     enrichMultipleItems,
   };

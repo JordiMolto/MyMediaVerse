@@ -10,6 +10,7 @@ import ItemForm from "@/components/items/item-form/ItemForm.vue";
 import NoteForm from "@/components/notes/note-form/NoteForm.vue";
 import NoteCard from "@/components/notes/note-card/NoteCard.vue";
 import { useConfirm } from "@/composables/useConfirm";
+import { useItemEnrichment } from "@/composables/useItemEnrichment";
 import "./item-detail-view.css";
 
 const route = useRoute();
@@ -24,6 +25,8 @@ const showNoteModal = ref(false);
 const showDeleteConfirm = ref(false);
 const editingNoteId = ref<string | null>(null);
 const { showConfirm } = useConfirm();
+const { isEnriching, enrichmentResult, canEnrich, enrichItem } = useItemEnrichment();
+const showEnrichConfirm = ref(false);
 
 const itemId = route.params.id as string;
 
@@ -45,7 +48,7 @@ async function loadNotes() {
   itemNotes.value = await notesStore.fetchNotesByItemId(itemId);
 }
 
-const typeIcons: Record<ItemType, string> = {
+const typeIcons: Record<string, string> = {
   [ItemType.MOVIE]: "fa-film",
   [ItemType.SERIES]: "fa-tv",
   [ItemType.ANIME]: "fa-dragon",
@@ -97,8 +100,7 @@ function openNoteModal(noteId?: string) {
 async function handleDeleteNote(noteId: string) {
   const ok = await showConfirm({
     title: "Eliminar nota",
-    message:
-      "¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.",
+    message: "¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.",
     confirmLabel: "Eliminar",
     danger: true,
   });
@@ -125,35 +127,31 @@ const editingNote = computed(() => {
   return itemNotes.value.find((n) => n.id === editingNoteId.value);
 });
 
+function tipoMatches(tipo: string, ...keywords: string[]): boolean {
+  const t = (tipo || "").toLowerCase();
+  return keywords.some((k) => t.includes(k.toLowerCase()));
+}
+
 const displayedMetadata = computed(() => {
   if (!item.value) return [];
   const meta = [];
+  const tipo = item.value.tipo;
 
-  if (
-    item.value.tipo === ItemType.MOVIE ||
-    item.value.tipo === ItemType.ANIME
-  ) {
+  const isSeries = tipoMatches(tipo, "series", "serie", "anime");
+  const isMovie = !isSeries && tipoMatches(tipo, "movie", "película", "pelicula", "film", "anime");
+  const isBook = tipoMatches(tipo, "book", "libro");
+  const isGame = tipoMatches(tipo, "videogame", "juego", "game");
+
+  if (isMovie) {
     if (item.value.director)
-      meta.push({
-        label: "Director",
-        value: item.value.director,
-        icon: "fa-user-tie",
-      });
+      meta.push({ label: "Director", value: item.value.director, icon: "fa-user-tie" });
     if (item.value.duracion)
-      meta.push({
-        label: "Duración",
-        value: `${item.value.duracion} min`,
-        icon: "fa-clock",
-      });
+      meta.push({ label: "Duración", value: `${item.value.duracion} min`, icon: "fa-clock" });
   }
 
-  if (item.value.tipo === ItemType.SERIES) {
+  if (isSeries) {
     if (item.value.director)
-      meta.push({
-        label: "Showrunner",
-        value: item.value.director,
-        icon: "fa-user-tie",
-      });
+      meta.push({ label: "Creador / Showrunner", value: item.value.director, icon: "fa-user-tie" });
     if (item.value.numberOfSeasons)
       meta.push({
         label: "Temporadas",
@@ -167,53 +165,27 @@ const displayedMetadata = computed(() => {
         icon: "fa-list-ol",
       });
     if (item.value.duracion)
-      meta.push({
-        label: "Duración ep.",
-        value: `${item.value.duracion} min`,
-        icon: "fa-clock",
-      });
+      meta.push({ label: "Duración ep.", value: `${item.value.duracion} min`, icon: "fa-clock" });
     if (item.value.progresoTemporadas)
-      meta.push({
-        label: "Progreso",
-        value: item.value.progresoTemporadas,
-        icon: "fa-chart-line",
-      });
+      meta.push({ label: "Progreso", value: item.value.progresoTemporadas, icon: "fa-chart-line" });
   }
 
-  if (item.value.tipo === ItemType.BOOK) {
+  if (isBook) {
     if (item.value.autor)
-      meta.push({
-        label: "Autor",
-        value: item.value.autor,
-        icon: "fa-pen-nib",
-      });
+      meta.push({ label: "Autor", value: item.value.autor, icon: "fa-pen-nib" });
     if (item.value.editorial)
-      meta.push({
-        label: "Editorial",
-        value: item.value.editorial,
-        icon: "fa-book-open",
-      });
+      meta.push({ label: "Editorial", value: item.value.editorial, icon: "fa-book-open" });
+    if (item.value.duracion)
+      meta.push({ label: "Páginas", value: `${item.value.duracion}`, icon: "fa-file-alt" });
     if (item.value.progresoLectura)
-      meta.push({
-        label: "Progreso",
-        value: item.value.progresoLectura,
-        icon: "fa-bookmark",
-      });
+      meta.push({ label: "Progreso", value: item.value.progresoLectura, icon: "fa-bookmark" });
   }
 
-  if (item.value.tipo === ItemType.VIDEOGAME) {
+  if (isGame) {
     if (item.value.developer)
-      meta.push({
-        label: "Desarrollador",
-        value: item.value.developer,
-        icon: "fa-code",
-      });
+      meta.push({ label: "Desarrollador", value: item.value.developer, icon: "fa-code" });
     if (item.value.plataforma)
-      meta.push({
-        label: "Plataforma",
-        value: item.value.plataforma,
-        icon: "fa-laptop",
-      });
+      meta.push({ label: "Plataforma", value: item.value.plataforma, icon: "fa-laptop" });
     if (item.value.tiempoEstimado)
       meta.push({
         label: "Tiempo Est.",
@@ -223,25 +195,16 @@ const displayedMetadata = computed(() => {
   }
 
   if (item.value.fechaInicio)
-    meta.push({
-      label: "Estreno",
-      value: formatDate(item.value.fechaInicio),
-      icon: "fa-calendar",
-    });
+    meta.push({ label: "Estreno", value: formatDate(item.value.fechaInicio), icon: "fa-calendar" });
 
   return meta;
 });
 
 const hasStreamingInfo = computed(
-  () =>
-    item.value?.streamingPlatforms && item.value.streamingPlatforms.length > 0,
+  () => item.value?.streamingPlatforms && item.value.streamingPlatforms.length > 0,
 );
-const hasCastInfo = computed(
-  () => item.value?.reparto && item.value.reparto.length > 0,
-);
-const hasGenres = computed(
-  () => item.value?.genero && item.value.genero.length > 0,
-);
+const hasCastInfo = computed(() => item.value?.reparto && item.value.reparto.length > 0);
+const hasGenres = computed(() => item.value?.genero && item.value.genero.length > 0);
 const hasTrailer = computed(() => !!item.value?.trailer);
 
 const backdropStyle = computed(() => {
@@ -253,14 +216,11 @@ const backdropStyle = computed(() => {
   };
 });
 
-async function updateMiniReview(review: string) {
+async function confirmAndEnrich() {
   if (!item.value) return;
-  try {
-    await itemsStore.updateItem(item.value.id, { miniReseña: review });
-    item.value.miniReseña = review;
-  } catch (error) {
-    console.error("Error updating review:", error);
-  }
+  showEnrichConfirm.value = false;
+  await enrichItem(item.value);
+  if (enrichmentResult.value?.success) await loadItem();
 }
 
 async function toggleFavorite() {
@@ -273,11 +233,7 @@ async function toggleFavorite() {
   }
 }
 
-async function handleSaveNote(data: {
-  texto: string;
-  spoilers: boolean;
-  hito: HitoType;
-}) {
+async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: HitoType }) {
   if (!item.value) return;
   try {
     if (editingNoteId.value) {
@@ -320,11 +276,7 @@ async function handleSaveNote(data: {
           >
             <i class="fa-heart" :class="item.favorito ? 'fas' : 'far'"></i>
           </button>
-          <AppButton
-            variant="ghost"
-            icon="fa-edit"
-            size="small"
-            @click="showEditModal = true"
+          <AppButton variant="ghost" icon="fa-edit" size="small" @click="showEditModal = true"
             >Editar</AppButton
           >
           <AppButton
@@ -340,31 +292,16 @@ async function handleSaveNote(data: {
       <div class="detail-layout">
         <aside class="sidebar-column">
           <div class="poster-wrap">
-            <img
-              v-if="item.imagen"
-              :src="item.imagen"
-              :alt="item.titulo"
-              class="poster-image"
-            />
+            <img v-if="item.imagen" :src="item.imagen" :alt="item.titulo" class="poster-image" />
             <div v-else class="poster-fallback">
-              <i
-                class="fas"
-                :class="typeIcons[item.tipo as ItemType] || 'fa-star'"
-              ></i>
+              <i class="fas" :class="typeIcons[item.tipo] || 'fa-star'"></i>
             </div>
           </div>
 
-          <section
-            v-if="displayedMetadata.length > 0"
-            class="info-card specs-card"
-          >
+          <section v-if="displayedMetadata.length > 0" class="info-card specs-card">
             <h3 class="card-label">Especificaciones</h3>
             <div class="specs-grid">
-              <div
-                v-for="meta in displayedMetadata"
-                :key="meta.label"
-                class="spec-row"
-              >
+              <div v-for="meta in displayedMetadata" :key="meta.label" class="spec-row">
                 <i class="fas spec-icon" :class="meta.icon"></i>
                 <div class="spec-content">
                   <span class="spec-key">{{ meta.label }}</span>
@@ -373,14 +310,20 @@ async function handleSaveNote(data: {
               </div>
             </div>
           </section>
+
+          <AppButton
+            v-if="item && canEnrich(item.tipo)"
+            variant="glass"
+            icon="fa-magic"
+            block
+            :loading="isEnriching"
+            @click="showEnrichConfirm = true"
+            >Regenerar info automáticamente</AppButton
+          >
         </aside>
 
         <main class="main-column">
-          <div
-            v-if="item.backdropImage"
-            class="hero-backdrop"
-            :style="backdropStyle"
-          >
+          <div v-if="item.backdropImage" class="hero-backdrop" :style="backdropStyle">
             <div class="hero-content">
               <h1 class="hero-title">{{ item.titulo }}</h1>
               <p v-if="item.tagline" class="hero-tagline">{{ item.tagline }}</p>
@@ -395,18 +338,12 @@ async function handleSaveNote(data: {
               </div>
               <p v-if="item.tagline" class="main-tagline">{{ item.tagline }}</p>
               <div v-if="item.tags?.length" class="tags-list">
-                <span v-for="tag in item.tags" :key="tag" class="tag-chip"
-                  >#{{ tag }}</span
-                >
+                <span v-for="tag in item.tags" :key="tag" class="tag-chip">#{{ tag }}</span>
               </div>
             </div>
 
             <div v-if="hasGenres" class="genres-row">
-              <span
-                v-for="genre in item.genero"
-                :key="genre"
-                class="genre-pill"
-              >
+              <span v-for="genre in item.genero" :key="genre" class="genre-pill">
                 <i class="fas fa-tag"></i> {{ genre }}
               </span>
             </div>
@@ -432,12 +369,7 @@ async function handleSaveNote(data: {
                 <i class="fas fa-play-circle accent-icon"></i>
                 <h3 class="card-title">Tráiler</h3>
               </div>
-              <a
-                :href="item.trailer"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="youtube-btn"
-              >
+              <a :href="item.trailer" target="_blank" rel="noopener noreferrer" class="youtube-btn">
                 <i class="fab fa-youtube"></i> Ver tráiler en YouTube
               </a>
             </div>
@@ -448,13 +380,8 @@ async function handleSaveNote(data: {
                 <h3 class="card-title">Reparto Principal</h3>
               </div>
               <div class="cast-text">
-                <span
-                  v-for="(actor, index) in item.reparto"
-                  :key="actor"
-                  class="actor-name"
-                >
-                  {{ actor
-                  }}<span v-if="index < item.reparto!.length - 1">, </span>
+                <span v-for="actor in item.reparto" :key="actor" class="actor-name">
+                  {{ actor }} |
                 </span>
               </div>
             </div>
@@ -467,10 +394,7 @@ async function handleSaveNote(data: {
             <div class="status-bar">
               <div class="status-indicator">
                 <span class="indicator-label">Estado:</span>
-                <div
-                  class="status-badge"
-                  :style="{ color: statusColors[item.estado] }"
-                >
+                <div class="status-badge" :style="{ color: statusColors[item.estado] }">
                   <span
                     class="status-dot"
                     :style="{ background: statusColors[item.estado] }"
@@ -479,7 +403,7 @@ async function handleSaveNote(data: {
                 </div>
               </div>
 
-              <div class="rating-indicator">
+              <div v-if="item.estado === ItemStatus.COMPLETED" class="rating-indicator">
                 <span class="indicator-label">Valoración:</span>
                 <div class="rating-value">
                   {{ item.rating?.toFixed(1) || "—" }}
@@ -489,35 +413,13 @@ async function handleSaveNote(data: {
             </div>
           </header>
 
-          <section class="notes-section">
-            <div class="section-heading">
-              <i class="fas fa-quote-left heading-icon"></i>
-              <h2 class="section-title">Pensamientos</h2>
-            </div>
-            <div class="thoughts-card">
-              <textarea
-                v-model="item.miniReseña"
-                placeholder="Escribe una breve reflexión o reseña personal..."
-                class="thoughts-editor"
-                @change="updateMiniReview(item.miniReseña || '')"
-              ></textarea>
-              <div class="editor-footer">
-                <span class="editor-hint">Autoguardado al salir del campo</span>
-              </div>
-            </div>
-          </section>
-
           <section class="timeline-section">
             <div class="timeline-header">
               <div class="section-heading">
                 <i class="fas fa-stream heading-icon heading-icon--primary"></i>
                 <h2 class="section-title">Diario de Actividad</h2>
               </div>
-              <AppButton
-                variant="glass"
-                icon="fa-plus"
-                size="small"
-                @click="openNoteModal()"
+              <AppButton variant="glass" icon="fa-plus" size="small" @click="openNoteModal()"
                 >Nueva Entrada</AppButton
               >
             </div>
@@ -549,12 +451,7 @@ async function handleSaveNote(data: {
       size="large"
       @close="showEditModal = false"
     >
-      <ItemForm
-        :item="item"
-        mode="edit"
-        @save="handleSaveItem"
-        @cancel="showEditModal = false"
-      />
+      <ItemForm :item="item" mode="edit" @save="handleSaveItem" @cancel="showEditModal = false" />
     </AppModal>
 
     <AppModal
@@ -586,18 +483,41 @@ async function handleSaveNote(data: {
     >
       <div class="confirm-body">
         <p class="confirm-text">
-          ¿Estás seguro de que quieres eliminar "<strong>{{
-            item.titulo
-          }}</strong
+          ¿Estás seguro de que quieres eliminar "<strong>{{ item.titulo }}</strong
           >"? Esta acción no se puede deshacer.
         </p>
         <div class="confirm-actions">
-          <AppButton variant="ghost" @click="showDeleteConfirm = false"
-            >Cancelar</AppButton
-          >
-          <AppButton variant="danger" icon="fa-trash" @click="handleDeleteItem"
-            >Eliminar</AppButton
-          >
+          <AppButton variant="ghost" @click="showDeleteConfirm = false">Cancelar</AppButton>
+          <AppButton variant="danger" icon="fa-trash" @click="handleDeleteItem">Eliminar</AppButton>
+        </div>
+      </div>
+    </AppModal>
+
+    <AppModal
+      :is-open="showEnrichConfirm"
+      title="Regenerar información"
+      size="small"
+      @close="showEnrichConfirm = false"
+    >
+      <div class="confirm-body">
+        <p class="confirm-text">
+          Se va a buscar y sobrescribir la información de <strong>{{ item.titulo }}</strong> con
+          datos de fuentes externas (TMDB / Google Books).
+        </p>
+        <p class="confirm-text" style="margin-top: 0.5rem; opacity: 0.7; font-size: 0.85em">
+          Los campos como director, reparto, sinopsis, póster y géneros se actualizarán. Cualquier
+          edición manual sobre esos campos se perderá. Mientras que campos como Notas, Valoración,
+          Estado y Tags no se verán afectados.
+        </p>
+        <div class="confirm-actions">
+          <AppButton variant="ghost" @click="showEnrichConfirm = false">Cancelar</AppButton>
+          <AppButton
+            variant="primary"
+            icon="fa-magic"
+            :loading="isEnriching"
+            @click="confirmAndEnrich"
+            >Sí, regenerar
+          </AppButton>
         </div>
       </div>
     </AppModal>

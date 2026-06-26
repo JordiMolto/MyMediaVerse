@@ -17,9 +17,7 @@ export function useItemFilters(items: Item[]) {
     }
 
     if (selectedStatus.value) {
-      filtered = filtered.filter(
-        (item) => item.estado === selectedStatus.value,
-      );
+      filtered = filtered.filter((item) => item.estado === selectedStatus.value);
     }
 
     return filtered;

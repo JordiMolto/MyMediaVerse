@@ -6,6 +6,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  user-select: none;
 }
 
 html {
@@ -35,6 +36,11 @@ textarea {
   color: inherit;
   background: transparent;
   border: none;
+}
+
+input,
+textarea {
+  user-select: text;
 }
 
 button {

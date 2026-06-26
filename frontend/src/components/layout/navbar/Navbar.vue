@@ -4,7 +4,6 @@ import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useUIStore } from "@/stores/ui";
 import AppButton from "@/components/common/app-button/AppButton.vue";
-import logoUrl from "@/assets/images/logo_mymediaverse.png";
 import { useUserAvatar } from "@/composables/useUserAvatar";
 import "./navbar.css";
 
@@ -17,10 +16,6 @@ const { avatarUrl } = useUserAvatar();
 const isAuthPage = computed(() => {
   return route.name === "login" || route.name === "register";
 });
-
-function goToHome() {
-  router.push("/");
-}
 </script>
 
 <template>
@@ -28,11 +23,7 @@ function goToHome() {
     <nav class="navbar">
       <div class="navbar-container">
         <!-- Left: Hamburger -->
-        <button
-          class="hamburger-btn"
-          @click="uiStore.toggleSideMenu(true)"
-          title="Menú"
-        >
+        <button class="hamburger-btn" @click="uiStore.toggleSideMenu(true)" title="Menú">
           <i class="fas fa-bars"></i>
         </button>
 

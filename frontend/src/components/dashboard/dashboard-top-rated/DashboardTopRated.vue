@@ -46,12 +46,7 @@ const goToItem = (id: string) => {
         @click="goToItem(item.id)"
       >
         <div class="rank">{{ index + 1 }}</div>
-        <img
-          v-if="item.imagen"
-          :src="item.imagen"
-          alt="Cover"
-          class="item-thumb"
-        />
+        <img v-if="item.imagen" :src="item.imagen" :alt="item.titulo" class="item-thumb" />
         <div v-else class="thumb-placeholder">
           <i class="fas fa-image"></i>
         </div>
@@ -66,7 +61,7 @@ const goToItem = (id: string) => {
       </div>
 
       <div v-if="items.length === 0" class="empty-top">
-        <p>Completa y puntúa items para ver tu top aquí.</p>
+        <p>Completa y puntúa títulos para ver tu top aquí.</p>
       </div>
     </div>
   </div>

@@ -93,8 +93,7 @@ function openNoteModal(noteId?: string) {
 async function handleDeleteNote(noteId: string) {
   const ok = await showConfirm({
     title: "Eliminar nota",
-    message:
-      "¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.",
+    message: "¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.",
     confirmLabel: "Eliminar",
     danger: true,
   });
@@ -130,21 +129,7 @@ const backdropStyle = computed(() => {
   };
 });
 
-async function updateMiniReview(review: string) {
-  if (!item.value) return;
-  try {
-    await itemsStore.updateItem(item.value.id, { miniReseña: review });
-    item.value.miniReseña = review;
-  } catch (error) {
-    console.error("Error updating review:", error);
-  }
-}
-
-async function handleSaveNote(data: {
-  texto: string;
-  spoilers: boolean;
-  hito: HitoType;
-}) {
+async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: HitoType }) {
   if (!item.value) return;
   try {
     if (editingNoteId.value) {
@@ -187,9 +172,7 @@ const platformLinks: Record<string, string> = {
 function getPlatformUrl(name: string) {
   const n = name.toLowerCase();
   const match = Object.entries(platformLinks).find(([key]) => n.includes(key));
-  return match
-    ? match[1]
-    : `https://www.google.com/search?q=${encodeURIComponent(name)}`;
+  return match ? match[1] : `https://www.google.com/search?q=${encodeURIComponent(name)}`;
 }
 
 async function handleSingleEnrich() {
@@ -256,12 +239,7 @@ async function toggleFavorite() {
             </div>
 
             <div v-if="item.genero?.length" class="movie-genres">
-              <span
-                v-for="genre in item.genero"
-                :key="genre"
-                class="genre-tag"
-                >{{ genre }}</span
-              >
+              <span v-for="genre in item.genero" :key="genre" class="genre-tag">{{ genre }}</span>
             </div>
           </div>
         </div>
@@ -272,23 +250,14 @@ async function toggleFavorite() {
       <div class="detail-layout">
         <aside class="sidebar-column">
           <div class="poster-wrap">
-            <img
-              v-if="item.imagen"
-              :src="item.imagen"
-              :alt="item.titulo"
-              class="poster-image"
-            />
+            <img v-if="item.imagen" :src="item.imagen" :alt="item.titulo" class="poster-image" />
             <div v-else class="poster-fallback">
               <i class="fas fa-film"></i>
             </div>
           </div>
 
           <div class="actions-group">
-            <AppButton
-              variant="primary"
-              icon="fa-edit"
-              block
-              @click="showEditModal = true"
+            <AppButton variant="primary" icon="fa-edit" block @click="showEditModal = true"
               >Editar</AppButton
             >
             <AppButton
@@ -299,19 +268,12 @@ async function toggleFavorite() {
               @click="handleSingleEnrich"
               >Enriquecer TMDB</AppButton
             >
-            <AppButton
-              variant="ghost"
-              icon="fa-trash"
-              block
-              @click="showDeleteConfirm = true"
+            <AppButton variant="ghost" icon="fa-trash" block @click="showDeleteConfirm = true"
               >Eliminar</AppButton
             >
           </div>
 
-          <div
-            v-if="item.streamingPlatforms?.length"
-            class="info-card platforms-card"
-          >
+          <div v-if="item.streamingPlatforms?.length" class="info-card platforms-card">
             <h3 class="card-title"><i class="fas fa-tv"></i> Disponible en</h3>
             <div class="platforms-grid">
               <a
@@ -329,9 +291,7 @@ async function toggleFavorite() {
           </div>
 
           <div v-if="item.trailer" class="info-card trailer-card">
-            <h3 class="card-title">
-              <i class="fas fa-play-circle"></i> Tráiler
-            </h3>
+            <h3 class="card-title"><i class="fas fa-play-circle"></i> Tráiler</h3>
             <a
               :href="item.trailer"
               target="_blank"
@@ -343,9 +303,7 @@ async function toggleFavorite() {
           </div>
 
           <div class="info-card meta-card">
-            <h3 class="card-title">
-              <i class="fas fa-info-circle"></i> Información
-            </h3>
+            <h3 class="card-title"><i class="fas fa-info-circle"></i> Información</h3>
             <div class="meta-list">
               <div v-if="item.director" class="meta-row">
                 <span class="meta-key">Director</span>
@@ -367,18 +325,12 @@ async function toggleFavorite() {
           <div class="info-card status-indicator-card">
             <div class="status-group">
               <span class="indicator-label">Estado</span>
-              <div
-                class="status-badge"
-                :style="{ color: statusColors[item.estado] }"
-              >
-                <span
-                  class="status-dot"
-                  :style="{ background: statusColors[item.estado] }"
-                ></span>
+              <div class="status-badge" :style="{ color: statusColors[item.estado] }">
+                <span class="status-dot" :style="{ background: statusColors[item.estado] }"></span>
                 {{ statusLabels[item.estado] }}
               </div>
             </div>
-            <div class="rating-group">
+            <div v-if="item.estado === ItemStatus.COMPLETED" class="rating-group">
               <span class="indicator-label">Tu Valoración</span>
               <div class="rating-score">
                 {{ item.rating?.toFixed(1) || "—" }}
@@ -388,53 +340,23 @@ async function toggleFavorite() {
           </div>
 
           <div v-if="item.descripcion" class="info-card description-card">
-            <h2 class="section-title">
-              <i class="fas fa-align-left"></i> Sinopsis
-            </h2>
+            <h2 class="section-title"><i class="fas fa-align-left"></i> Sinopsis</h2>
             <p class="description-text">{{ item.descripcion }}</p>
           </div>
 
           <div v-if="item.reparto?.length" class="info-card cast-card">
-            <h2 class="section-title">
-              <i class="fas fa-users"></i> Reparto Principal
-            </h2>
+            <h2 class="section-title"><i class="fas fa-users"></i> Reparto Principal</h2>
             <div class="actors-list">
-              <span
-                v-for="(actor, index) in item.reparto"
-                :key="actor"
-                class="actor-name"
-              >
-                {{ actor
-                }}<span v-if="index < item.reparto.length - 1">, </span>
+              <span v-for="(actor, index) in item.reparto" :key="actor" class="actor-name">
+                {{ actor }}<span v-if="index < item.reparto.length - 1">, </span>
               </span>
-            </div>
-          </div>
-
-          <div class="info-card thoughts-box-card">
-            <h2 class="section-title">
-              <i class="fas fa-quote-left"></i> Tus Pensamientos
-            </h2>
-            <textarea
-              v-model="item.miniReseña"
-              placeholder="Escribe tu opinión personal sobre esta película..."
-              class="thoughts-editor"
-              @change="updateMiniReview(item.miniReseña || '')"
-            ></textarea>
-            <div class="editor-hint">
-              <i class="fas fa-check-circle"></i> Autoguardado
             </div>
           </div>
 
           <div class="activity-section">
             <div class="timeline-header">
-              <h2 class="section-title">
-                <i class="fas fa-stream"></i> Diario de Actividad
-              </h2>
-              <AppButton
-                variant="glass"
-                icon="fa-plus"
-                size="small"
-                @click="openNoteModal()"
+              <h2 class="section-title"><i class="fas fa-stream"></i> Diario de Actividad</h2>
+              <AppButton variant="glass" icon="fa-plus" size="small" @click="openNoteModal()"
                 >Nueva Entrada</AppButton
               >
             </div>
@@ -464,12 +386,7 @@ async function toggleFavorite() {
       size="large"
       @close="showEditModal = false"
     >
-      <ItemForm
-        :item="item"
-        mode="edit"
-        @save="handleSaveItem"
-        @cancel="showEditModal = false"
-      />
+      <ItemForm :item="item" mode="edit" @save="handleSaveItem" @cancel="showEditModal = false" />
     </AppModal>
 
     <AppModal
@@ -501,19 +418,13 @@ async function toggleFavorite() {
     >
       <div class="delete-confirmation">
         <p class="delete-msg">
-          ¿Estás seguro de que quieres eliminar "<strong>{{
-            item.titulo
-          }}</strong
+          ¿Estás seguro de que quieres eliminar "<strong>{{ item.titulo }}</strong
           >"?
         </p>
         <p class="delete-warning">Esta acción no se puede deshacer.</p>
         <div class="delete-actions">
-          <AppButton variant="ghost" @click="showDeleteConfirm = false"
-            >Cancelar</AppButton
-          >
-          <AppButton variant="danger" icon="fa-trash" @click="handleDeleteItem"
-            >Eliminar</AppButton
-          >
+          <AppButton variant="ghost" @click="showDeleteConfirm = false">Cancelar</AppButton>
+          <AppButton variant="danger" icon="fa-trash" @click="handleDeleteItem">Eliminar</AppButton>
         </div>
       </div>
     </AppModal>
@@ -531,26 +442,15 @@ async function toggleFavorite() {
         </div>
 
         <div v-else-if="enrichmentResult" class="enrich-result">
-          <div
-            v-if="enrichmentResult.success > 0"
-            class="result-box result-box--success"
-          >
+          <div v-if="enrichmentResult.success > 0" class="result-box result-box--success">
             <i class="fas fa-check-circle"></i>
             <span>¡Completado con éxito!</span>
           </div>
-          <div
-            v-if="enrichmentResult.failed > 0"
-            class="result-box result-box--error"
-          >
+          <div v-if="enrichmentResult.failed > 0" class="result-box result-box--error">
             <i class="fas fa-exclamation-circle"></i>
             <span>No se pudo encontrar información.</span>
           </div>
-          <AppButton
-            variant="primary"
-            block
-            @click="showEnrichmentModal = false"
-            >Cerrar</AppButton
-          >
+          <AppButton variant="primary" block @click="showEnrichmentModal = false">Cerrar</AppButton>
         </div>
       </div>
     </AppModal>

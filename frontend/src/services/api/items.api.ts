@@ -22,20 +22,14 @@ export async function fetchItems(): Promise<Item[]> {
 export async function getItemById(id: string): Promise<Item | null> {
   if (!supabase) throw new Error("Supabase not configured");
 
-  const { data, error } = await supabase
-    .from("items")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data, error } = await supabase.from("items").select("*").eq("id", id).single();
 
   if (error) throw error;
 
   return data ? mapSupabaseItemToLocal(data) : null;
 }
 
-export async function createItem(
-  item: Omit<Item, "id" | "fechaCreacion">,
-): Promise<Item> {
+export async function createItem(item: Omit<Item, "id" | "fechaCreacion">): Promise<Item> {
   if (!supabase) throw new Error("Supabase not configured");
 
   const {
@@ -80,21 +74,14 @@ export async function createItem(
     favorito: item.favorito || false,
   };
 
-  const { data, error } = await supabase
-    .from("items")
-    .insert(supabaseItem)
-    .select()
-    .single();
+  const { data, error } = await supabase.from("items").insert(supabaseItem).select().single();
 
   if (error) throw error;
 
   return mapSupabaseItemToLocal(data);
 }
 
-export async function updateItem(
-  id: string,
-  updates: Partial<Item>,
-): Promise<Item> {
+export async function updateItem(id: string, updates: Partial<Item>): Promise<Item> {
   if (!supabase) throw new Error("Supabase not configured");
 
   const supabaseUpdates: any = {};
@@ -102,57 +89,43 @@ export async function updateItem(
   if (updates.tipo) supabaseUpdates.tipo = updates.tipo;
   if (updates.titulo) supabaseUpdates.titulo = updates.titulo;
   if (updates.estado) supabaseUpdates.estado = updates.estado;
-  if (updates.prioridad !== undefined)
-    supabaseUpdates.prioridad = updates.prioridad;
+  if (updates.prioridad !== undefined) supabaseUpdates.prioridad = updates.prioridad;
   if (updates.rating !== undefined) supabaseUpdates.rating = updates.rating;
-  if (updates.descripcion !== undefined)
-    supabaseUpdates.descripcion = updates.descripcion;
+  if (updates.descripcion !== undefined) supabaseUpdates.descripcion = updates.descripcion;
   if (updates.tags !== undefined) supabaseUpdates.tags = updates.tags;
-  if (updates.fechaInicio !== undefined)
-    supabaseUpdates.fecha_inicio = updates.fechaInicio;
-  if (updates.fechaFin !== undefined)
-    supabaseUpdates.fecha_fin = updates.fechaFin;
+  if (updates.fechaInicio !== undefined) supabaseUpdates.fecha_inicio = updates.fechaInicio;
+  if (updates.fechaFin !== undefined) supabaseUpdates.fecha_fin = updates.fechaFin;
   if (updates.imagen !== undefined) supabaseUpdates.imagen = updates.imagen;
-  if (updates.duracion !== undefined)
-    supabaseUpdates.duracion = updates.duracion;
+  if (updates.duracion !== undefined) supabaseUpdates.duracion = updates.duracion;
   if (updates.progresoTemporadas !== undefined)
     supabaseUpdates.progreso_temporadas = updates.progresoTemporadas;
   if (updates.progresoLectura !== undefined)
     supabaseUpdates.progreso_lectura = updates.progresoLectura;
-  if (updates.plataforma !== undefined)
-    supabaseUpdates.plataforma = updates.plataforma;
-  if (updates.director !== undefined)
-    supabaseUpdates.director = updates.director;
+  if (updates.plataforma !== undefined) supabaseUpdates.plataforma = updates.plataforma;
+  if (updates.director !== undefined) supabaseUpdates.director = updates.director;
   if (updates.autor !== undefined) supabaseUpdates.autor = updates.autor;
-  if (updates.editorial !== undefined)
-    supabaseUpdates.editorial = updates.editorial;
+  if (updates.editorial !== undefined) supabaseUpdates.editorial = updates.editorial;
   if (updates.genero !== undefined) supabaseUpdates.genero = updates.genero;
   if (updates.reparto !== undefined) supabaseUpdates.reparto = updates.reparto;
-  if (updates.developer !== undefined)
-    supabaseUpdates.developer = updates.developer;
+  if (updates.developer !== undefined) supabaseUpdates.developer = updates.developer;
   if (updates.tiempoEstimado !== undefined)
     supabaseUpdates.tiempo_estimado = updates.tiempoEstimado;
   if (updates.vecesConsumido !== undefined)
     supabaseUpdates.veces_consumido = updates.vecesConsumido;
-  if (updates.ultimaVez !== undefined)
-    supabaseUpdates.ultima_vez = updates.ultimaVez;
-  if (updates.miniReseña !== undefined)
-    supabaseUpdates.mini_reseña = updates.miniReseña;
-  if (updates.archivos !== undefined)
-    supabaseUpdates.archivos = updates.archivos;
+  if (updates.ultimaVez !== undefined) supabaseUpdates.ultima_vez = updates.ultimaVez;
+  if (updates.miniReseña !== undefined) supabaseUpdates.mini_reseña = updates.miniReseña;
+  if (updates.archivos !== undefined) supabaseUpdates.archivos = updates.archivos;
   // TMDB Enhanced Fields
   if (updates.trailer !== undefined) supabaseUpdates.trailer = updates.trailer;
   if (updates.streamingPlatforms !== undefined)
     supabaseUpdates.streaming_platforms = updates.streamingPlatforms;
-  if (updates.backdropImage !== undefined)
-    supabaseUpdates.backdrop_image = updates.backdropImage;
+  if (updates.backdropImage !== undefined) supabaseUpdates.backdrop_image = updates.backdropImage;
   if (updates.numberOfSeasons !== undefined)
     supabaseUpdates.number_of_seasons = updates.numberOfSeasons;
   if (updates.numberOfEpisodes !== undefined)
     supabaseUpdates.number_of_episodes = updates.numberOfEpisodes;
   if (updates.tagline !== undefined) supabaseUpdates.tagline = updates.tagline;
-  if (updates.favorito !== undefined)
-    supabaseUpdates.favorito = updates.favorito;
+  if (updates.favorito !== undefined) supabaseUpdates.favorito = updates.favorito;
 
   const { data, error } = await supabase
     .from("items")
@@ -188,12 +161,8 @@ function mapSupabaseItemToLocal(supabaseItem: any): Item {
     descripcion: supabaseItem.descripcion,
     tags: supabaseItem.tags,
     fechaCreacion: new Date(supabaseItem.fecha_creacion),
-    fechaInicio: supabaseItem.fecha_inicio
-      ? new Date(supabaseItem.fecha_inicio)
-      : undefined,
-    fechaFin: supabaseItem.fecha_fin
-      ? new Date(supabaseItem.fecha_fin)
-      : undefined,
+    fechaInicio: supabaseItem.fecha_inicio ? new Date(supabaseItem.fecha_inicio) : undefined,
+    fechaFin: supabaseItem.fecha_fin ? new Date(supabaseItem.fecha_fin) : undefined,
     imagen: supabaseItem.imagen,
     duracion: supabaseItem.duracion,
     progresoTemporadas: supabaseItem.progreso_temporadas,
@@ -207,9 +176,7 @@ function mapSupabaseItemToLocal(supabaseItem: any): Item {
     developer: supabaseItem.developer,
     tiempoEstimado: supabaseItem.tiempo_estimado,
     vecesConsumido: supabaseItem.veces_consumido,
-    ultimaVez: supabaseItem.ultima_vez
-      ? new Date(supabaseItem.ultima_vez)
-      : undefined,
+    ultimaVez: supabaseItem.ultima_vez ? new Date(supabaseItem.ultima_vez) : undefined,
     miniReseña: supabaseItem.mini_reseña,
     archivos: supabaseItem.archivos,
     // TMDB Enhanced Fields

@@ -16,9 +16,7 @@ defineProps<{
     </div>
 
     <div v-if="insights.length === 0" class="insight-card insight-card--empty">
-      <p class="insight-text">
-        Aún no hay suficientes datos para generar insights.
-      </p>
+      <p class="insight-text">Aún no hay suficientes datos para generar estadísticas.</p>
     </div>
   </div>
 </template>

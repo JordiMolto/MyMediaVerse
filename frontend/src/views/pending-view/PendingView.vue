@@ -47,12 +47,8 @@ const {
 } = useBulkSelection();
 const { showConfirm } = useConfirm();
 
-const {
-  isEnriching,
-  enrichmentProgress,
-  enrichmentTotal,
-  enrichMultipleItems,
-} = useTMDBEnrichment();
+const { isEnriching, enrichmentProgress, enrichmentTotal, enrichMultipleItems } =
+  useTMDBEnrichment();
 
 const sortOptions = [
   { value: "priority", label: "Prioridad" },
@@ -91,15 +87,11 @@ const filteredItems = computed(() => {
         [Priority.LOW]: 1,
       };
       return (
-        priorityScore[b.prioridad || Priority.LOW] -
-        priorityScore[a.prioridad || Priority.LOW]
+        priorityScore[b.prioridad || Priority.LOW] - priorityScore[a.prioridad || Priority.LOW]
       );
     }
     if (sortBy.value === "recent") {
-      return (
-        new Date(b.fechaCreacion).getTime() -
-        new Date(a.fechaCreacion).getTime()
-      );
+      return new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime();
     }
     if (sortBy.value === "alpha") {
       return a.titulo.localeCompare(b.titulo);
@@ -122,9 +114,7 @@ const hasEnrichableSelected = computed(() =>
   filteredItems.value.some(
     (item) =>
       selectedIds.value.has(item.id) &&
-      TMDB_ENRICHABLE.some((t) =>
-        (item.tipo || "").toLowerCase().includes(t.toLowerCase()),
-      ),
+      TMDB_ENRICHABLE.some((t) => (item.tipo || "").toLowerCase().includes(t.toLowerCase())),
   ),
 );
 
@@ -145,9 +135,7 @@ function handleExport() {
 
 const currentPage = ref(1);
 const itemsPerPage = 12;
-const totalPages = computed(() =>
-  Math.ceil(filteredItems.value.length / itemsPerPage),
-);
+const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage));
 
 const paginatedItems = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
@@ -196,9 +184,7 @@ function goToDetail(id: string) {
 async function handleBulkChangeStatus(status: ItemStatus) {
   const items = getSelectedItems(filteredItems.value);
   try {
-    await Promise.all(
-      items.map((item) => itemsStore.changeStatus(item.id, status)),
-    );
+    await Promise.all(items.map((item) => itemsStore.changeStatus(item.id, status)));
     clearSelection();
   } catch (error) {
     console.error("Error changing status:", error);
@@ -244,15 +230,13 @@ async function handleEnrichWithTMDB() {
   });
 
   if (enrichableItems.length === 0) {
-    alert(
-      "Selecciona al menos una película, serie o anime para enriquecer con TMDB",
-    );
+    alert("Selecciona al menos una película, serie o anime para enriquecer con TMDB");
     return;
   }
 
   const ok = await showConfirm({
     title: "Enriquecer con TMDB",
-    message: `¿Quieres enriquecer ${enrichableItems.length} items con datos de TMDB? Esto puede tardar unos minutos.`,
+    message: `¿Quieres enriquecer ${enrichableItems.length} títulos con datos de TMDB? Esto puede tardar unos minutos.`,
     confirmLabel: "Enriquecer",
   });
   if (!ok) return;
@@ -270,9 +254,7 @@ async function handleEnrichWithTMDB() {
     <header class="pending-header">
       <div class="header-content">
         <h1 class="header-title">Lista Pendiente</h1>
-        <p class="header-subtitle">
-          Tienes {{ filteredItems.length }} aventuras esperándote
-        </p>
+        <p class="header-subtitle">Tienes {{ filteredItems.length }} aventuras esperándote</p>
       </div>
       <div class="header-actions">
         <button
@@ -292,10 +274,7 @@ async function handleEnrichWithTMDB() {
           :class="{ active: isSelectionMode }"
           @click="isSelectionMode = !isSelectionMode"
         >
-          <i
-            class="fas"
-            :class="isSelectionMode ? 'fa-times' : 'fa-check-square'"
-          ></i>
+          <i class="fas" :class="isSelectionMode ? 'fa-times' : 'fa-check-square'"></i>
           {{ isSelectionMode ? "Cancelar" : "Seleccionar" }}
         </button>
         <button class="action-btn-small" @click="handleExport">
@@ -359,9 +338,7 @@ async function handleEnrichWithTMDB() {
         <i class="fas fa-ghost empty-icon"></i>
         <div class="empty-content">
           <h3 class="empty-title">¡No tienes nada pendiente!</h3>
-          <p class="empty-description">
-            Añade algo nuevo a tu lista para empezar
-          </p>
+          <p class="empty-description">Añade algo nuevo a tu lista para empezar</p>
         </div>
       </div>
 
@@ -428,10 +405,8 @@ async function handleEnrichWithTMDB() {
         <div v-if="isEnriching" class="enrichment-progress">
           <div class="progress-info">
             <i class="fas fa-film fa-spin"></i>
-            <p>Enriqueciendo items con datos de TMDB...</p>
-            <p class="progress-text">
-              {{ enrichmentProgress }} / {{ enrichmentTotal }}
-            </p>
+            <p>Enriqueciendo títulos con datos de TMDB...</p>
+            <p class="progress-text">{{ enrichmentProgress }} / {{ enrichmentTotal }}</p>
           </div>
           <div class="progress-bar">
             <div
@@ -466,18 +441,13 @@ async function handleEnrichWithTMDB() {
           <div v-if="enrichmentResult.errors.length > 0" class="errors-list">
             <h4>Errores:</h4>
             <ul>
-              <li
-                v-for="(error, index) in enrichmentResult.errors"
-                :key="index"
-              >
+              <li v-for="(error, index) in enrichmentResult.errors" :key="index">
                 {{ error }}
               </li>
             </ul>
           </div>
 
-          <button class="btn btn-primary" @click="showEnrichmentModal = false">
-            Cerrar
-          </button>
+          <button class="btn btn-primary" @click="showEnrichmentModal = false">Cerrar</button>
         </div>
       </div>
     </AppModal>

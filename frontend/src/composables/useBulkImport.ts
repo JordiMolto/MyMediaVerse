@@ -122,8 +122,7 @@ export function useBulkImport() {
       if (type === ItemType.MOVIE || type === ItemType.SERIES) {
         const TMDB_KEY = import.meta.env.VITE_TMDB_API_KEY;
         if (!TMDB_KEY) {
-          error.value =
-            "Configuración incompleta: Falta la API Key de TMDB en el archivo .env.";
+          error.value = "Configuración incompleta: Falta la API Key de TMDB en el archivo .env.";
           isProcessing.value = false;
           return;
         }
@@ -131,11 +130,8 @@ export function useBulkImport() {
         const tmdbResult = await searchTMDB(row.titulo, type);
         if (tmdbResult) {
           // Get detailed information
-          const {
-            getTMDBDetails,
-            getYouTubeTrailerUrl,
-            getStreamingPlatforms,
-          } = await import("@/services/external/tmdb.service");
+          const { getTMDBDetails, getYouTubeTrailerUrl, getStreamingPlatforms } =
+            await import("@/services/external/tmdb.service");
           const details = await getTMDBDetails(tmdbResult.id, type);
 
           if (details) {
@@ -143,9 +139,7 @@ export function useBulkImport() {
             item.descripcion = details.overview;
             item.imagen = getTMDBImageUrl(details.poster_path);
             item.backdropImage = getTMDBImageUrl(details.backdrop_path);
-            item.rating = details.vote_average
-              ? Math.round(details.vote_average / 2)
-              : item.rating;
+            item.rating = details.vote_average ? Math.round(details.vote_average / 2) : item.rating;
             item.tagline = details.tagline;
 
             // Genres
@@ -156,10 +150,7 @@ export function useBulkImport() {
             // Runtime/Duration
             if (details.runtime) {
               item.duracion = details.runtime;
-            } else if (
-              details.episode_run_time &&
-              details.episode_run_time.length > 0
-            ) {
+            } else if (details.episode_run_time && details.episode_run_time.length > 0) {
               item.duracion = details.episode_run_time[0];
             }
 
@@ -171,24 +162,18 @@ export function useBulkImport() {
 
             // Cast (top 5)
             if (details.credits?.cast && details.credits.cast.length > 0) {
-              item.reparto = details.credits.cast
-                .slice(0, 5)
-                .map((c) => c.name);
+              item.reparto = details.credits.cast.slice(0, 5).map((c) => c.name);
             }
 
             // Trailer
             item.trailer = getYouTubeTrailerUrl(details.videos);
 
             // Streaming platforms
-            item.streamingPlatforms = getStreamingPlatforms(
-              details["watch/providers"],
-            );
+            item.streamingPlatforms = getStreamingPlatforms(details["watch/providers"]);
 
             // Release date
             if (details.release_date || details.first_air_date) {
-              item.fechaInicio = new Date(
-                details.release_date || details.first_air_date!,
-              );
+              item.fechaInicio = new Date(details.release_date || details.first_air_date!);
             }
 
             item.found = true;
@@ -200,10 +185,7 @@ export function useBulkImport() {
         if (bookResult) {
           item.titulo = bookResult.volumeInfo.title;
           item.descripcion = bookResult.volumeInfo.description;
-          item.imagen = bookResult.volumeInfo.imageLinks?.thumbnail?.replace(
-            "http:",
-            "https:",
-          );
+          item.imagen = bookResult.volumeInfo.imageLinks?.thumbnail?.replace("http:", "https:");
           item.autor = bookResult.volumeInfo.authors?.join(", ");
           item.editorial = bookResult.volumeInfo.publisher;
           item.duracion = bookResult.volumeInfo.pageCount; // Pages
@@ -247,11 +229,7 @@ export function useBulkImport() {
   };
 
   const downloadTemplate = (type: ItemType) => {
-    const headers = [
-      "Titulo",
-      "Estado (Pendiente/Progreso/Completado)",
-      "Nota (1-5)",
-    ];
+    const headers = ["Titulo", "Estado (Pendiente/Progreso/Completado)", "Nota (1-5)"];
     const examples = [
       ["Matrix", "Completado", "5"],
       ["Inception", "Pendiente", ""],

@@ -35,13 +35,9 @@ function handleEnrich() {
         <div class="selection-info">
           <i class="fas fa-check-circle"></i>
           <span class="count"
-            >{{ selectedCount }} seleccionado{{
-              selectedCount !== 1 ? "s" : ""
-            }}</span
+            >{{ selectedCount }} seleccionado{{ selectedCount !== 1 ? "s" : "" }}</span
           >
-          <button class="link-btn" @click="emit('clearSelection')">
-            Limpiar
-          </button>
+          <button class="link-btn" @click="emit('clearSelection')">Limpiar</button>
         </div>
 
         <div class="actions-group">

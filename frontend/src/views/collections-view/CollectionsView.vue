@@ -148,9 +148,7 @@ const colors = [
       <i class="fas fa-exclamation-triangle error-icon"></i>
       <h3 class="state-title">¡No se pudieron cargar las colecciones!</h3>
       <p class="state-body">{{ categoriesStore.error }}</p>
-      <p class="state-hint">
-        Asegúrate de haber ejecutado la migración SQL en Supabase.
-      </p>
+      <p class="state-hint">Asegúrate de haber ejecutado la migración SQL en Supabase.</p>
     </div>
 
     <div
@@ -161,21 +159,12 @@ const colors = [
       <span class="loading-text">Cargando colecciones...</span>
     </div>
 
-    <div
-      v-else-if="categoriesStore.categories.length === 0"
-      class="empty-state glass-card"
-    >
+    <div v-else-if="categoriesStore.categories.length === 0" class="empty-state glass-card">
       <i class="fas fa-layer-group empty-icon"></i>
       <h3 class="state-title">No tienes colecciones personalizadas</h3>
-      <p class="state-body">
-        Crea tu primera colección o restaura las predeterminadas.
-      </p>
+      <p class="state-body">Crea tu primera colección o restaura las predeterminadas.</p>
       <div class="empty-actions">
-        <AppButton
-          variant="primary"
-          icon="fa-plus"
-          @click="showAddModal = true"
-        >
+        <AppButton variant="primary" icon="fa-plus" @click="showAddModal = true">
           Crear Colección
         </AppButton>
       </div>
@@ -189,10 +178,7 @@ const colors = [
         :class="{ 'is-hidden': cat.oculto }"
       >
         <div class="card-body">
-          <div
-            class="icon-box"
-            :style="{ backgroundColor: cat.color, color: 'white' }"
-          >
+          <div class="icon-box" :style="{ backgroundColor: cat.color, color: 'white' }">
             <i class="fas" :class="cat.icono"></i>
           </div>
           <div class="card-info">
@@ -211,18 +197,10 @@ const colors = [
           >
             <i class="fas" :class="cat.oculto ? 'fa-eye-slash' : 'fa-eye'"></i>
           </button>
-          <button
-            class="action-btn action-btn--edit"
-            @click="openEditModal(cat)"
-            title="Editar"
-          >
+          <button class="action-btn action-btn--edit" @click="openEditModal(cat)" title="Editar">
             <i class="fas fa-edit"></i>
           </button>
-          <button
-            class="action-btn action-btn--delete"
-            @click="confirmDelete(cat)"
-            title="Borrar"
-          >
+          <button class="action-btn action-btn--delete" @click="confirmDelete(cat)" title="Borrar">
             <i class="fas fa-trash"></i>
           </button>
         </div>
@@ -233,11 +211,7 @@ const colors = [
     </div>
 
     <!-- Add Modal -->
-    <AppModal
-      :is-open="showAddModal"
-      title="Nueva Colección"
-      @close="showAddModal = false"
-    >
+    <AppModal :is-open="showAddModal" title="Nueva Colección" @close="showAddModal = false">
       <div class="modal-form">
         <div class="modal-field">
           <label class="field-label">Nombre</label>
@@ -279,30 +253,18 @@ const colors = [
         </div>
 
         <div class="modal-actions">
-          <AppButton variant="glass" @click="showAddModal = false"
-            >Cancelar</AppButton
-          >
-          <AppButton variant="primary" @click="handleAddCategory"
-            >Crear</AppButton
-          >
+          <AppButton variant="glass" @click="showAddModal = false">Cancelar</AppButton>
+          <AppButton variant="primary" @click="handleAddCategory">Crear</AppButton>
         </div>
       </div>
     </AppModal>
 
     <!-- Edit Modal -->
-    <AppModal
-      :is-open="showEditModal"
-      title="Editar Colección"
-      @close="showEditModal = false"
-    >
+    <AppModal :is-open="showEditModal" title="Editar Colección" @close="showEditModal = false">
       <div class="modal-form">
         <div class="modal-field">
           <label class="field-label">Nombre</label>
-          <input
-            v-model="editCategoryData.nombre"
-            type="text"
-            class="field-input"
-          />
+          <input v-model="editCategoryData.nombre" type="text" class="field-input" />
         </div>
 
         <div class="modal-field">
@@ -335,12 +297,8 @@ const colors = [
         </div>
 
         <div class="modal-actions">
-          <AppButton variant="glass" @click="showEditModal = false"
-            >Cancelar</AppButton
-          >
-          <AppButton variant="primary" @click="handleEditCategory"
-            >Guardar Cambios</AppButton
-          >
+          <AppButton variant="glass" @click="showEditModal = false">Cancelar</AppButton>
+          <AppButton variant="primary" @click="handleEditCategory">Guardar Cambios</AppButton>
         </div>
       </div>
     </AppModal>

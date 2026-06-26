@@ -79,9 +79,7 @@ function formatRelativeTime(date: Date) {
         <div class="item-meta">
           <span class="type-badge">{{ item.tipo.toUpperCase() }}</span>
           <span class="dot-separator">•</span>
-          <span class="time-stamp">{{
-            formatRelativeTime(item.fechaCreacion)
-          }}</span>
+          <span class="time-stamp">{{ formatRelativeTime(item.fechaCreacion) }}</span>
         </div>
       </div>
     </div>

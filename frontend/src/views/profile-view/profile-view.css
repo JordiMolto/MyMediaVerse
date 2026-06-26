@@ -121,11 +121,7 @@
     width: 100%;
     max-width: 600px;
     padding: var(--space-8) var(--space-10);
-    background: linear-gradient(
-      135deg,
-      rgba(112, 104, 184, 0.08) 0%,
-      rgba(20, 20, 25, 0.5) 100%
-    );
+    background: linear-gradient(135deg, rgba(112, 104, 184, 0.08) 0%, rgba(20, 20, 25, 0.5) 100%);
     border: 1px solid rgba(112, 104, 184, 0.15);
     min-height: 140px;
     display: flex;

@@ -93,18 +93,12 @@ export async function searchTMDBResults(
       media_type: type === ItemType.SERIES ? "tv" : "movie",
     }));
   } catch (error: any) {
-    console.error(
-      "Error searching TMDB:",
-      error?.response?.data || error.message,
-    );
+    console.error("Error searching TMDB:", error?.response?.data || error.message);
     return [];
   }
 }
 
-export async function searchTMDB(
-  query: string,
-  type: ItemType,
-): Promise<TMDBResult | null> {
+export async function searchTMDB(query: string, type: ItemType): Promise<TMDBResult | null> {
   const results = await searchTMDBResults(query, type);
   return results && results.length > 0 ? results[0] : null;
 }
@@ -131,10 +125,7 @@ export async function getTMDBDetails(
 
     return response.data as TMDBDetailedResult;
   } catch (error: any) {
-    console.error(
-      "Error fetching TMDB details:",
-      error?.response?.data || error.message,
-    );
+    console.error("Error fetching TMDB details:", error?.response?.data || error.message);
     return null;
   }
 }
@@ -144,24 +135,18 @@ export function getTMDBImageUrl(path: string | null): string | undefined {
   return `${IMAGE_BASE_URL}${path}`;
 }
 
-export function getYouTubeTrailerUrl(
-  videos?: TMDBDetailedResult["videos"],
-): string | undefined {
+export function getYouTubeTrailerUrl(videos?: TMDBDetailedResult["videos"]): string | undefined {
   if (!videos?.results) return undefined;
 
   // Find official trailer in Spanish or English
   const trailer =
-    videos.results.find(
-      (v) => v.site === "YouTube" && v.type === "Trailer" && v.official,
-    ) ||
+    videos.results.find((v) => v.site === "YouTube" && v.type === "Trailer" && v.official) ||
     videos.results.find((v) => v.site === "YouTube" && v.type === "Trailer");
 
   return trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : undefined;
 }
 
-export function getStreamingPlatforms(
-  providers?: TMDBDetailedResult["watch/providers"],
-): string[] {
+export function getStreamingPlatforms(providers?: TMDBDetailedResult["watch/providers"]): string[] {
   if (!providers?.results?.ES) return [];
 
   const platforms: string[] = [];

@@ -17,10 +17,7 @@ export const useUIStore = defineStore("ui", () => {
     home: "all" as string,
   });
 
-  function toggleQuickAdd(
-    value?: boolean,
-    context: { type?: string; status?: string } = {},
-  ) {
+  function toggleQuickAdd(value?: boolean, context: { type?: string; status?: string } = {}) {
     if (context.type || context.status) {
       quickAddContext.value = context;
     }

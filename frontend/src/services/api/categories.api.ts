@@ -48,10 +48,7 @@ export async function createCategory(
   return mapSupabaseCategoryToLocal(data);
 }
 
-export async function updateCategory(
-  id: string,
-  updates: Partial<Category>,
-): Promise<Category> {
+export async function updateCategory(id: string, updates: Partial<Category>): Promise<Category> {
   if (!supabase) throw new Error("Supabase not configured");
 
   const supabaseUpdates: any = {};

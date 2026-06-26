@@ -21,9 +21,7 @@ export const useItemsStore = defineStore("items", () => {
     items.value.filter((item) => item.estado === ItemStatus.COMPLETED),
   );
 
-  const favoriteItems = computed(() =>
-    items.value.filter((item) => item.favorito),
-  );
+  const favoriteItems = computed(() => items.value.filter((item) => item.favorito));
 
   // Actions
   async function fetchItems() {
@@ -134,11 +132,7 @@ export const useItemsStore = defineStore("items", () => {
     }
   }
 
-  function filterItems(filters: {
-    type?: ItemType;
-    status?: ItemStatus;
-    search?: string;
-  }) {
+  function filterItems(filters: { type?: ItemType; status?: ItemStatus; search?: string }) {
     let filtered = [...items.value];
 
     if (filters.type) {

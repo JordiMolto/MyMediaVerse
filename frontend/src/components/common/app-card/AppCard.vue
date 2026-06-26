@@ -7,7 +7,7 @@ interface Props {
   padding?: "none" | "small" | "medium" | "large";
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   hoverable: false,
   clickable: false,
   padding: "medium",
@@ -15,10 +15,7 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <div
-    class="app-card"
-    :class="[`padding-${padding}`, { hoverable, clickable }]"
-  >
+  <div class="app-card" :class="[`padding-${padding}`, { hoverable, clickable }]">
     <slot></slot>
   </div>
 </template>

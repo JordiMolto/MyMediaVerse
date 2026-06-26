@@ -93,8 +93,7 @@ function openNoteModal(noteId?: string) {
 async function handleDeleteNote(noteId: string) {
   const ok = await showConfirm({
     title: "Eliminar nota",
-    message:
-      "¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.",
+    message: "¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.",
     confirmLabel: "Eliminar",
     danger: true,
   });
@@ -121,16 +120,6 @@ const editingNote = computed(() => {
   return itemNotes.value.find((n) => n.id === editingNoteId.value);
 });
 
-async function updateMiniReview(review: string) {
-  if (!item.value) return;
-  try {
-    await itemsStore.updateItem(item.value.id, { miniReseña: review });
-    item.value.miniReseña = review;
-  } catch (error) {
-    console.error("Error updating review:", error);
-  }
-}
-
 async function toggleFavorite() {
   if (!item.value) return;
   try {
@@ -141,11 +130,7 @@ async function toggleFavorite() {
   }
 }
 
-async function handleSaveNote(data: {
-  texto: string;
-  spoilers: boolean;
-  hito: HitoType;
-}) {
+async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: HitoType }) {
   if (!item.value) return;
   try {
     if (editingNoteId.value) {
@@ -236,12 +221,7 @@ const backdropStyle = computed(() => {
             </div>
 
             <div v-if="item.genero?.length" class="book-genres">
-              <span
-                v-for="genre in item.genero"
-                :key="genre"
-                class="genre-tag"
-                >{{ genre }}</span
-              >
+              <span v-for="genre in item.genero" :key="genre" class="genre-tag">{{ genre }}</span>
             </div>
           </div>
         </div>
@@ -252,12 +232,7 @@ const backdropStyle = computed(() => {
       <div class="detail-layout">
         <aside class="sidebar-column">
           <div class="poster-wrap">
-            <img
-              v-if="item.imagen"
-              :src="item.imagen"
-              :alt="item.titulo"
-              class="poster-image"
-            />
+            <img v-if="item.imagen" :src="item.imagen" :alt="item.titulo" class="poster-image" />
             <div v-else class="poster-fallback">
               <i class="fas fa-book"></i>
             </div>
@@ -273,18 +248,10 @@ const backdropStyle = computed(() => {
             >
               Enriquecer Libro
             </AppButton>
-            <AppButton
-              variant="ghost"
-              icon="fa-edit"
-              block
-              @click="showEditModal = true"
+            <AppButton variant="ghost" icon="fa-edit" block @click="showEditModal = true"
               >Editar Libro</AppButton
             >
-            <AppButton
-              variant="ghost"
-              icon="fa-trash"
-              block
-              @click="showDeleteConfirm = true"
+            <AppButton variant="ghost" icon="fa-trash" block @click="showDeleteConfirm = true"
               >Eliminar Libro</AppButton
             >
           </div>
@@ -292,18 +259,13 @@ const backdropStyle = computed(() => {
           <div v-if="item.progresoLectura" class="info-card">
             <h3 class="card-title"><i class="fas fa-bookmark"></i> Progreso</h3>
             <div class="status-badge" style="color: var(--color-accent)">
-              <span
-                class="status-dot"
-                style="background: var(--color-accent)"
-              ></span>
+              <span class="status-dot" style="background: var(--color-accent)"></span>
               {{ item.progresoLectura }}
             </div>
           </div>
 
           <div class="info-card">
-            <h3 class="card-title">
-              <i class="fas fa-info-circle"></i> Detalles
-            </h3>
+            <h3 class="card-title"><i class="fas fa-info-circle"></i> Detalles</h3>
             <div class="meta-list">
               <div v-if="item.autor" class="meta-row">
                 <span class="meta-key">Autor</span>
@@ -329,18 +291,12 @@ const backdropStyle = computed(() => {
           <div class="info-card status-indicator-card">
             <div class="status-group">
               <span class="indicator-label">Estado</span>
-              <div
-                class="status-badge"
-                :style="{ color: statusColors[item.estado] }"
-              >
-                <span
-                  class="status-dot"
-                  :style="{ background: statusColors[item.estado] }"
-                ></span>
+              <div class="status-badge" :style="{ color: statusColors[item.estado] }">
+                <span class="status-dot" :style="{ background: statusColors[item.estado] }"></span>
                 {{ statusLabels[item.estado] }}
               </div>
             </div>
-            <div class="rating-group">
+            <div v-if="item.estado === ItemStatus.COMPLETED" class="rating-group">
               <span class="indicator-label">Tu Valoración</span>
               <div class="rating-score">
                 {{ item.rating?.toFixed(1) || "—" }}
@@ -350,47 +306,21 @@ const backdropStyle = computed(() => {
           </div>
 
           <div v-if="item.descripcion" class="info-card description-card">
-            <h2 class="section-title">
-              <i class="fas fa-align-left"></i> Sinopsis
-            </h2>
+            <h2 class="section-title"><i class="fas fa-align-left"></i> Sinopsis</h2>
             <p class="description-text">{{ item.descripcion }}</p>
-          </div>
-
-          <div class="info-card thoughts-box-card">
-            <h2 class="section-title">
-              <i class="fas fa-quote-left"></i> Tu Reseña
-            </h2>
-            <textarea
-              v-model="item.miniReseña"
-              placeholder="¿Qué te ha parecido el libro hasta ahora?..."
-              class="thoughts-editor"
-              @change="updateMiniReview(item.miniReseña || '')"
-            ></textarea>
-            <div class="editor-hint">
-              <i class="fas fa-check-circle"></i> Se guarda automáticamente al
-              salir
-            </div>
           </div>
 
           <div class="activity-section">
             <div class="timeline-header">
-              <h2 class="section-title">
-                <i class="fas fa-stream"></i> Diario de Lectura
-              </h2>
-              <AppButton
-                variant="glass"
-                icon="fa-plus"
-                size="small"
-                @click="openNoteModal()"
+              <h2 class="section-title"><i class="fas fa-stream"></i> Diario de Lectura</h2>
+              <AppButton variant="glass" icon="fa-plus" size="small" @click="openNoteModal()"
                 >Nueva Entrada</AppButton
               >
             </div>
 
             <div v-if="itemNotes.length === 0" class="empty-timeline">
               <i class="fas fa-feather-alt empty-icon"></i>
-              <p class="empty-text">
-                No has registrado ninguna actividad para este libro.
-              </p>
+              <p class="empty-text">No has registrado ninguna actividad para este libro.</p>
             </div>
 
             <div v-else class="timeline-list">
@@ -413,12 +343,7 @@ const backdropStyle = computed(() => {
       size="large"
       @close="showEditModal = false"
     >
-      <ItemForm
-        :item="item"
-        mode="edit"
-        @save="handleSaveItem"
-        @cancel="showEditModal = false"
-      />
+      <ItemForm :item="item" mode="edit" @save="handleSaveItem" @cancel="showEditModal = false" />
     </AppModal>
 
     <AppModal
@@ -450,18 +375,14 @@ const backdropStyle = computed(() => {
     >
       <div class="delete-confirmation">
         <p class="delete-msg">
-          ¿Estás seguro de que quieres eliminar "<strong>{{
-            item.titulo
-          }}</strong
+          ¿Estás seguro de que quieres eliminar "<strong>{{ item.titulo }}</strong
           >"?
         </p>
         <p class="delete-warning">
           Esta acción eliminará permanentemente el libro y todas sus notas.
         </p>
         <div class="delete-actions">
-          <AppButton variant="ghost" @click="showDeleteConfirm = false"
-            >Cancelar</AppButton
-          >
+          <AppButton variant="ghost" @click="showDeleteConfirm = false">Cancelar</AppButton>
           <AppButton variant="danger" icon="fa-trash" @click="handleDeleteItem"
             >Eliminar Libro</AppButton
           >
@@ -482,26 +403,15 @@ const backdropStyle = computed(() => {
         </div>
 
         <div v-else-if="enrichmentResult" class="enrich-result">
-          <div
-            v-if="enrichmentResult.success > 0"
-            class="result-box result-box--success"
-          >
+          <div v-if="enrichmentResult.success > 0" class="result-box result-box--success">
             <i class="fas fa-check-circle"></i>
             <span>¡Completado con éxito!</span>
           </div>
-          <div
-            v-if="enrichmentResult.failed > 0"
-            class="result-box result-box--error"
-          >
+          <div v-if="enrichmentResult.failed > 0" class="result-box result-box--error">
             <i class="fas fa-exclamation-circle"></i>
             <span>No se pudo encontrar información.</span>
           </div>
-          <AppButton
-            variant="primary"
-            block
-            @click="showEnrichmentModal = false"
-            >Cerrar</AppButton
-          >
+          <AppButton variant="primary" block @click="showEnrichmentModal = false">Cerrar</AppButton>
         </div>
       </div>
     </AppModal>

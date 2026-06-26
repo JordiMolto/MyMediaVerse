@@ -5,9 +5,7 @@ export function exportToCSV(data: any[], filename: string) {
   const csvContent = [
     headers.join(","),
     ...data.map((row) =>
-      headers
-        .map((fieldName) => JSON.stringify(row[fieldName] || ""))
-        .join(","),
+      headers.map((fieldName) => JSON.stringify(row[fieldName] || "")).join(","),
     ),
   ].join("\r\n");
 

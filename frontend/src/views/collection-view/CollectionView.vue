@@ -21,9 +21,7 @@ const sortBy = ref<string>("recent");
 const currentPage = ref(1);
 
 // Derived from route
-const categoryName = computed(() =>
-  decodeURIComponent(route.params.nombre as string),
-);
+const categoryName = computed(() => decodeURIComponent(route.params.nombre as string));
 const category = computed(() =>
   categoriesStore.categories.find((c) => c.nombre === categoryName.value),
 );
@@ -85,10 +83,7 @@ const filteredItems = computed(() => {
   const base = getItemsForStatus(selectedStatus.value);
   return [...base].sort((a, b) => {
     if (sortBy.value === "recent") {
-      return (
-        new Date(b.fechaCreacion || 0).getTime() -
-        new Date(a.fechaCreacion || 0).getTime()
-      );
+      return new Date(b.fechaCreacion || 0).getTime() - new Date(a.fechaCreacion || 0).getTime();
     }
     if (sortBy.value === "alpha") return a.titulo.localeCompare(b.titulo);
     if (sortBy.value === "rating") return (b.rating || 0) - (a.rating || 0);
@@ -102,9 +97,7 @@ function getCount(status: string): number {
 
 // Pagination
 const itemsPerPage = 12;
-const totalPages = computed(() =>
-  Math.ceil(filteredItems.value.length / itemsPerPage),
-);
+const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage));
 const paginatedItems = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   return filteredItems.value.slice(start, start + itemsPerPage);
@@ -116,12 +109,7 @@ const visiblePages = computed(() => {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   pages.push(1);
   if (current > 3) pages.push("...");
-  for (
-    let i = Math.max(2, current - 1);
-    i <= Math.min(total - 1, current + 1);
-    i++
-  )
-    pages.push(i);
+  for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
   if (current < total - 2) pages.push("...");
   pages.push(total);
   return pages;
@@ -143,7 +131,6 @@ const headerStyle = computed(() => {
   if (!category.value?.color) return {};
   return {
     background: `linear-gradient(135deg, ${category.value.color}12 0%, transparent 60%)`,
-    borderBottom: `1px solid ${category.value.color}30`,
   };
 });
 
@@ -160,10 +147,7 @@ function getTabStyle(tabValue: string) {
   <div class="collection-view">
     <header class="collection-header" :style="headerStyle">
       <div class="collection-hero">
-        <div
-          class="collection-icon"
-          :style="category?.color ? { color: category.color } : {}"
-        >
+        <div class="collection-icon" :style="category?.color ? { color: category.color } : {}">
           <i class="fas" :class="category?.icono || 'fa-folder'"></i>
         </div>
         <div class="collection-info">

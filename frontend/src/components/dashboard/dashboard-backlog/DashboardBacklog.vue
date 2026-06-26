@@ -3,7 +3,7 @@ import { Item } from "@/types";
 import { useRouter } from "vue-router";
 import "./dashboard-backlog.css";
 
-const props = defineProps<{
+defineProps<{
   oldest: Item | null;
   best: Item | null;
   random: Item | null;
@@ -18,7 +18,7 @@ const goToItem = (id?: string) => {
 
 <template>
   <div class="backlog-section">
-    <h3 class="section-title">Tu Backlog Real</h3>
+    <h3 class="section-title">Tu Lista de Espera</h3>
 
     <div class="backlog-grid">
       <div class="backlog-card" @click="goToItem(oldest?.id)">
@@ -47,10 +47,7 @@ const goToItem = (id?: string) => {
         <div v-else class="empty-card">No hay pendientes</div>
       </div>
 
-      <div
-        class="backlog-card backlog-card--random"
-        @click="goToItem(random?.id)"
-      >
+      <div class="backlog-card backlog-card--random" @click="goToItem(random?.id)">
         <div class="card-tag">QUÉ CONSUMIR AHORA</div>
         <div v-if="random" class="random-inner">
           <i class="fas fa-dice dice-icon"></i>

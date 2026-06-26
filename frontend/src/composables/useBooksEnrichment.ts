@@ -8,23 +8,20 @@ export function useBooksEnrichment() {
   const isEnriching = ref(false);
   const enrichmentErrors = ref<string[]>([]);
 
+  function isEnrichableBook(tipo: string): boolean {
+    const t = (tipo || "").toLowerCase();
+    return t === ItemType.BOOK || t.includes("libro") || t.includes("book");
+  }
+
   async function enrichItemWithBooks(item: Item): Promise<boolean> {
-    // Only enrich books
-    if (
-      item.tipo !== ItemType.BOOK &&
-      !item.tipo.toLowerCase().includes("libro")
-    ) {
-      return false;
-    }
+    if (!isEnrichableBook(item.tipo)) return false;
 
     try {
       // Search for the item in Google Books
       const bookResult = await searchGoogleBooks(item.titulo);
 
       if (!bookResult) {
-        enrichmentErrors.value.push(
-          `No se encontró "${item.titulo}" en Google Books`,
-        );
+        enrichmentErrors.value.push(`No se encontró "${item.titulo}" en Google Books`);
         return false;
       }
 
@@ -37,10 +34,7 @@ export function useBooksEnrichment() {
         autor: details.authors ? details.authors.join(", ") : item.autor,
         editorial: details.publisher || item.editorial,
         duracion: details.pageCount ? details.pageCount : item.duracion,
-        imagen:
-          details.imageLinks?.thumbnail ||
-          details.imageLinks?.smallThumbnail ||
-          item.imagen,
+        imagen: details.imageLinks?.thumbnail || details.imageLinks?.smallThumbnail || item.imagen,
       };
 
       // Genres/Categories
@@ -95,6 +89,7 @@ export function useBooksEnrichment() {
   return {
     isEnriching,
     enrichmentErrors,
+    isEnrichableBook,
     enrichItemWithBooks,
     enrichMultipleBooks,
   };

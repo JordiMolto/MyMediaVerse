@@ -20,9 +20,7 @@ export interface GoogleBookResult {
   };
 }
 
-export async function searchGoogleBooks(
-  query: string,
-): Promise<GoogleBookResult | null> {
+export async function searchGoogleBooks(query: string): Promise<GoogleBookResult | null> {
   const trimmedQuery = query.trim();
   if (!trimmedQuery) return null;
 

@@ -31,6 +31,7 @@ const emit = defineEmits<{
 
 const isOpen = ref(false);
 const selectRef = ref<HTMLElement | null>(null);
+const instanceId = Math.random().toString(36).slice(2);
 
 const selectedOption = computed(() => {
   return props.options.find((opt) => opt.value === props.modelValue);
@@ -38,6 +39,9 @@ const selectedOption = computed(() => {
 
 function toggle() {
   if (props.disabled) return;
+  if (!isOpen.value) {
+    document.dispatchEvent(new CustomEvent("app-select:open", { detail: { id: instanceId } }));
+  }
   isOpen.value = !isOpen.value;
 }
 
@@ -52,12 +56,20 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
+function handleOtherOpen(event: Event) {
+  if ((event as CustomEvent).detail?.id !== instanceId) {
+    isOpen.value = false;
+  }
+}
+
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
+  document.addEventListener("app-select:open", handleOtherOpen);
 });
 
 onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside);
+  document.removeEventListener("app-select:open", handleOtherOpen);
 });
 </script>
 
@@ -74,14 +86,9 @@ onUnmounted(() => {
 
     <div class="select-wrapper">
       <div class="select-trigger" @click="toggle">
-        <span v-if="selectedOption" class="selected-text">{{
-          selectedOption.label
-        }}</span>
+        <span v-if="selectedOption" class="selected-text">{{ selectedOption.label }}</span>
         <span v-else class="placeholder-text">{{ placeholder }}</span>
-        <i
-          class="fas fa-chevron-down select-icon"
-          :class="{ rotate: isOpen }"
-        ></i>
+        <i class="fas fa-chevron-down select-icon" :class="{ rotate: isOpen }"></i>
       </div>
 
       <Transition name="dropdown-fade">
@@ -94,10 +101,7 @@ onUnmounted(() => {
             @click="selectOption(option.value)"
           >
             {{ option.label }}
-            <i
-              v-if="option.value === modelValue"
-              class="fas fa-check check-icon"
-            ></i>
+            <i v-if="option.value === modelValue" class="fas fa-check check-icon"></i>
           </div>
         </div>
       </Transition>

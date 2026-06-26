@@ -18,10 +18,7 @@ const uiStore = useUIStore();
     </main>
 
     <!-- Global Modals -->
-    <QuickAddModal
-      :is-open="uiStore.isQuickAddOpen"
-      @close="uiStore.toggleQuickAdd(false)"
-    />
+    <QuickAddModal :is-open="uiStore.isQuickAddOpen" @close="uiStore.toggleQuickAdd(false)" />
     <ConfirmModal />
   </div>
 </template>

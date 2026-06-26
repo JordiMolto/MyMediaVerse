@@ -78,9 +78,7 @@ const toggleSelection = (id: string | undefined) => {
 
 const confirmImport = async () => {
   // Only process items that have an ID and are selected
-  const itemsToSave = enrichedItems.value.filter(
-    (i) => i.id && selectedForImport.value.has(i.id),
-  );
+  const itemsToSave = enrichedItems.value.filter((i) => i.id && selectedForImport.value.has(i.id));
 
   try {
     // Save sequentially to avoid race conditions/blocks
@@ -138,13 +136,7 @@ const deselectAll = () => {
     <div class="modal-content">
       <header class="modal-header">
         <h2>Importación Masiva</h2>
-        <button
-          class="close-btn"
-          :disabled="isProcessing"
-          @click="$emit('close')"
-        >
-          &times;
-        </button>
+        <button class="close-btn" :disabled="isProcessing" @click="$emit('close')">&times;</button>
       </header>
 
       <div class="modal-body">
@@ -152,20 +144,12 @@ const deselectAll = () => {
         <div v-if="step === 'upload'" class="upload-step">
           <div class="form-group">
             <label>¿Qué vas a importar?</label>
-            <AppSelect
-              v-model="selectType"
-              :options="typeOptions"
-              label="Tipo de Contenido"
-            />
+            <AppSelect v-model="selectType" :options="typeOptions" label="Tipo de Contenido" />
           </div>
 
           <div class="template-section">
             <p>Descarga la plantilla para rellenar tus datos:</p>
-            <AppButton
-              variant="secondary"
-              size="small"
-              @click="downloadTemplate(selectType)"
-            >
+            <AppButton variant="secondary" size="small" @click="downloadTemplate(selectType)">
               <i class="fas fa-download"></i> Descargar Excel/CSV
             </AppButton>
           </div>
@@ -186,9 +170,7 @@ const deselectAll = () => {
             <div v-else class="file-selected">
               <i class="fas fa-file-excel"></i>
               <p>{{ selectedFile.name }}</p>
-              <p class="file-size">
-                {{ (selectedFile.size / 1024).toFixed(1) }} KB
-              </p>
+              <p class="file-size">{{ (selectedFile.size / 1024).toFixed(1) }} KB</p>
             </div>
           </div>
 
@@ -209,10 +191,7 @@ const deselectAll = () => {
             <div class="spinner"></div>
             <p>Analizando y buscando datos...</p>
             <div class="progress-bar">
-              <div
-                class="progress-fill"
-                :style="{ width: progress + '%' }"
-              ></div>
+              <div class="progress-fill" :style="{ width: progress + '%' }"></div>
             </div>
             <span>{{ progress }}%</span>
           </div>
@@ -227,12 +206,8 @@ const deselectAll = () => {
               {{ enrichedItems.length }} filas.
             </p>
             <div class="review-actions">
-              <button class="text-btn" @click="selectAll">
-                Seleccionar Todo
-              </button>
-              <button class="text-btn" @click="deselectAll">
-                Desmarcar Todo
-              </button>
+              <button class="text-btn" @click="selectAll">Seleccionar Todo</button>
+              <button class="text-btn" @click="deselectAll">Desmarcar Todo</button>
             </div>
           </div>
 
@@ -248,17 +223,14 @@ const deselectAll = () => {
               @click="toggleSelection(item.id)"
             >
               <div class="checkbox">
-                <i
-                  v-if="item.id && selectedForImport.has(item.id)"
-                  class="fas fa-check"
-                ></i>
+                <i v-if="item.id && selectedForImport.has(item.id)" class="fas fa-check"></i>
               </div>
 
               <div class="item-preview">
                 <img
                   v-if="item.imagen"
                   :src="item.imagen"
-                  alt="Cover"
+                  :alt="item.titulo || 'Portada'"
                   class="item-cover"
                 />
                 <div v-else class="no-cover">
@@ -266,9 +238,7 @@ const deselectAll = () => {
                 </div>
 
                 <div class="item-info">
-                  <span class="original-title"
-                    >Excel: {{ item.originalTitle }}</span
-                  >
+                  <span class="original-title">Excel: {{ item.originalTitle }}</span>
                   <h4 v-if="item.found">{{ item.titulo }}</h4>
                   <span v-else class="not-found-badge">No encontrado</span>
 
@@ -286,7 +256,7 @@ const deselectAll = () => {
           <div class="actions footer-actions">
             <AppButton variant="secondary" @click="reset">Cancelar</AppButton>
             <AppButton @click="confirmImport">
-              Importar {{ selectedForImport.size }} Items
+              Importar {{ selectedForImport.size }} títulos
             </AppButton>
           </div>
         </div>

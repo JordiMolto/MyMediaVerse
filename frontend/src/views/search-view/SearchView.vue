@@ -39,14 +39,8 @@ watch(
 const filteredResults = computed(() => {
   return itemsStore.filterItems({
     search: searchQuery.value,
-    type:
-      selectedType.value === "all"
-        ? undefined
-        : (selectedType.value as ItemType),
-    status:
-      selectedStatus.value === "all"
-        ? undefined
-        : (selectedStatus.value as ItemStatus),
+    type: selectedType.value === "all" ? undefined : (selectedType.value as ItemType),
+    status: selectedStatus.value === "all" ? undefined : (selectedStatus.value as ItemStatus),
   });
 });
 
@@ -107,7 +101,7 @@ async function saveQuickNote(data: { texto: string; spoilers: boolean }) {
           <i class="fas fa-search"></i>
           Buscar
         </h1>
-        <p class="search-subtitle">Encuentra tus items rápidamente</p>
+        <p class="search-subtitle">Encuentra tus títulos rápidamente</p>
       </header>
 
       <div class="search-controls">
@@ -120,23 +114,13 @@ async function saveQuickNote(data: { texto: string; spoilers: boolean }) {
 
         <div class="filters-row">
           <div class="filter-item">
-            <AppSelect
-              v-model="selectedType"
-              :options="typeOptions"
-              label="Tipo"
-            />
+            <AppSelect v-model="selectedType" :options="typeOptions" label="Tipo" />
           </div>
           <div class="filter-item">
-            <AppSelect
-              v-model="selectedStatus"
-              :options="statusOptions"
-              label="Estado"
-            />
+            <AppSelect v-model="selectedStatus" :options="statusOptions" label="Estado" />
           </div>
           <button
-            v-if="
-              searchQuery || selectedType !== 'all' || selectedStatus !== 'all'
-            "
+            v-if="searchQuery || selectedType !== 'all' || selectedStatus !== 'all'"
             class="clear-filters-btn"
             @click="clearFilters"
           >
@@ -147,17 +131,13 @@ async function saveQuickNote(data: { texto: string; spoilers: boolean }) {
       </div>
 
       <div
-        v-if="
-          !searchQuery && selectedType === 'all' && selectedStatus === 'all'
-        "
+        v-if="!searchQuery && selectedType === 'all' && selectedStatus === 'all'"
         class="empty-state"
       >
         <i class="fas fa-search empty-icon"></i>
         <div class="empty-text">
           <p class="empty-primary">Comienza a buscar</p>
-          <p class="empty-secondary">
-            Escribe algo en el campo de búsqueda o selecciona filtros
-          </p>
+          <p class="empty-secondary">Escribe algo en el campo de búsqueda o selecciona filtros</p>
         </div>
       </div>
 
@@ -165,30 +145,18 @@ async function saveQuickNote(data: { texto: string; spoilers: boolean }) {
         <i class="fas fa-inbox empty-icon"></i>
         <div class="empty-text">
           <p class="empty-primary">No se encontraron resultados</p>
-          <p class="empty-secondary">
-            Intenta con otros términos de búsqueda o filtros
-          </p>
+          <p class="empty-secondary">Intenta con otros términos de búsqueda o filtros</p>
         </div>
       </div>
 
       <div v-else class="results-section">
         <h2 class="results-count">
-          {{ filteredResults.length }} resultado{{
-            filteredResults.length !== 1 ? "s" : ""
-          }}
+          {{ filteredResults.length }} resultado{{ filteredResults.length !== 1 ? "s" : "" }}
         </h2>
 
         <div class="results-grid">
-          <div
-            v-for="item in filteredResults"
-            :key="item.id"
-            class="result-item"
-          >
-            <MediaCard
-              :item="item"
-              @click="goToDetail"
-              @quick-note="handleQuickNote"
-            />
+          <div v-for="item in filteredResults" :key="item.id" class="result-item">
+            <MediaCard :item="item" @click="goToDetail" @quick-note="handleQuickNote" />
           </div>
         </div>
       </div>

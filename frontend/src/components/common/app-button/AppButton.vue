@@ -10,7 +10,7 @@ interface Props {
   fullWidth?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   variant: "primary",
   size: "medium",
   disabled: false,

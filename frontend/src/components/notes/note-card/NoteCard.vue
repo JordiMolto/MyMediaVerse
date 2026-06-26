@@ -39,8 +39,7 @@ const hitoConfig = {
 };
 
 const hitoInfo = computed(() => {
-  if (!props.note.tipoHito || props.note.tipoHito === HitoType.NONE)
-    return null;
+  if (!props.note.tipoHito || props.note.tipoHito === HitoType.NONE) return null;
   return hitoConfig[props.note.tipoHito];
 });
 
@@ -58,11 +57,7 @@ function formatDate(date: Date): string {
 <template>
   <div class="note-card-wrapper" :class="{ 'has-milestone': hitoInfo }">
     <div class="timeline-trail">
-      <div
-        v-if="hitoInfo"
-        class="milestone-marker"
-        :style="{ background: hitoInfo.color }"
-      >
+      <div v-if="hitoInfo" class="milestone-marker" :style="{ background: hitoInfo.color }">
         <i class="fas" :class="hitoInfo.icon"></i>
       </div>
       <div v-else class="timeline-dot"></div>
@@ -86,16 +81,10 @@ function formatDate(date: Date): string {
           </span>
         </div>
         <div class="note-actions">
-          <button
-            class="action-btn action-btn--edit"
-            @click="emit('edit', note.id)"
-          >
+          <button class="action-btn action-btn--edit" @click="emit('edit', note.id)">
             <i class="fas fa-edit"></i>
           </button>
-          <button
-            class="action-btn action-btn--delete"
-            @click="emit('delete', note.id)"
-          >
+          <button class="action-btn action-btn--delete" @click="emit('delete', note.id)">
             <i class="fas fa-trash"></i>
           </button>
         </div>

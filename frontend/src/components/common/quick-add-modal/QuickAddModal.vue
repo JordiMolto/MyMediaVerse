@@ -14,10 +14,7 @@ import {
   searchGoogleBooksMultiple,
   type GoogleBookResult,
 } from "@/services/external/google-books.service";
-import {
-  searchRawgGamesMultiple,
-  type RawgGameResult,
-} from "@/services/external/rawg.service";
+import { searchRawgGamesMultiple, type RawgGameResult } from "@/services/external/rawg.service";
 import AppModal from "../app-modal/AppModal.vue";
 import AppButton from "../app-button/AppButton.vue";
 import AppSelect from "../app-select/AppSelect.vue";
@@ -40,7 +37,6 @@ const itemsStore = useItemsStore();
 const uiStore = useUIStore();
 
 const {
-  isProcessing: isImportProcessing,
   progress: importProgress,
   items: importEnrichedItems,
   error: importError,
@@ -158,9 +154,9 @@ interface NormalizedResult {
   raw: any;
 }
 
-const step = ref<
-  "setup" | "search" | "bulk" | "processing" | "success" | "manual" | "import"
->("setup");
+const step = ref<"setup" | "search" | "bulk" | "processing" | "success" | "manual" | "import">(
+  "setup",
+);
 const selectedType = ref<string>("");
 const selectedStatus = ref<ItemStatus>(ItemStatus.PENDING);
 const searchQuery = ref("");
@@ -195,25 +191,16 @@ function getSearchSource(categoryName: string): SearchSource {
   const low = categoryName.toLowerCase();
   if (low.includes("serie") || low.includes("anime")) return "tmdb_tv";
   if (low.includes("libro") || low.includes("book")) return "googlebooks";
-  if (
-    low.includes("juego") ||
-    low.includes("game") ||
-    low.includes("videojuego")
-  )
-    return "rawg";
+  if (low.includes("juego") || low.includes("game") || low.includes("videojuego")) return "rawg";
   return "tmdb_movie";
 }
 
 const currentSource = computed(() => getSearchSource(selectedType.value));
 const isTmdbSource = computed(
-  () =>
-    currentSource.value === "tmdb_movie" || currentSource.value === "tmdb_tv",
+  () => currentSource.value === "tmdb_movie" || currentSource.value === "tmdb_tv",
 );
 
-function normalizeTMDB(
-  items: any[],
-  source: "tmdb_movie" | "tmdb_tv",
-): NormalizedResult[] {
+function normalizeTMDB(items: any[], source: "tmdb_movie" | "tmdb_tv"): NormalizedResult[] {
   return items.map((r) => ({
     id: String(r.id),
     title: r.title || r.name || "",
@@ -230,8 +217,7 @@ function normalizeGoogleBooks(items: GoogleBookResult[]): NormalizedResult[] {
   return items.map((r) => ({
     id: r.id,
     title: r.volumeInfo.title,
-    posterUrl:
-      r.volumeInfo.imageLinks?.thumbnail?.replace("http:", "https:") || null,
+    posterUrl: r.volumeInfo.imageLinks?.thumbnail?.replace("http:", "https:") || null,
     year: r.volumeInfo.publishedDate?.split("-")[0] || null,
     rating: null,
     mediaTypeLabel: "Libro",
@@ -340,9 +326,7 @@ const handleSave = async () => {
   progress.value = { current: 0, total: selectedIds.value.size };
 
   try {
-    const selectedResults = results.value.filter((r) =>
-      selectedIds.value.has(r.id),
-    );
+    const selectedResults = results.value.filter((r) => selectedIds.value.has(r.id));
 
     for (const result of selectedResults) {
       const baseData: any = {
@@ -352,8 +336,7 @@ const handleSave = async () => {
       };
 
       if (result.source === "tmdb_movie" || result.source === "tmdb_tv") {
-        const tmdbType =
-          result.source === "tmdb_tv" ? ItemType.SERIES : ItemType.MOVIE;
+        const tmdbType = result.source === "tmdb_tv" ? ItemType.SERIES : ItemType.MOVIE;
         const details = await getTMDBDetails(Number(result.id), tmdbType);
         if (details) {
           Object.assign(baseData, {
@@ -362,16 +345,11 @@ const handleSave = async () => {
             backdropImage: getTMDBImageUrl(details.backdrop_path),
             descripcion: details.overview,
             tagline: details.tagline,
-            rating: details.vote_average
-              ? Math.round(details.vote_average / 2)
-              : undefined,
+            rating: details.vote_average ? Math.round(details.vote_average / 2) : undefined,
             genero: details.genres?.map((g: any) => g.name) || [],
-            reparto:
-              details.credits?.cast?.slice(0, 5).map((c: any) => c.name) || [],
+            reparto: details.credits?.cast?.slice(0, 5).map((c: any) => c.name) || [],
             trailer: getYouTubeTrailerUrl(details.videos),
-            streamingPlatforms: getStreamingPlatforms(
-              details["watch/providers"],
-            ),
+            streamingPlatforms: getStreamingPlatforms(details["watch/providers"]),
           });
           if (details.runtime) baseData.duracion = details.runtime;
           else if (details.episode_run_time?.length)
@@ -381,9 +359,7 @@ const handleSave = async () => {
             baseData.numberOfEpisodes = details.number_of_episodes;
           }
           if (details.release_date || details.first_air_date) {
-            baseData.fechaInicio = new Date(
-              details.release_date || details.first_air_date!,
-            );
+            baseData.fechaInicio = new Date(details.release_date || details.first_air_date!);
           }
           await itemsStore.createItem(baseData);
         }
@@ -391,10 +367,7 @@ const handleSave = async () => {
         const book = result.raw as GoogleBookResult;
         Object.assign(baseData, {
           titulo: book.volumeInfo.title,
-          imagen: book.volumeInfo.imageLinks?.thumbnail?.replace(
-            "http:",
-            "https:",
-          ),
+          imagen: book.volumeInfo.imageLinks?.thumbnail?.replace("http:", "https:"),
           descripcion: book.volumeInfo.description,
           reparto: book.volumeInfo.authors || [],
           genero: book.volumeInfo.categories || [],
@@ -442,8 +415,7 @@ const handleManualIdAdd = async () => {
 
   isAddingManual.value = true;
   try {
-    const tmdbType =
-      currentSource.value === "tmdb_tv" ? ItemType.SERIES : ItemType.MOVIE;
+    const tmdbType = currentSource.value === "tmdb_tv" ? ItemType.SERIES : ItemType.MOVIE;
     const details = await getTMDBDetails(id, tmdbType);
     if (details) {
       const strId = String(details.id);
@@ -483,8 +455,7 @@ const handleClose = () => {
   setTimeout(() => {
     step.value = "setup";
     selectedType.value = uiStore.quickAddContext.type || "";
-    selectedStatus.value =
-      (uiStore.quickAddContext.status as ItemStatus) || ItemStatus.PENDING;
+    selectedStatus.value = (uiStore.quickAddContext.status as ItemStatus) || ItemStatus.PENDING;
     searchQuery.value = "";
     results.value = [];
     selectedIds.value.clear();
@@ -508,8 +479,7 @@ watch(
   () => props.isOpen,
   (val) => {
     if (val) {
-      if (uiStore.quickAddContext.type)
-        selectedType.value = uiStore.quickAddContext.type;
+      if (uiStore.quickAddContext.type) selectedType.value = uiStore.quickAddContext.type;
       if (uiStore.quickAddContext.status)
         selectedStatus.value = uiStore.quickAddContext.status as ItemStatus;
 
@@ -539,9 +509,7 @@ watch(
       <div v-if="step === 'setup'" class="setup-view">
         <div class="setup-heading">
           <h3 class="setup-title">¿Qué vamos a añadir?</h3>
-          <p class="setup-subtitle">
-            Configura el destino de tus nuevos descubrimientos.
-          </p>
+          <p class="setup-subtitle">Configura el destino de tus nuevos descubrimientos.</p>
         </div>
 
         <div class="setup-fields">
@@ -610,15 +578,12 @@ watch(
             <p class="empty-sub">Busca por título para empezar a añadir.</p>
           </div>
 
-          <div
-            v-else-if="hasSearched && results.length === 0 && !isSearching"
-            class="empty-state"
-          >
+          <div v-else-if="hasSearched && results.length === 0 && !isSearching" class="empty-state">
             <i class="fas fa-ghost empty-icon"></i>
             <p class="empty-title">Sin resultados</p>
             <p class="empty-sub">
-              No encontramos nada para <strong>"{{ searchQuery }}"</strong>.
-              Prueba con otro término.
+              No encontramos nada para <strong>"{{ searchQuery }}"</strong>. Prueba con otro
+              término.
             </p>
             <div v-if="isTmdbSource" class="tmdb-id-helper">
               <p class="field-label">O añade por ID de TMDB</p>
@@ -635,10 +600,7 @@ watch(
                   @click="handleManualIdAdd"
                   :disabled="isAddingManual"
                 >
-                  <i
-                    class="fas"
-                    :class="isAddingManual ? 'fa-spinner fa-spin' : 'fa-plus'"
-                  ></i>
+                  <i class="fas" :class="isAddingManual ? 'fa-spinner fa-spin' : 'fa-plus'"></i>
                 </button>
               </div>
             </div>
@@ -664,9 +626,7 @@ watch(
               </div>
 
               <div class="card-badges">
-                <span v-if="item.year" class="badge badge-year">{{
-                  item.year
-                }}</span>
+                <span v-if="item.year" class="badge badge-year">{{ item.year }}</span>
                 <span v-if="item.rating" class="badge badge-rating">
                   <i class="fas fa-star"></i>
                   {{ item.rating.toFixed(1) }}
@@ -675,10 +635,7 @@ watch(
 
               <div class="selection-overlay">
                 <div class="selection-icon">
-                  <i
-                    class="fas"
-                    :class="selectedIds.has(item.id) ? 'fa-check' : 'fa-plus'"
-                  ></i>
+                  <i class="fas" :class="selectedIds.has(item.id) ? 'fa-check' : 'fa-plus'"></i>
                 </div>
               </div>
             </div>
@@ -687,17 +644,13 @@ watch(
               <h4 class="info-title">{{ item.title }}</h4>
               <div class="info-meta">
                 <span class="meta-type">{{ item.mediaTypeLabel }}</span>
-                <span v-if="selectedIds.has(item.id)" class="meta-selected"
-                  >Seleccionado</span
-                >
+                <span v-if="selectedIds.has(item.id)" class="meta-selected">Seleccionado</span>
               </div>
             </div>
           </div>
 
           <div v-if="results.length > 0 && isTmdbSource" class="tmdb-id-footer">
-            <p class="field-label">
-              ¿No está en la lista? Añade por ID de TMDB
-            </p>
+            <p class="field-label">¿No está en la lista? Añade por ID de TMDB</p>
             <div class="tmdb-id-row">
               <input
                 v-model="manualId"
@@ -711,10 +664,7 @@ watch(
                 @click="handleManualIdAdd"
                 :disabled="isAddingManual"
               >
-                <i
-                  class="fas"
-                  :class="isAddingManual ? 'fa-spinner fa-spin' : 'fa-plus'"
-                ></i>
+                <i class="fas" :class="isAddingManual ? 'fa-spinner fa-spin' : 'fa-plus'"></i>
               </button>
             </div>
           </div>
@@ -724,15 +674,9 @@ watch(
           <button class="back-btn" @click="step = 'setup'">
             <i class="fas fa-chevron-left"></i> Cambiar destino
           </button>
-          <AppButton
-            variant="primary"
-            :disabled="selectedIds.size === 0"
-            @click="handleSave"
-          >
+          <AppButton variant="primary" :disabled="selectedIds.size === 0" @click="handleSave">
             {{
-              selectedIds.size > 0
-                ? `Añadir ${selectedIds.size} items`
-                : "Selecciona para añadir"
+              selectedIds.size > 0 ? `Añadir ${selectedIds.size} items` : "Selecciona para añadir"
             }}
           </AppButton>
         </div>
@@ -743,8 +687,8 @@ watch(
         <div class="bulk-header">
           <p class="empty-title">Lista rápida de títulos</p>
           <p class="empty-sub">
-            Un título por línea, o pega una lista. Pulsa <kbd>Ctrl+Enter</kbd> o
-            el botón + para añadirlos todos.
+            Un título por línea, o pega una lista. Pulsa <kbd>Ctrl+Enter</kbd> o el botón + para
+            añadirlos todos.
           </p>
         </div>
 
@@ -758,24 +702,16 @@ watch(
             @keydown.meta.enter.prevent="addBulkTitle"
             autofocus
           />
-          <button
-            class="bulk-add-btn"
-            @click="addBulkTitle"
-            title="Añadir títulos (Ctrl+Enter)"
-          >
+          <button class="bulk-add-btn" @click="addBulkTitle" title="Añadir títulos (Ctrl+Enter)">
             <i class="fas fa-plus"></i>
           </button>
         </div>
 
-        <div
-          v-if="bulkTitles.length > 0"
-          class="bulk-tags-container custom-scrollbar"
-        >
+        <div v-if="bulkTitles.length > 0" class="bulk-tags-container custom-scrollbar">
           <span class="field-label"
-            >{{ bulkTitles.length }} título{{
+            >{{ bulkTitles.length }} título{{ bulkTitles.length !== 1 ? "s" : "" }} añadido{{
               bulkTitles.length !== 1 ? "s" : ""
-            }}
-            añadido{{ bulkTitles.length !== 1 ? "s" : "" }}</span
+            }}</span
           >
           <div class="bulk-tags">
             <div v-for="(title, i) in bulkTitles" :key="i" class="bulk-tag">
@@ -796,11 +732,7 @@ watch(
           <button class="back-btn" @click="step = 'setup'">
             <i class="fas fa-chevron-left"></i> Atrás
           </button>
-          <AppButton
-            variant="primary"
-            :disabled="bulkTitles.length === 0"
-            @click="saveBulkTitles"
-          >
+          <AppButton variant="primary" :disabled="bulkTitles.length === 0" @click="saveBulkTitles">
             Guardar
             {{ bulkTitles.length > 0 ? bulkTitles.length + " items" : "" }}
           </AppButton>
@@ -830,9 +762,7 @@ watch(
         </div>
         <div class="success-info">
           <h3 class="success-title">¡Todo listo!</h3>
-          <p class="success-subtitle">
-            Los items se han añadido correctamente a tu lista.
-          </p>
+          <p class="success-subtitle">Los items se han añadido correctamente a tu lista.</p>
         </div>
       </div>
 
@@ -853,16 +783,11 @@ watch(
         <div v-if="importSubStep === 'upload'" class="import-upload">
           <div class="import-type-row">
             <label class="field-label">¿Qué vas a importar?</label>
-            <AppSelect
-              v-model="importSelectType"
-              :options="importTypeOptions"
-            />
+            <AppSelect v-model="importSelectType" :options="importTypeOptions" />
           </div>
 
           <div class="import-template-row">
-            <span class="import-hint"
-              >Descarga la plantilla con el formato correcto:</span
-            >
+            <span class="import-hint">Descarga la plantilla con el formato correcto:</span>
             <button
               class="setup-alt-btn import-template-btn"
               @click="downloadTemplate(importSelectType)"
@@ -927,12 +852,8 @@ watch(
               {{ importEnrichedItems.length }} filas
             </p>
             <div class="import-review-actions">
-              <button class="setup-link-btn" @click="importSelectAll">
-                Seleccionar todo
-              </button>
-              <button class="setup-link-btn" @click="importDeselectAll">
-                Desmarcar todo
-              </button>
+              <button class="setup-link-btn" @click="importSelectAll">Seleccionar todo</button>
+              <button class="setup-link-btn" @click="importDeselectAll">Desmarcar todo</button>
             </div>
           </div>
 
@@ -942,30 +863,20 @@ watch(
               :key="item.id"
               class="import-review-item"
               :class="{
-                'import-item--selected':
-                  item.id && importSelectedForImport.has(item.id),
+                'import-item--selected': item.id && importSelectedForImport.has(item.id),
                 'import-item--not-found': !item.found,
               }"
               @click="toggleImportSelection(item.id)"
             >
               <div class="import-item-check">
-                <i
-                  v-if="item.id && importSelectedForImport.has(item.id)"
-                  class="fas fa-check"
-                ></i>
+                <i v-if="item.id && importSelectedForImport.has(item.id)" class="fas fa-check"></i>
               </div>
-              <img
-                v-if="item.imagen"
-                :src="item.imagen"
-                class="import-item-cover"
-              />
+              <img v-if="item.imagen" :src="item.imagen" class="import-item-cover" />
               <div v-else class="import-item-no-cover">
                 <i class="fas fa-image"></i>
               </div>
               <div class="import-item-info">
-                <span class="import-item-original">{{
-                  item.originalTitle
-                }}</span>
+                <span class="import-item-original">{{ item.originalTitle }}</span>
                 <strong v-if="item.found">{{ item.titulo }}</strong>
                 <span v-else class="import-not-found-badge">No encontrado</span>
               </div>
@@ -982,11 +893,7 @@ watch(
               @click="confirmImport"
             >
               Importar
-              {{
-                importSelectedForImport.size > 0
-                  ? importSelectedForImport.size + " items"
-                  : ""
-              }}
+              {{ importSelectedForImport.size > 0 ? importSelectedForImport.size + " items" : "" }}
             </AppButton>
           </div>
         </div>

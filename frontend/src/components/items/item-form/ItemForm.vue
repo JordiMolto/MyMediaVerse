@@ -44,7 +44,7 @@ const formData = ref({
   titulo: props.item?.titulo || "",
   estado: props.item?.estado || props.initialStatus || ItemStatus.PENDING,
   prioridad: props.item?.prioridad || Priority.MEDIUM,
-  rating: props.item?.rating?.toString() || "",
+  rating: props.item?.rating?.toString() ?? "0",
   descripcion: props.item?.descripcion || "",
   tags: props.item?.tags?.join(", ") || "",
   imagen: props.item?.imagen || "",
@@ -59,8 +59,14 @@ const formData = ref({
   reparto: props.item?.reparto?.join(", ") || "",
   developer: props.item?.developer || "",
   tiempoEstimado: props.item?.tiempoEstimado || "",
+  trailer: props.item?.trailer || "",
+  streamingPlatforms: [...(props.item?.streamingPlatforms || [])],
+  fechaInicio: props.item?.fechaInicio
+    ? new Date(props.item.fechaInicio).toISOString().split("T")[0]
+    : "",
 });
 
+const newPlatform = ref("");
 const errors = ref<Record<string, string>>({});
 
 const typeOptions = computed(() => {
@@ -93,23 +99,14 @@ const priorityOptions = [
   { value: Priority.HIGH, label: "Alta" },
 ];
 
-const showRating = computed(
-  () => formData.value.estado === ItemStatus.COMPLETED,
-);
-const showPriority = computed(
-  () => formData.value.estado === ItemStatus.PENDING,
-);
+const showRating = computed(() => formData.value.estado === ItemStatus.COMPLETED);
+const showPriority = computed(() => formData.value.estado === ItemStatus.PENDING);
 
 const isVisual = computed(() => {
   const type = formData.value.tipo.toLowerCase();
-  return [
-    ItemType.MOVIE,
-    ItemType.SERIES,
-    ItemType.ANIME,
-    "película",
-    "pelicula",
-    "serie",
-  ].some((v) => type.includes(v));
+  return [ItemType.MOVIE, ItemType.SERIES, ItemType.ANIME, "película", "pelicula", "serie"].some(
+    (v) => type.includes(v),
+  );
 });
 const isSeries = computed(() => {
   const type = formData.value.tipo.toLowerCase();
@@ -117,18 +114,27 @@ const isSeries = computed(() => {
 });
 const isBook = computed(() => {
   const type = formData.value.tipo.toLowerCase();
-  return (
-    type === ItemType.BOOK || type.includes("libro") || type.includes("book")
-  );
+  return type === ItemType.BOOK || type.includes("libro") || type.includes("book");
 });
 const isGame = computed(() => {
   const type = formData.value.tipo.toLowerCase();
-  return (
-    type === ItemType.VIDEOGAME ||
-    type.includes("juego") ||
-    type.includes("game")
-  );
+  return type === ItemType.VIDEOGAME || type.includes("juego") || type.includes("game");
 });
+
+function addPlatform() {
+  const val = newPlatform.value.trim();
+  if (!val) return;
+  if (!formData.value.streamingPlatforms.includes(val)) {
+    formData.value.streamingPlatforms.push(val);
+  }
+  newPlatform.value = "";
+}
+
+function removePlatform(platform: string) {
+  formData.value.streamingPlatforms = formData.value.streamingPlatforms.filter(
+    (p) => p !== platform,
+  );
+}
 
 function validate(): boolean {
   errors.value = {};
@@ -137,10 +143,14 @@ function validate(): boolean {
     errors.value.titulo = "El título es obligatorio";
   }
 
-  if (showRating.value && formData.value.rating) {
-    const rating = Number(formData.value.rating);
-    if (isNaN(rating) || rating < 0 || rating > 10) {
-      errors.value.rating = "El rating debe estar entre 0 y 10";
+  if (showRating.value) {
+    if (!formData.value.rating) {
+      errors.value.rating = "La nota es obligatoria al marcar como completado";
+    } else {
+      const rating = Number(formData.value.rating);
+      if (isNaN(rating) || rating < 0 || rating > 10) {
+        errors.value.rating = "El rating debe estar entre 0 y 10";
+      }
     }
   }
 
@@ -182,6 +192,10 @@ function handleSubmit() {
           .map((g) => g.trim())
           .filter(Boolean)
       : undefined,
+    trailer: formData.value.trailer.trim() || undefined,
+    streamingPlatforms:
+      formData.value.streamingPlatforms.length > 0 ? formData.value.streamingPlatforms : undefined,
+    fechaInicio: formData.value.fechaInicio ? new Date(formData.value.fechaInicio) : undefined,
   };
 
   if (formData.value.duracion) {
@@ -209,69 +223,76 @@ function handleCancel() {
 <template>
   <form class="item-form" @submit.prevent="handleSubmit">
     <div class="form-content">
-      <div class="form-section">
-        <h3 class="section-heading">Información Básica</h3>
+      <!-- Sección 1: Básico -->
+      <section class="form-section">
+        <h3 class="section-heading">Básico</h3>
         <div class="form-row">
-          <div class="form-field">
-            <AppSelect
-              v-model="formData.tipo"
-              :options="typeOptions"
-              label="Tipo"
-              required
-            />
-          </div>
-          <div class="form-field form-field--wide">
-            <AppInput
-              v-model="formData.titulo"
-              label="Título"
-              placeholder="Ej: Inception"
-              icon="fa-heading"
-              required
-              :error="errors.titulo"
-            />
-          </div>
+          <AppSelect
+            v-model="formData.tipo"
+            :options="typeOptions"
+            label="Tipo"
+            required
+            class="form-field"
+          />
+          <AppInput
+            v-model="formData.titulo"
+            label="Título"
+            placeholder="Ej: Inception"
+            icon="fa-heading"
+            required
+            :error="errors.titulo"
+            class="form-field form-field--wide"
+          />
         </div>
-      </div>
+        <AppInput
+          v-model="formData.imagen"
+          label="URL del póster"
+          icon="fa-image"
+          placeholder="https://..."
+        />
+      </section>
 
-      <div class="form-section">
-        <h3 class="section-heading">Estado y Prioridad</h3>
+      <!-- Sección 2: Estado -->
+      <section class="form-section">
+        <h3 class="section-heading">Estado</h3>
         <div class="form-row">
-          <div class="form-field">
-            <AppSelect
-              v-model="formData.estado"
-              :options="statusOptions"
-              label="Estado"
-              required
-            />
-          </div>
-          <div v-if="showPriority" class="form-field">
-            <AppSelect
-              v-model="formData.prioridad"
-              :options="priorityOptions"
-              label="Prioridad"
-            />
-          </div>
-          <div v-if="showRating" class="form-field">
-            <AppInput
-              v-model="formData.rating"
-              type="number"
-              label="Rating (0-10)"
-              placeholder="8"
-              icon="fa-star"
-              :error="errors.rating"
-            />
-          </div>
+          <AppSelect
+            v-model="formData.estado"
+            :options="statusOptions"
+            label="Estado"
+            required
+            class="form-field"
+          />
+          <AppSelect
+            v-if="showPriority"
+            v-model="formData.prioridad"
+            :options="priorityOptions"
+            label="Prioridad"
+            class="form-field"
+          />
+          <AppInput
+            v-if="showRating"
+            v-model="formData.rating"
+            type="number"
+            label="Nota (0–10)"
+            placeholder="0"
+            icon="fa-star"
+            required
+            :error="errors.rating"
+            class="form-field"
+          />
         </div>
-      </div>
+      </section>
 
-      <div class="form-section">
-        <h3 class="section-heading">Metadata Adaptativa</h3>
+      <!-- Sección 3: Metadata por tipo -->
+      <section class="form-section">
+        <h3 class="section-heading">Detalles</h3>
 
         <div v-if="isVisual" class="meta-fields">
-          <div class="meta-row">
+          <div class="form-row">
             <AppInput
               v-model="formData.director"
-              :label="isSeries ? 'Showrunner / Creador' : 'Director'"
+              :label="isSeries ? 'Creador / Showrunner' : 'Director'"
               icon="fa-user-tie"
               class="form-field"
             />
@@ -285,7 +306,7 @@ function handleCancel() {
             <AppInput
               v-else
               v-model="formData.duracion"
-              label="Duración (minutos)"
+              label="Duración (min)"
               type="number"
               icon="fa-clock"
               class="form-field form-field--sm"
@@ -293,19 +314,14 @@ function handleCancel() {
           </div>
           <AppInput
             v-model="formData.reparto"
-            label="Reparto Principal (separado por comas)"
+            label="Reparto (separado por comas)"
             icon="fa-users"
           />
         </div>
 
         <div v-if="isBook" class="meta-fields">
-          <div class="meta-row">
-            <AppInput
-              v-model="formData.autor"
-              label="Autor"
-              icon="fa-pen-nib"
-              class="form-field"
-            />
+          <div class="form-row">
+            <AppInput v-model="formData.autor" label="Autor" icon="fa-pen-nib" class="form-field" />
             <AppInput
               v-model="formData.editorial"
               label="Editorial"
@@ -315,13 +331,13 @@ function handleCancel() {
           </div>
           <AppInput
             v-model="formData.progresoLectura"
-            label="Progreso de lectura (pág o %)"
+            label="Progreso (pág o %)"
             icon="fa-bookmark"
           />
         </div>
 
         <div v-if="isGame" class="meta-fields">
-          <div class="meta-row">
+          <div class="form-row">
             <AppInput
               v-model="formData.developer"
               label="Desarrollador"
@@ -337,50 +353,90 @@ function handleCancel() {
           </div>
           <AppInput
             v-model="formData.tiempoEstimado"
-            label="Tiempo Estimado (HLTB)"
+            label="Tiempo estimado"
             icon="fa-hourglass-half"
           />
         </div>
 
-        <div class="genre-field">
+        <div class="form-row">
+          <AppInput
+            v-model="formData.fechaInicio"
+            type="date"
+            label="Fecha de estreno / publicación"
+            icon="fa-calendar"
+            class="form-field"
+          />
           <AppInput
             v-model="formData.genero"
-            label="Géneros (comas)"
+            label="Géneros (separados por comas)"
             icon="fa-tags"
+            class="form-field form-field--wide"
           />
         </div>
-      </div>
+      </section>
 
-      <div class="form-section">
-        <h3 class="section-heading">Extra</h3>
-        <div class="extra-fields">
-          <AppInput
-            v-model="formData.imagen"
-            label="URL de la Imagen / Póster"
-            icon="fa-image"
-            placeholder="https://..."
-          />
-          <AppInput
-            v-model="formData.tags"
-            label="Etiquetas Personales"
-            placeholder="ciencia ficción, masterpiece, para repetir"
-            icon="fa-hashtag"
-          />
-          <AppInput
-            v-model="formData.descripcion"
-            type="textarea"
-            label="Sinopsis / Descripción"
-            placeholder="Añade una descripción..."
-            :rows="3"
-          />
+      <!-- Sección 4: Dónde verlo -->
+      <section class="form-section">
+        <h3 class="section-heading">Dónde verlo</h3>
+
+        <div class="platforms-editor">
+          <div class="platforms-chips">
+            <span
+              v-for="platform in formData.streamingPlatforms"
+              :key="platform"
+              class="platform-chip"
+            >
+              {{ platform }}
+              <button type="button" class="chip-remove" @click="removePlatform(platform)">
+                <i class="fas fa-times"></i>
+              </button>
+            </span>
+            <span v-if="formData.streamingPlatforms.length === 0" class="platforms-empty">
+              Sin plataformas añadidas
+            </span>
+          </div>
+          <div class="platform-add-row">
+            <input
+              v-model="newPlatform"
+              class="platform-input"
+              placeholder="Netflix, HBO Max..."
+              @keydown.enter.prevent="addPlatform"
+            />
+            <button type="button" class="platform-add-btn" @click="addPlatform">
+              <i class="fas fa-plus"></i> Añadir
+            </button>
+          </div>
         </div>
-      </div>
+
+        <AppInput
+          v-model="formData.trailer"
+          label="URL del tráiler"
+          icon="fa-play-circle"
+          placeholder="https://youtube.com/..."
+        />
+      </section>
+
+      <!-- Sección 5: Descripción y etiquetas -->
+      <section class="form-section">
+        <h3 class="section-heading">Descripción y etiquetas</h3>
+        <AppInput
+          v-model="formData.descripcion"
+          type="textarea"
+          label="Sinopsis / Descripción"
+          placeholder="Añade una descripción..."
+          :rows="3"
+        />
+        <AppInput
+          v-model="formData.tags"
+          label="Etiquetas personales"
+          placeholder="ciencia ficción, masterpiece, para repetir"
+          icon="fa-hashtag"
+        />
+      </section>
     </div>
 
     <div class="form-actions">
-      <AppButton type="button" variant="ghost" @click="handleCancel"
-        >Cancelar</AppButton
-      >
+      <AppButton type="button" variant="ghost" @click="handleCancel"> Cancelar </AppButton>
       <AppButton type="submit" variant="primary" icon="fa-save">
         {{ mode === "create" ? "Crear" : "Guardar" }}
       </AppButton>

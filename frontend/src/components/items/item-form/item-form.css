@@ -7,22 +7,28 @@
   & .form-content {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-2);
   }
 
   & .form-section {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
+    padding: var(--space-5) var(--space-6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+    &:last-child {
+      border-bottom: none;
+    }
   }
 
   & .section-heading {
-    font-size: 11px;
+    font-size: 16px;
     font-weight: 800;
     color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin: 0;
+    margin: 0 0 2px;
   }
 
   & .form-row {
@@ -56,22 +62,111 @@
     gap: 16px;
   }
 
-  & .genre-field {
-    margin-top: 8px;
-  }
-
-  & .extra-fields {
+  & .platforms-editor {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-3);
+  }
+
+  & .platforms-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    min-height: 32px;
+    align-items: center;
+  }
+
+  & .platform-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-3);
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+
+  & .chip-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    font-size: 10px;
+    padding: 0;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    transition: color var(--transition-fast);
+
+    &:hover {
+      color: var(--color-danger);
+    }
+  }
+
+  & .platforms-empty {
+    font-size: var(--fs-sm);
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  & .platform-add-row {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  & .platform-input {
+    flex: 1;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    font-size: var(--fs-sm);
+    font-family: inherit;
+    padding: var(--space-2) var(--space-3);
+    outline: none;
+    transition: border-color var(--transition-fast);
+
+    &:focus {
+      border-color: var(--color-accent);
+    }
+
+    &::placeholder {
+      color: var(--color-text-muted);
+    }
+  }
+
+  & .platform-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: rgba(var(--color-accent-rgb), 0.1);
+    border: 1px solid rgba(var(--color-accent-rgb), 0.3);
+    border-radius: var(--radius-sm);
+    color: var(--color-accent);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+    white-space: nowrap;
+
+    &:hover {
+      background: rgba(var(--color-accent-rgb), 0.2);
+    }
   }
 
   & .form-actions {
     display: flex;
     gap: 12px;
     justify-content: flex-end;
-    padding: 20px 24px;
+    padding: var(--space-4) var(--space-6);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
+    position: sticky;
+    bottom: 0;
+    background: var(--color-bg-card);
   }
 
   /* ─── Responsive ─────────────────────────── */

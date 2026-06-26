@@ -33,20 +33,12 @@
       background: var(--color-bg-card-hover);
 
       & .overlay {
-        background: linear-gradient(
-          to top,
-          rgba(112, 104, 184, 0.3) 0%,
-          transparent 100%
-        );
+        background: linear-gradient(to top, rgba(112, 104, 184, 0.3) 0%, transparent 100%);
       }
     }
 
     &.backlog-card--random {
-      background: linear-gradient(
-        135deg,
-        var(--color-bg-card) 0%,
-        var(--color-bg-surface) 100%
-      );
+      background: linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-surface) 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -92,11 +84,7 @@
   & .overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      to top,
-      rgba(0, 0, 0, 0.9) 0%,
-      transparent 100%
-    );
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
   }
 
   & .info {

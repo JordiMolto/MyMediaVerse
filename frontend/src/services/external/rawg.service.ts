@@ -15,15 +15,11 @@ export interface RawgGameResult {
   genres?: { name: string }[];
 }
 
-export async function searchRawgGames(
-  query: string,
-): Promise<RawgGameResult | null> {
+export async function searchRawgGames(query: string): Promise<RawgGameResult | null> {
   const trimmedQuery = query.trim();
 
   if (!RAWG_API_KEY) {
-    console.warn(
-      "RAWG API Key missing. Please add VITE_RAWG_API_KEY to your .env file.",
-    );
+    console.warn("RAWG API Key missing. Please add VITE_RAWG_API_KEY to your .env file.");
     return null;
   }
 

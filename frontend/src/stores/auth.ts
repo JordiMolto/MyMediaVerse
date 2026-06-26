@@ -13,9 +13,7 @@ export const useAuthStore = defineStore("auth", () => {
   const isMock = computed(() => user.value?.email === "test@example.com");
 
   // Only allow Supabase if it exists, user is logged in, AND it's not the mock user
-  const canUseSupabase = computed(
-    () => !!supabase && isAuthenticated.value && !isMock.value,
-  );
+  const canUseSupabase = computed(() => !!supabase && isAuthenticated.value && !isMock.value);
 
   async function signUp(email: string, password: string) {
     if (!supabase) {
@@ -72,11 +70,10 @@ export const useAuthStore = defineStore("auth", () => {
 
     try {
       console.log("Calling Supabase signInWithPassword...");
-      const { data, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
       if (signInError) {
         console.error("Supabase signIn error:", signInError);
@@ -120,10 +117,7 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
-  async function updateUser(updates: {
-    display_name?: string;
-    avatar_url?: string;
-  }) {
+  async function updateUser(updates: { display_name?: string; avatar_url?: string }) {
     if (isMock.value) {
       if (user.value) {
         user.value.user_metadata = { ...user.value.user_metadata, ...updates };
@@ -165,10 +159,7 @@ export const useAuthStore = defineStore("auth", () => {
         data: { session },
       } = await supabase.auth.getSession();
       user.value = session?.user ?? null;
-      console.log(
-        "Initial auth session:",
-        session ? "User logged in" : "No user",
-      );
+      console.log("Initial auth session:", session ? "User logged in" : "No user");
 
       supabase.auth.onAuthStateChange((_event, session) => {
         console.log("Auth state change event:", _event);

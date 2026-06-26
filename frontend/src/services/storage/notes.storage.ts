@@ -17,9 +17,7 @@ export async function getNotesByItemId(itemId: string): Promise<Note[]> {
   return idb.getNotesByItemId(itemId);
 }
 
-export async function createNote(
-  note: Omit<Note, "id" | "fechaCreacion">,
-): Promise<Note> {
+export async function createNote(note: Omit<Note, "id" | "fechaCreacion">): Promise<Note> {
   const authStore = useAuthStore();
 
   if (authStore.canUseSupabase) {
@@ -36,10 +34,7 @@ export async function createNote(
   return newNote;
 }
 
-export async function updateNote(
-  id: string,
-  updates: Partial<Note>,
-): Promise<Note> {
+export async function updateNote(id: string, updates: Partial<Note>): Promise<Note> {
   const authStore = useAuthStore();
 
   if (authStore.canUseSupabase) {

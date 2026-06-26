@@ -20,9 +20,7 @@ export async function fetchNotesByItemId(itemId: string): Promise<Note[]> {
   return data.map(mapSupabaseNoteToLocal);
 }
 
-export async function createNote(
-  note: Omit<Note, "id" | "fechaCreacion">,
-): Promise<Note> {
+export async function createNote(note: Omit<Note, "id" | "fechaCreacion">): Promise<Note> {
   if (!supabase) throw new Error("Supabase not configured");
 
   const {
@@ -38,31 +36,21 @@ export async function createNote(
     tipo_hito: note.tipoHito,
   };
 
-  const { data, error } = await supabase
-    .from("notes")
-    .insert(supabaseNote)
-    .select()
-    .single();
+  const { data, error } = await supabase.from("notes").insert(supabaseNote).select().single();
 
   if (error) throw error;
 
   return mapSupabaseNoteToLocal(data);
 }
 
-export async function updateNote(
-  id: string,
-  updates: Partial<Note>,
-): Promise<Note> {
+export async function updateNote(id: string, updates: Partial<Note>): Promise<Note> {
   if (!supabase) throw new Error("Supabase not configured");
 
   const supabaseUpdates: any = {};
 
-  if (updates.contenido !== undefined)
-    supabaseUpdates.contenido = updates.contenido;
-  if (updates.esSpoiler !== undefined)
-    supabaseUpdates.es_spoiler = updates.esSpoiler;
-  if (updates.tipoHito !== undefined)
-    supabaseUpdates.tipo_hito = updates.tipoHito;
+  if (updates.contenido !== undefined) supabaseUpdates.contenido = updates.contenido;
+  if (updates.esSpoiler !== undefined) supabaseUpdates.es_spoiler = updates.esSpoiler;
+  if (updates.tipoHito !== undefined) supabaseUpdates.tipo_hito = updates.tipoHito;
 
   const { data, error } = await supabase
     .from("notes")

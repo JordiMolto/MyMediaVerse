@@ -34,7 +34,7 @@ const hitoOptions = [
   { value: HitoType.START, label: "Empezado" },
   { value: HitoType.HALF, label: "Mitad de camino" },
   { value: HitoType.END, label: "Finalizado" },
-  { value: HitoType.REWATCH, label: "Re-consumo (Re-watch/read)" },
+  { value: HitoType.REWATCH, label: "Re-consumo" },
 ];
 
 function validate(): boolean {
@@ -63,12 +63,7 @@ function handleCancel() {
 <template>
   <form class="note-form" @submit.prevent="handleSubmit">
     <div class="form-row">
-      <AppSelect
-        v-model="hito"
-        :options="hitoOptions"
-        label="Hito / Evento"
-        icon="fa-flag"
-      />
+      <AppSelect v-model="hito" :options="hitoOptions" label="Hito / Evento" icon="fa-flag" />
     </div>
 
     <AppInput
@@ -92,12 +87,8 @@ function handleCancel() {
     </div>
 
     <div class="form-actions">
-      <AppButton type="button" variant="ghost" @click="handleCancel">
-        Cancelar
-      </AppButton>
-      <AppButton type="submit" variant="primary" icon="fa-save">
-        Guardar Nota
-      </AppButton>
+      <AppButton type="button" variant="ghost" @click="handleCancel"> Cancelar </AppButton>
+      <AppButton type="submit" variant="primary" icon="fa-save"> Guardar Nota </AppButton>
     </div>
   </form>
 </template>
