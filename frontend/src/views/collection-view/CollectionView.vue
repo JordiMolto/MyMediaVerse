@@ -23,6 +23,7 @@ const { enrichMultiple, canEnrich } = useItemEnrichment();
 
 // State
 const selectedStatus = ref<string>("todos");
+const selectedGenre = ref<string>("todos");
 const sortBy = ref<string>("recent");
 const currentPage = ref(1);
 
@@ -209,11 +210,12 @@ onMounted(() => {
 
 watch(categorySlug, () => {
   selectedStatus.value = "todos";
+  selectedGenre.value = "todos";
   currentPage.value = 1;
   exitSelectMode();
 });
 
-watch([selectedStatus, sortBy, itemsPerPage], () => {
+watch([selectedStatus, selectedGenre, sortBy, itemsPerPage], () => {
   currentPage.value = 1;
 });
 
@@ -233,9 +235,23 @@ function getItemsForStatus(status: string) {
   }
 }
 
+const availableGenres = computed(() => {
+  const all = itemsStore.items.filter((i) => i.tipo === categoryName.value);
+  const genres = new Set<string>();
+  all.forEach((i) => i.genero?.forEach((g) => genres.add(g)));
+  return [
+    { value: "todos", label: "Todos los géneros" },
+    ...[...genres].sort().map((g) => ({ value: g, label: g })),
+  ];
+});
+
 const filteredItems = computed(() => {
   const base = getItemsForStatus(selectedStatus.value);
-  return [...base].sort((a, b) => {
+  const byGenre =
+    selectedGenre.value === "todos"
+      ? base
+      : base.filter((i) => i.genero?.includes(selectedGenre.value));
+  return [...byGenre].sort((a, b) => {
     if (sortBy.value === "recent")
       return new Date(b.fechaCreacion || 0).getTime() - new Date(a.fechaCreacion || 0).getTime();
     if (sortBy.value === "alpha") return a.titulo.localeCompare(b.titulo);
@@ -484,6 +500,12 @@ onUnmounted(() => window.removeEventListener("click", handleDocClick));
             <i class="fas" :class="opt.icon"></i>
           </button>
         </div>
+        <AppSelect
+          v-if="availableGenres.length > 1"
+          v-model="selectedGenre"
+          :options="availableGenres"
+          pill
+        />
         <AppSelect v-model="sortBy" :options="sortOptions" pill />
         <AppSelect v-model="itemsPerPage" :options="pageSizeOptions" pill />
       </div>

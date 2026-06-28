@@ -2,6 +2,7 @@ import { ref } from "vue";
 import { type Item } from "@/types";
 import { useTMDBEnrichment } from "./useTMDBEnrichment";
 import { useBooksEnrichment } from "./useBooksEnrichment";
+import { useRAWGEnrichment } from "./useRAWGEnrichment";
 
 export function useItemEnrichment() {
   const isEnriching = ref(false);
@@ -12,9 +13,10 @@ export function useItemEnrichment() {
 
   const tmdb = useTMDBEnrichment();
   const books = useBooksEnrichment();
+  const rawg = useRAWGEnrichment();
 
   function canEnrich(tipo: string): boolean {
-    return tmdb.isEnrichable(tipo) || books.isEnrichableBook(tipo);
+    return tmdb.isEnrichable(tipo) || books.isEnrichableBook(tipo) || rawg.isEnrichableGame(tipo);
   }
 
   async function enrichItem(item: Item): Promise<boolean> {
@@ -27,6 +29,8 @@ export function useItemEnrichment() {
       success = await tmdb.enrichItemWithTMDB(item);
     } else if (books.isEnrichableBook(item.tipo)) {
       success = await books.enrichItemWithBooks(item);
+    } else if (rawg.isEnrichableGame(item.tipo)) {
+      success = await rawg.enrichItemWithRAWG(item);
     }
 
     isEnriching.value = false;
@@ -52,10 +56,11 @@ export function useItemEnrichment() {
         ok = await tmdb.enrichItemWithTMDB(item);
       } else if (books.isEnrichableBook(item.tipo)) {
         ok = await books.enrichItemWithBooks(item);
+      } else if (rawg.isEnrichableGame(item.tipo)) {
+        ok = await rawg.enrichItemWithRAWG(item);
       }
       if (ok) success++;
       else failed++;
-      // Small delay to avoid rate limiting
       await new Promise((r) => setTimeout(r, 300));
     }
 

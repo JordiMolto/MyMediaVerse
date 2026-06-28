@@ -45,6 +45,17 @@ export async function searchRawgGames(query: string): Promise<RawgGameResult | n
   }
 }
 
+export async function getRawgGameDetail(id: number): Promise<RawgGameResult | null> {
+  if (!RAWG_API_KEY) return null;
+  try {
+    const response = await axios.get(`${BASE_URL}/${id}`, { params: { key: RAWG_API_KEY } });
+    return response.data as RawgGameResult;
+  } catch (error: any) {
+    console.error("Error fetching RAWG game detail:", error.message);
+    return null;
+  }
+}
+
 export async function searchRawgGamesMultiple(
   query: string,
   pageSize = 20,
