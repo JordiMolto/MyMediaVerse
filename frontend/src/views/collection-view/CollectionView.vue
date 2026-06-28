@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useItemsStore } from "@/stores/items";
 import { useCategoriesStore } from "@/stores/categories";
 import { useUIStore } from "@/stores/ui";
+import { useConfirm } from "@/composables/useConfirm";
 import { Item, ItemStatus } from "@/types";
 import { CategoryViewMode } from "@/types/category";
 import MediaCard from "@/components/common/media-card/MediaCard.vue";
@@ -16,21 +17,108 @@ const router = useRouter();
 const itemsStore = useItemsStore();
 const categoriesStore = useCategoriesStore();
 const uiStore = useUIStore();
+const { showConfirm } = useConfirm();
 
 // State
 const selectedStatus = ref<string>("todos");
 const sortBy = ref<string>("recent");
 const currentPage = ref(1);
 
-// Derived from route — el param llega como slug (ej: "juegos-de-mesa")
+// ── Selection ──────────────────────────────────────────────────────────────
+const isSelecting = ref(false);
+const selectedIds = ref<Set<string>>(new Set());
+
+function enterSelectMode() {
+  isSelecting.value = true;
+}
+
+function exitSelectMode() {
+  isSelecting.value = false;
+  selectedIds.value = new Set();
+}
+
+function toggleSelect(id: string) {
+  const next = new Set(selectedIds.value);
+  if (next.has(id)) {
+    next.delete(id);
+  } else {
+    next.add(id);
+  }
+  selectedIds.value = next;
+}
+
+const allPageSelected = computed(
+  () =>
+    paginatedItems.value.length > 0 &&
+    paginatedItems.value.every((i) => selectedIds.value.has(i.id)),
+);
+
+function toggleSelectAll() {
+  if (allPageSelected.value) {
+    const next = new Set(selectedIds.value);
+    paginatedItems.value.forEach((i) => next.delete(i.id));
+    selectedIds.value = next;
+  } else {
+    const next = new Set(selectedIds.value);
+    paginatedItems.value.forEach((i) => next.add(i.id));
+    selectedIds.value = next;
+  }
+}
+
+// Salir con Escape
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === "Escape" && isSelecting.value) exitSelectMode();
+}
+onMounted(() => window.addEventListener("keydown", handleKeydown));
+onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
+
+// ── Bulk actions ───────────────────────────────────────────────────────────
+const isBulkLoading = ref(false);
+
+async function bulkChangeStatus(status: ItemStatus) {
+  isBulkLoading.value = true;
+  await Promise.all([...selectedIds.value].map((id) => itemsStore.changeStatus(id, status)));
+  isBulkLoading.value = false;
+  exitSelectMode();
+}
+
+async function bulkToggleFavorite() {
+  isBulkLoading.value = true;
+  const ids = [...selectedIds.value];
+  const allFav = ids.every((id) => itemsStore.items.find((i) => i.id === id)?.favorito);
+  await Promise.all(
+    ids.map((id) => {
+      const item = itemsStore.items.find((i) => i.id === id);
+      if (item && item.favorito === allFav) return itemsStore.toggleFavorite(id);
+    }),
+  );
+  isBulkLoading.value = false;
+  exitSelectMode();
+}
+
+async function bulkDelete() {
+  const n = selectedIds.value.size;
+  const ok = await showConfirm({
+    title: "Eliminar selección",
+    message: `¿Eliminar ${n} ${n === 1 ? "item" : "items"}? Esta acción no se puede deshacer.`,
+    confirmLabel: "Eliminar",
+    danger: true,
+  });
+  if (!ok) return;
+  isBulkLoading.value = true;
+  await Promise.all([...selectedIds.value].map((id) => itemsStore.deleteItem(id)));
+  isBulkLoading.value = false;
+  exitSelectMode();
+}
+
+// ── Route / category ───────────────────────────────────────────────────────
 const categorySlug = computed(() => route.params.nombre as string);
 const category = computed(() =>
   categoriesStore.categories.find((c) => slugify(c.nombre) === categorySlug.value),
 );
-// Nombre real para mostrar en UI y filtrar items
 const categoryName = computed(() => category.value?.nombre ?? categorySlug.value);
 
-// View mode — se lee de la categoría, fallback a "grid"
+// ── View mode ──────────────────────────────────────────────────────────────
 const viewMode = computed<CategoryViewMode>(() => category.value?.viewMode ?? "grid");
 
 const viewModeOptions: { value: CategoryViewMode; icon: string; title: string }[] = [
@@ -44,6 +132,7 @@ async function setViewMode(mode: CategoryViewMode) {
   await categoriesStore.updateCategory(category.value.id, { viewMode: mode });
 }
 
+// ── Filters / sort ─────────────────────────────────────────────────────────
 const sortOptions = [
   { value: "recent", label: "Recientes" },
   { value: "alpha", label: "Alfabético" },
@@ -74,13 +163,13 @@ onMounted(() => {
 watch(categorySlug, () => {
   selectedStatus.value = "todos";
   currentPage.value = 1;
+  exitSelectMode();
 });
 
 watch([selectedStatus, sortBy], () => {
   currentPage.value = 1;
 });
 
-// Filtering by status reuses the store's already-filtered computeds
 function getItemsForStatus(status: string) {
   const name = categoryName.value;
   switch (status) {
@@ -100,9 +189,8 @@ function getItemsForStatus(status: string) {
 const filteredItems = computed(() => {
   const base = getItemsForStatus(selectedStatus.value);
   return [...base].sort((a, b) => {
-    if (sortBy.value === "recent") {
+    if (sortBy.value === "recent")
       return new Date(b.fechaCreacion || 0).getTime() - new Date(a.fechaCreacion || 0).getTime();
-    }
     if (sortBy.value === "alpha") return a.titulo.localeCompare(b.titulo);
     if (sortBy.value === "rating") return (b.rating || 0) - (a.rating || 0);
     return 0;
@@ -113,8 +201,10 @@ function getCount(status: string): number {
   return getItemsForStatus(status).length;
 }
 
-// Pagination — compact shows more items per page
-const itemsPerPage = computed(() => (viewMode.value === "compact" ? 30 : viewMode.value === "list" ? 20 : 12));
+// ── Pagination ─────────────────────────────────────────────────────────────
+const itemsPerPage = computed(() =>
+  viewMode.value === "compact" ? 30 : viewMode.value === "list" ? 20 : 12,
+);
 const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage.value));
 const paginatedItems = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
@@ -141,24 +231,61 @@ function changePage(page: number | string) {
   }
 }
 
-function goToDetail(item: Item) {
-  router.push(collectionItemPath(item.tipo, item.titulo, item.id));
+function handleCardClick(item: Item) {
+  if (isSelecting.value) {
+    toggleSelect(item.id);
+  } else {
+    router.push(collectionItemPath(item.tipo, item.titulo, item.id));
+  }
+}
+
+// Long-press para activar selección desde la tarjeta
+let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+
+function onCardPointerDown(item: Item) {
+  if (isSelecting.value) return;
+  longPressTimer = setTimeout(() => {
+    enterSelectMode();
+    toggleSelect(item.id);
+  }, 500);
+}
+
+function onCardPointerUp() {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
 }
 
 const headerStyle = computed(() => {
   if (!category.value?.color) return {};
-  return {
-    background: `linear-gradient(135deg, ${category.value.color}12 0%, transparent 60%)`,
-  };
+  return { background: `linear-gradient(135deg, ${category.value.color}12 0%, transparent 60%)` };
 });
 
 function getTabStyle(tabValue: string) {
   if (selectedStatus.value !== tabValue || !category.value?.color) return {};
-  return {
-    borderBottomColor: category.value.color,
-    color: category.value.color,
-  };
+  return { borderBottomColor: category.value.color, color: category.value.color };
 }
+
+const bulkStatusOptions = [
+  { value: ItemStatus.IN_PROGRESS, label: "En Progreso", icon: "fa-play" },
+  { value: ItemStatus.PENDING, label: "Pendiente", icon: "fa-clock" },
+  { value: ItemStatus.COMPLETED, label: "Completado", icon: "fa-check-circle" },
+];
+
+const showStatusDropdown = ref(false);
+
+function toggleStatusDropdown(e: Event) {
+  e.stopPropagation();
+  showStatusDropdown.value = !showStatusDropdown.value;
+}
+
+function handleDocClick() {
+  showStatusDropdown.value = false;
+}
+
+onMounted(() => window.addEventListener("click", handleDocClick));
+onUnmounted(() => window.removeEventListener("click", handleDocClick));
 </script>
 
 <template>
@@ -171,20 +298,96 @@ function getTabStyle(tabValue: string) {
         <div class="collection-info">
           <h1 class="collection-title">{{ categoryName }}</h1>
           <p class="collection-meta">
-            {{ getCount("todos") }}
-            {{ getCount("todos") === 1 ? "item" : "items" }} en tu colección
+            {{ getCount("todos") }} {{ getCount("todos") === 1 ? "item" : "items" }} en tu colección
           </p>
         </div>
-        <button
-          class="collection-add-btn"
-          @click="uiStore.toggleQuickAdd(true, { type: categoryName })"
-        >
-          <i class="fas fa-plus"></i>
-          <span>Añadir</span>
-        </button>
+        <div class="header-actions">
+          <button
+            class="collection-select-btn"
+            :class="{ active: isSelecting }"
+            :title="isSelecting ? 'Cancelar selección' : 'Seleccionar'"
+            @click="isSelecting ? exitSelectMode() : enterSelectMode()"
+          >
+            <i class="fas" :class="isSelecting ? 'fa-times' : 'fa-check-square'"></i>
+            <span>{{ isSelecting ? "Cancelar" : "Seleccionar" }}</span>
+          </button>
+          <button
+            class="collection-add-btn"
+            @click="uiStore.toggleQuickAdd(true, { type: categoryName })"
+          >
+            <i class="fas fa-plus"></i>
+            <span>Añadir</span>
+          </button>
+        </div>
       </div>
     </header>
 
+    <!-- ── Bulk action bar ─────────────────────────────────────────────── -->
+    <Transition name="bulk-bar">
+      <div v-if="isSelecting" class="bulk-bar">
+        <div class="bulk-bar-left">
+          <button class="bulk-select-all" @click="toggleSelectAll">
+            <div class="bulk-checkbox" :class="{ checked: allPageSelected }">
+              <i v-if="allPageSelected" class="fas fa-check"></i>
+            </div>
+            <span>{{ allPageSelected ? "Deseleccionar todo" : "Seleccionar todo" }}</span>
+          </button>
+          <span class="bulk-count">
+            {{ selectedIds.size }} {{ selectedIds.size === 1 ? "seleccionado" : "seleccionados" }}
+          </span>
+        </div>
+
+        <div class="bulk-actions" :class="{ disabled: selectedIds.size === 0 }">
+          <!-- Estado dropdown -->
+          <div class="bulk-dropdown-wrapper">
+            <button
+              class="bulk-btn"
+              :disabled="selectedIds.size === 0 || isBulkLoading"
+              @click="toggleStatusDropdown"
+            >
+              <i class="fas fa-exchange-alt"></i>
+              <span>Estado</span>
+              <i class="fas fa-chevron-down" style="font-size: 10px"></i>
+            </button>
+            <Transition name="fade">
+              <div v-if="showStatusDropdown" class="bulk-dropdown" @click.stop>
+                <button
+                  v-for="opt in bulkStatusOptions"
+                  :key="opt.value"
+                  class="bulk-dropdown-item"
+                  @click="showStatusDropdown = false; bulkChangeStatus(opt.value)"
+                >
+                  <i class="fas" :class="opt.icon"></i>
+                  {{ opt.label }}
+                </button>
+              </div>
+            </Transition>
+          </div>
+
+          <button
+            class="bulk-btn"
+            :disabled="selectedIds.size === 0 || isBulkLoading"
+            title="Favorito"
+            @click="bulkToggleFavorite"
+          >
+            <i class="fas fa-heart"></i>
+            <span>Favorito</span>
+          </button>
+
+          <button
+            class="bulk-btn bulk-btn--danger"
+            :disabled="selectedIds.size === 0 || isBulkLoading"
+            title="Eliminar"
+            @click="bulkDelete"
+          >
+            <i class="fas fa-trash"></i>
+            <span>Eliminar</span>
+          </button>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- ── Tabs bar ────────────────────────────────────────────────────── -->
     <div class="status-tabs-bar">
       <div class="status-tabs-scroll">
         <div class="status-tabs">
@@ -219,6 +422,7 @@ function getTabStyle(tabValue: string) {
       </div>
     </div>
 
+    <!-- ── Content ─────────────────────────────────────────────────────── -->
     <div class="collection-content">
       <div v-if="itemsStore.loading" class="loading-state">
         <i class="fas fa-circle-notch fa-spin loading-icon"></i>
@@ -248,15 +452,27 @@ function getTabStyle(tabValue: string) {
           :class="{
             'items-grid--list': viewMode === 'list',
             'items-grid--compact': viewMode === 'compact',
+            'items-grid--selecting': isSelecting,
           }"
         >
-          <MediaCard
+          <div
             v-for="item in paginatedItems"
             :key="item.id"
-            :item="item"
-            :view-mode="viewMode"
-            @click="goToDetail"
-          />
+            class="card-wrapper"
+            @pointerdown="onCardPointerDown(item)"
+            @pointerup="onCardPointerUp"
+            @pointerleave="onCardPointerUp"
+            @contextmenu.prevent="!isSelecting && (enterSelectMode(), toggleSelect(item.id))"
+          >
+            <MediaCard
+              :item="item"
+              :view-mode="viewMode"
+              :selectable="isSelecting"
+              :selected="selectedIds.has(item.id)"
+              @click="handleCardClick"
+              @toggle-select="toggleSelect"
+            />
+          </div>
         </div>
 
         <div v-if="totalPages > 1" class="pagination-controls">
