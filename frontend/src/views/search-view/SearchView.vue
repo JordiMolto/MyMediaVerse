@@ -2,13 +2,14 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useItemsStore } from "@/stores/items";
-import { ItemType, ItemStatus } from "@/types";
+import { Item, ItemType, ItemStatus } from "@/types";
 import AppInput from "@/components/common/app-input/AppInput.vue";
 import AppSelect from "@/components/common/app-select/AppSelect.vue";
 import MediaCard from "@/components/common/media-card/MediaCard.vue";
 import AppModal from "@/components/common/app-modal/AppModal.vue";
 import NoteForm from "@/components/notes/note-form/NoteForm.vue";
 import { useNotesStore } from "@/stores/notes";
+import { collectionItemPath } from "@/utils/slugify";
 import "./search-view.css";
 
 const router = useRouter();
@@ -62,8 +63,8 @@ const statusOptions = [
   { value: ItemStatus.ABANDONED, label: "Abandonado" },
 ];
 
-function goToDetail(id: string) {
-  router.push(`/item/${id}`);
+function goToDetail(item: Item) {
+  router.push(collectionItemPath(item.tipo, item.titulo, item.id));
 }
 
 function clearFilters() {

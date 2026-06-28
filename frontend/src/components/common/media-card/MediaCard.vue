@@ -14,7 +14,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  click: [id: string];
+  click: [item: Item];
   quickNote: [id: string];
   toggleSelect: [id: string];
 }>();
@@ -64,7 +64,7 @@ function handleCardClick() {
   if (props.selectable) {
     emit("toggleSelect", props.item.id);
   } else {
-    emit("click", props.item.id);
+    emit("click", props.item);
   }
 }
 </script>

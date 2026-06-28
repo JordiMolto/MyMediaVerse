@@ -1,7 +1,9 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { extractIdFromSlug } from "@/utils/slugify";
 
 const routes: RouteRecordRaw[] = [
+  // ─── Autenticación (sin guard) ───────────────────────────────────────────────
   {
     path: "/login",
     name: "login",
@@ -14,6 +16,8 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/register-view/RegisterView.vue"),
     meta: { requiresAuth: false },
   },
+
+  // ─── Rutas estáticas (deben ir antes que las dinámicas) ──────────────────────
   {
     path: "/",
     name: "home",
@@ -45,77 +49,6 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/item/:id",
-    name: "item-detail",
-    component: () => import("@/views/item-detail-view/ItemDetailView.vue"),
-    meta: { requiresAuth: true },
-    beforeEnter: async (to, _, next) => {
-      // Dynamically load the correct detail view based on item type
-      const { useItemsStore } = await import("@/stores/items");
-      const itemsStore = useItemsStore();
-
-      const itemId = to.params.id as string;
-      const item = await itemsStore.getItemById(itemId);
-
-      if (!item) {
-        next({ name: "home" });
-        return;
-      }
-
-      // Route to specialized view based on type (with robust check)
-      const t = (item.tipo || "").toLowerCase();
-      let targetRoute = "";
-
-      if (t === "movie" || t === "película" || t === "pelicula") {
-        targetRoute = "movie-detail";
-      } else if (t === "series" || t === "serie" || t === "anime") {
-        targetRoute = "series-detail";
-      } else if (t === "book" || t === "libro") {
-        targetRoute = "book-detail";
-      } else if (t === "videogame" || t === "videojuego" || t === "juego") {
-        targetRoute = "videogame-detail";
-      } else if (t === "boardgame" || t === "juego de mesa") {
-        targetRoute = "boardgame-detail";
-      }
-
-      if (targetRoute && to.name !== targetRoute) {
-        next({ name: targetRoute, params: { id: itemId } });
-      } else {
-        next();
-      }
-    },
-  },
-  {
-    path: "/movie/:id",
-    name: "movie-detail",
-    component: () => import("@/views/movie-detail-view/MovieDetailView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/series/:id",
-    name: "series-detail",
-    component: () => import("@/views/series-detail-view/SeriesDetailView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/book/:id",
-    name: "book-detail",
-    component: () => import("@/views/book-detail-view/BookDetailView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/videogame/:id",
-    name: "videogame-detail",
-    component: () => import("@/views/item-detail-view/ItemDetailView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/boardgame/:id",
-    name: "boardgame-detail",
-    component: () => import("@/views/item-detail-view/ItemDetailView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
     path: "/buscar",
     name: "search",
     component: () => import("@/views/search-view/SearchView.vue"),
@@ -133,11 +66,37 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/collections-view/CollectionsView.vue"),
     meta: { requiresAuth: true },
   },
+
+  // ─── Alias de compatibilidad: /item/:id → URL semántica ───────────────────────
+  // ItemDetailView se encarga de leer el id directamente cuando la ruta es /item/:id
+  {
+    path: "/item/:id",
+    name: "item-detail-legacy",
+    component: () => import("@/views/item-detail-view/ItemDetailView.vue"),
+    meta: { requiresAuth: true },
+  },
+
+  // ─── Rutas dinámicas (van al final para no eclipsar las estáticas) ────────────
   {
     path: "/coleccion/:nombre",
     name: "collection",
     component: () => import("@/views/collection-view/CollectionView.vue"),
     meta: { requiresAuth: true },
+  },
+  {
+    // URL canónica: /coleccion/:nombre/:titulo--id
+    // Ejemplo: /coleccion/peliculas/interstellar--abc123
+    path: "/coleccion/:nombre/:slug",
+    name: "item-detail",
+    component: () => import("@/views/item-detail-view/ItemDetailView.vue"),
+    meta: { requiresAuth: true },
+    beforeEnter: (to, _, next) => {
+      if (!(to.params.slug as string).includes("--")) {
+        next({ name: "home" });
+        return;
+      }
+      next();
+    },
   },
 ];
 
@@ -150,7 +109,6 @@ const router = createRouter({
 router.beforeEach(async (to, _, next) => {
   const authStore = useAuthStore();
 
-  // Wait for auth to initialize
   if (!authStore.initialized) {
     await authStore.initialize();
   }
@@ -158,14 +116,12 @@ router.beforeEach(async (to, _, next) => {
   const requiresAuth = to.meta.requiresAuth !== false;
 
   if (requiresAuth && !authStore.isAuthenticated) {
-    // Redirect to login if not authenticated
     next({ name: "login" });
   } else if (
     !requiresAuth &&
     authStore.isAuthenticated &&
     (to.name === "login" || to.name === "register")
   ) {
-    // Redirect to home if already authenticated and trying to access login/register
     next({ name: "home" });
   } else {
     next();

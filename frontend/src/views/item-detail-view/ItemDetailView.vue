@@ -11,6 +11,7 @@ import NoteForm from "@/components/notes/note-form/NoteForm.vue";
 import NoteCard from "@/components/notes/note-card/NoteCard.vue";
 import { useConfirm } from "@/composables/useConfirm";
 import { useItemEnrichment } from "@/composables/useItemEnrichment";
+import { extractIdFromSlug } from "@/utils/slugify";
 import "./item-detail-view.css";
 
 const route = useRoute();
@@ -28,7 +29,10 @@ const { showConfirm } = useConfirm();
 const { isEnriching, enrichmentResult, canEnrich, enrichItem } = useItemEnrichment();
 const showEnrichConfirm = ref(false);
 
-const itemId = route.params.id as string;
+// Soporta /:categoria/:slug--id y /item/:id (legacy)
+const itemId = route.params.slug
+  ? extractIdFromSlug(route.params.slug as string)
+  : (route.params.id as string);
 
 onMounted(async () => {
   await loadItem();
@@ -48,6 +52,30 @@ async function loadNotes() {
   itemNotes.value = await notesStore.fetchNotesByItemId(itemId);
 }
 
+// ─── Tipo helpers ─────────────────────────────────────────────────────────────
+
+function tipoMatches(tipo: string, ...keywords: string[]): boolean {
+  const t = (tipo || "").toLowerCase();
+  return keywords.some((k) => t.includes(k.toLowerCase()));
+}
+
+const isSeries = computed(() =>
+  item.value ? tipoMatches(item.value.tipo, "series", "serie", "anime") : false,
+);
+const isMovie = computed(() =>
+  item.value && !isSeries.value
+    ? tipoMatches(item.value.tipo, "movie", "película", "pelicula", "film")
+    : false,
+);
+const isBook = computed(() =>
+  item.value ? tipoMatches(item.value.tipo, "book", "libro") : false,
+);
+const isGame = computed(() =>
+  item.value
+    ? tipoMatches(item.value.tipo, "videogame", "videojuego", "juego", "game")
+    : false,
+);
+
 const typeIcons: Record<string, string> = {
   [ItemType.MOVIE]: "fa-film",
   [ItemType.SERIES]: "fa-tv",
@@ -57,12 +85,59 @@ const typeIcons: Record<string, string> = {
   [ItemType.BOARDGAME]: "fa-dice",
 };
 
-const statusLabels: Record<ItemStatus, string> = {
-  [ItemStatus.PENDING]: "Pendiente",
-  [ItemStatus.IN_PROGRESS]: "En Progreso",
-  [ItemStatus.COMPLETED]: "Completado",
-  [ItemStatus.ABANDONED]: "Abandonado",
-};
+function getTypeIcon(tipo: string): string {
+  const t = (tipo || "").toLowerCase();
+  if (t.includes("anime")) return "fa-dragon";
+  if (t.includes("serie") || t.includes("series")) return "fa-tv";
+  if (t.includes("movie") || t.includes("película") || t.includes("pelicula")) return "fa-film";
+  if (t.includes("libro") || t.includes("book")) return "fa-book";
+  if (t.includes("videojuego") || t.includes("videogame") || t.includes("game")) return "fa-gamepad";
+  if (t.includes("mesa") || t.includes("boardgame")) return "fa-dice";
+  return typeIcons[tipo] || "fa-star";
+}
+
+// ─── Status labels adaptativos ────────────────────────────────────────────────
+
+const statusLabels = computed((): Record<ItemStatus, string> => {
+  if (isSeries.value) {
+    return {
+      [ItemStatus.PENDING]: "Pendiente",
+      [ItemStatus.IN_PROGRESS]: "Viendo",
+      [ItemStatus.COMPLETED]: "Completada",
+      [ItemStatus.ABANDONED]: "Abandonada",
+    };
+  }
+  if (isMovie.value) {
+    return {
+      [ItemStatus.PENDING]: "Pendiente",
+      [ItemStatus.IN_PROGRESS]: "Viendo",
+      [ItemStatus.COMPLETED]: "Vista",
+      [ItemStatus.ABANDONED]: "Abandonada",
+    };
+  }
+  if (isBook.value) {
+    return {
+      [ItemStatus.PENDING]: "Pendiente",
+      [ItemStatus.IN_PROGRESS]: "Leyendo",
+      [ItemStatus.COMPLETED]: "Leído",
+      [ItemStatus.ABANDONED]: "Abandonado",
+    };
+  }
+  if (isGame.value) {
+    return {
+      [ItemStatus.PENDING]: "Pendiente",
+      [ItemStatus.IN_PROGRESS]: "Jugando",
+      [ItemStatus.COMPLETED]: "Completado",
+      [ItemStatus.ABANDONED]: "Abandonado",
+    };
+  }
+  return {
+    [ItemStatus.PENDING]: "Pendiente",
+    [ItemStatus.IN_PROGRESS]: "En Progreso",
+    [ItemStatus.COMPLETED]: "Completado",
+    [ItemStatus.ABANDONED]: "Abandonado",
+  };
+});
 
 const statusColors: Record<ItemStatus, string> = {
   [ItemStatus.PENDING]: "var(--color-warning)",
@@ -70,6 +145,85 @@ const statusColors: Record<ItemStatus, string> = {
   [ItemStatus.COMPLETED]: "var(--color-success)",
   [ItemStatus.ABANDONED]: "var(--text-muted)",
 };
+
+// ─── Diario label adaptativo ──────────────────────────────────────────────────
+
+const diarioLabel = computed(() => {
+  if (isSeries.value || isMovie.value) return "Diario de Visión";
+  if (isBook.value) return "Diario de Lectura";
+  if (isGame.value) return "Diario de Juego";
+  return "Diario de Actividad";
+});
+
+const diarioEmptyText = computed(() => {
+  if (isSeries.value) return "No has registrado ninguna actividad para esta serie.";
+  if (isMovie.value) return "No has registrado ninguna actividad para esta película.";
+  if (isBook.value) return "No has registrado ninguna actividad para este libro.";
+  if (isGame.value) return "No has registrado ninguna actividad para este juego.";
+  return "Nada por aquí aún. Comienza tu viaje añadiendo un hito o nota.";
+});
+
+// ─── Metadata adaptativa para el sidebar ──────────────────────────────────────
+
+const displayedMetadata = computed(() => {
+  if (!item.value) return [];
+  const meta: { label: string; value: string; icon: string }[] = [];
+  const i = item.value;
+
+  if (isMovie.value) {
+    if (i.director) meta.push({ label: "Director", value: i.director, icon: "fa-user-tie" });
+    if (i.duracion) meta.push({ label: "Duración", value: `${i.duracion} min`, icon: "fa-clock" });
+  }
+
+  if (isSeries.value) {
+    if (i.director) meta.push({ label: "Creador / Showrunner", value: i.director, icon: "fa-user-tie" });
+    if (i.numberOfSeasons) meta.push({ label: "Temporadas", value: `${i.numberOfSeasons}`, icon: "fa-layer-group" });
+    if (i.numberOfEpisodes) meta.push({ label: "Episodios", value: `${i.numberOfEpisodes}`, icon: "fa-list-ol" });
+    if (i.duracion) meta.push({ label: "Duración ep.", value: `${i.duracion} min`, icon: "fa-clock" });
+    if (i.progresoTemporadas) meta.push({ label: "Progreso", value: i.progresoTemporadas, icon: "fa-chart-line" });
+  }
+
+  if (isBook.value) {
+    if (i.autor) meta.push({ label: "Autor", value: i.autor, icon: "fa-pen-nib" });
+    if (i.editorial) meta.push({ label: "Editorial", value: i.editorial, icon: "fa-book-open" });
+    if (i.duracion) meta.push({ label: "Páginas", value: `${i.duracion}`, icon: "fa-file-alt" });
+    if (i.progresoLectura) meta.push({ label: "Progreso", value: i.progresoLectura, icon: "fa-bookmark" });
+  }
+
+  if (isGame.value) {
+    if (i.developer) meta.push({ label: "Desarrollador", value: i.developer, icon: "fa-code" });
+    if (i.plataforma) meta.push({ label: "Plataforma", value: i.plataforma, icon: "fa-laptop" });
+    if (i.tiempoEstimado) meta.push({ label: "Tiempo Est.", value: i.tiempoEstimado, icon: "fa-hourglass-half" });
+  }
+
+  if (!isMovie.value && !isSeries.value && !isBook.value && !isGame.value) {
+    if (i.fechaInicio) meta.push({ label: "Fecha", value: formatDate(i.fechaInicio), icon: "fa-calendar" });
+  }
+
+  if (i.fechaInicio && (isMovie.value || isSeries.value)) {
+    meta.push({ label: "Estreno", value: formatDate(i.fechaInicio), icon: "fa-calendar" });
+  }
+
+  return meta;
+});
+
+const hasStreamingInfo = computed(
+  () => item.value?.streamingPlatforms && item.value.streamingPlatforms.length > 0,
+);
+const hasCastInfo = computed(() => item.value?.reparto && item.value.reparto.length > 0);
+const hasGenres = computed(() => item.value?.genero && item.value.genero.length > 0);
+const hasTrailer = computed(() => !!item.value?.trailer);
+
+const backdropStyle = computed(() => {
+  if (!item.value?.backdropImage) return {};
+  return {
+    backgroundImage: `linear-gradient(to bottom, rgba(10, 10, 15, 0.7), rgba(10, 10, 15, 0.95)), url(${item.value.backdropImage})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  };
+});
+
+// ─── Acciones ─────────────────────────────────────────────────────────────────
 
 async function handleSaveItem(updates: Partial<Item>) {
   if (!item.value) return;
@@ -92,6 +246,25 @@ async function handleDeleteItem() {
   }
 }
 
+async function toggleFavorite() {
+  if (!item.value) return;
+  try {
+    await itemsStore.toggleFavorite(item.value.id);
+    await loadItem();
+  } catch (error) {
+    console.error("Error toggling favorite:", error);
+  }
+}
+
+async function confirmAndEnrich() {
+  if (!item.value) return;
+  showEnrichConfirm.value = false;
+  await enrichItem(item.value);
+  if (enrichmentResult.value?.success) await loadItem();
+}
+
+// ─── Notas ────────────────────────────────────────────────────────────────────
+
 function openNoteModal(noteId?: string) {
   editingNoteId.value = noteId || null;
   showNoteModal.value = true;
@@ -110,126 +283,6 @@ async function handleDeleteNote(noteId: string) {
     await loadNotes();
   } catch (error) {
     console.error("Error deleting note:", error);
-  }
-}
-
-function formatDate(date?: Date) {
-  if (!date) return "-";
-  return new Date(date).toLocaleDateString("es-ES", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
-const editingNote = computed(() => {
-  if (!editingNoteId.value) return null;
-  return itemNotes.value.find((n) => n.id === editingNoteId.value);
-});
-
-function tipoMatches(tipo: string, ...keywords: string[]): boolean {
-  const t = (tipo || "").toLowerCase();
-  return keywords.some((k) => t.includes(k.toLowerCase()));
-}
-
-const displayedMetadata = computed(() => {
-  if (!item.value) return [];
-  const meta = [];
-  const tipo = item.value.tipo;
-
-  const isSeries = tipoMatches(tipo, "series", "serie", "anime");
-  const isMovie = !isSeries && tipoMatches(tipo, "movie", "película", "pelicula", "film", "anime");
-  const isBook = tipoMatches(tipo, "book", "libro");
-  const isGame = tipoMatches(tipo, "videogame", "juego", "game");
-
-  if (isMovie) {
-    if (item.value.director)
-      meta.push({ label: "Director", value: item.value.director, icon: "fa-user-tie" });
-    if (item.value.duracion)
-      meta.push({ label: "Duración", value: `${item.value.duracion} min`, icon: "fa-clock" });
-  }
-
-  if (isSeries) {
-    if (item.value.director)
-      meta.push({ label: "Creador / Showrunner", value: item.value.director, icon: "fa-user-tie" });
-    if (item.value.numberOfSeasons)
-      meta.push({
-        label: "Temporadas",
-        value: `${item.value.numberOfSeasons}`,
-        icon: "fa-layer-group",
-      });
-    if (item.value.numberOfEpisodes)
-      meta.push({
-        label: "Episodios",
-        value: `${item.value.numberOfEpisodes}`,
-        icon: "fa-list-ol",
-      });
-    if (item.value.duracion)
-      meta.push({ label: "Duración ep.", value: `${item.value.duracion} min`, icon: "fa-clock" });
-    if (item.value.progresoTemporadas)
-      meta.push({ label: "Progreso", value: item.value.progresoTemporadas, icon: "fa-chart-line" });
-  }
-
-  if (isBook) {
-    if (item.value.autor)
-      meta.push({ label: "Autor", value: item.value.autor, icon: "fa-pen-nib" });
-    if (item.value.editorial)
-      meta.push({ label: "Editorial", value: item.value.editorial, icon: "fa-book-open" });
-    if (item.value.duracion)
-      meta.push({ label: "Páginas", value: `${item.value.duracion}`, icon: "fa-file-alt" });
-    if (item.value.progresoLectura)
-      meta.push({ label: "Progreso", value: item.value.progresoLectura, icon: "fa-bookmark" });
-  }
-
-  if (isGame) {
-    if (item.value.developer)
-      meta.push({ label: "Desarrollador", value: item.value.developer, icon: "fa-code" });
-    if (item.value.plataforma)
-      meta.push({ label: "Plataforma", value: item.value.plataforma, icon: "fa-laptop" });
-    if (item.value.tiempoEstimado)
-      meta.push({
-        label: "Tiempo Est.",
-        value: item.value.tiempoEstimado,
-        icon: "fa-hourglass-half",
-      });
-  }
-
-  if (item.value.fechaInicio)
-    meta.push({ label: "Estreno", value: formatDate(item.value.fechaInicio), icon: "fa-calendar" });
-
-  return meta;
-});
-
-const hasStreamingInfo = computed(
-  () => item.value?.streamingPlatforms && item.value.streamingPlatforms.length > 0,
-);
-const hasCastInfo = computed(() => item.value?.reparto && item.value.reparto.length > 0);
-const hasGenres = computed(() => item.value?.genero && item.value.genero.length > 0);
-const hasTrailer = computed(() => !!item.value?.trailer);
-
-const backdropStyle = computed(() => {
-  if (!item.value?.backdropImage) return {};
-  return {
-    backgroundImage: `linear-gradient(to bottom, rgba(10, 10, 15, 0.7), rgba(10, 10, 15, 0.95)), url(${item.value.backdropImage})`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-  };
-});
-
-async function confirmAndEnrich() {
-  if (!item.value) return;
-  showEnrichConfirm.value = false;
-  await enrichItem(item.value);
-  if (enrichmentResult.value?.success) await loadItem();
-}
-
-async function toggleFavorite() {
-  if (!item.value) return;
-  try {
-    await itemsStore.toggleFavorite(item.value.id);
-    await loadItem();
-  } catch (error) {
-    console.error("Error toggling favorite:", error);
   }
 }
 
@@ -257,6 +310,22 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
     console.error("Error saving note:", error);
   }
 }
+
+const editingNote = computed(() => {
+  if (!editingNoteId.value) return null;
+  return itemNotes.value.find((n) => n.id === editingNoteId.value);
+});
+
+// ─── Utils ────────────────────────────────────────────────────────────────────
+
+function formatDate(date?: Date) {
+  if (!date) return "-";
+  return new Date(date).toLocaleDateString("es-ES", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
 </script>
 
 <template>
@@ -276,16 +345,16 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
           >
             <i class="fa-heart" :class="item.favorito ? 'fas' : 'far'"></i>
           </button>
-          <AppButton variant="ghost" icon="fa-edit" size="small" @click="showEditModal = true"
-            >Editar</AppButton
-          >
+          <AppButton variant="ghost" icon="fa-edit" size="small" @click="showEditModal = true">
+            Editar
+          </AppButton>
           <AppButton
             variant="ghost"
             icon="fa-trash"
             size="small"
             class="delete-action"
             @click="showDeleteConfirm = true"
-          ></AppButton>
+          />
         </div>
       </nav>
 
@@ -294,7 +363,7 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
           <div class="poster-wrap">
             <img v-if="item.imagen" :src="item.imagen" :alt="item.titulo" class="poster-image" />
             <div v-else class="poster-fallback">
-              <i class="fas" :class="typeIcons[item.tipo] || 'fa-star'"></i>
+              <i class="fas" :class="getTypeIcon(item.tipo)"></i>
             </div>
           </div>
 
@@ -312,14 +381,15 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
           </section>
 
           <AppButton
-            v-if="item && canEnrich(item.tipo)"
+            v-if="canEnrich(item.tipo)"
             variant="glass"
             icon="fa-magic"
             block
             :loading="isEnriching"
             @click="showEnrichConfirm = true"
-            >Regenerar info automáticamente</AppButton
           >
+            Regenerar info automáticamente
+          </AppButton>
         </aside>
 
         <main class="main-column">
@@ -395,10 +465,7 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
               <div class="status-indicator">
                 <span class="indicator-label">Estado:</span>
                 <div class="status-badge" :style="{ color: statusColors[item.estado] }">
-                  <span
-                    class="status-dot"
-                    :style="{ background: statusColors[item.estado] }"
-                  ></span>
+                  <span class="status-dot" :style="{ background: statusColors[item.estado] }"></span>
                   {{ statusLabels[item.estado] }}
                 </div>
               </div>
@@ -417,18 +484,16 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
             <div class="timeline-header">
               <div class="section-heading">
                 <i class="fas fa-stream heading-icon heading-icon--primary"></i>
-                <h2 class="section-title">Diario de Actividad</h2>
+                <h2 class="section-title">{{ diarioLabel }}</h2>
               </div>
-              <AppButton variant="glass" icon="fa-plus" size="small" @click="openNoteModal()"
-                >Nueva Entrada</AppButton
-              >
+              <AppButton variant="glass" icon="fa-plus" size="small" @click="openNoteModal()">
+                Nueva Entrada
+              </AppButton>
             </div>
 
             <div v-if="itemNotes.length === 0" class="empty-timeline">
               <i class="fas fa-feather-alt empty-icon"></i>
-              <p class="empty-text">
-                Nada por aquí aún. Comienza tu viaje añadiendo un hito o nota.
-              </p>
+              <p class="empty-text">{{ diarioEmptyText }}</p>
             </div>
 
             <div v-else class="timeline-list">
@@ -445,6 +510,7 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
       </div>
     </div>
 
+    <!-- Modal editar -->
     <AppModal
       :is-open="showEditModal"
       title="Editar Item"
@@ -454,13 +520,11 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
       <ItemForm :item="item" mode="edit" @save="handleSaveItem" @cancel="showEditModal = false" />
     </AppModal>
 
+    <!-- Modal nota -->
     <AppModal
       :is-open="showNoteModal"
       :title="editingNoteId ? 'Editar Entrada' : 'Nueva Entrada en el Diario'"
-      @close="
-        showNoteModal = false;
-        editingNoteId = null;
-      "
+      @close="showNoteModal = false; editingNoteId = null"
     >
       <NoteForm
         :item-id="item.id"
@@ -468,13 +532,11 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
         :initial-spoilers="editingNote?.esSpoiler"
         :initial-hito="editingNote?.tipoHito"
         @save="handleSaveNote"
-        @cancel="
-          showNoteModal = false;
-          editingNoteId = null;
-        "
+        @cancel="showNoteModal = false; editingNoteId = null"
       />
     </AppModal>
 
+    <!-- Modal eliminar -->
     <AppModal
       :is-open="showDeleteConfirm"
       title="Confirmar Eliminación"
@@ -483,8 +545,8 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
     >
       <div class="confirm-body">
         <p class="confirm-text">
-          ¿Estás seguro de que quieres eliminar "<strong>{{ item.titulo }}</strong
-          >"? Esta acción no se puede deshacer.
+          ¿Estás seguro de que quieres eliminar "<strong>{{ item.titulo }}</strong>"?
+          Esta acción no se puede deshacer.
         </p>
         <div class="confirm-actions">
           <AppButton variant="ghost" @click="showDeleteConfirm = false">Cancelar</AppButton>
@@ -493,6 +555,7 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
       </div>
     </AppModal>
 
+    <!-- Modal enriquecer -->
     <AppModal
       :is-open="showEnrichConfirm"
       title="Regenerar información"
@@ -516,7 +579,8 @@ async function handleSaveNote(data: { texto: string; spoilers: boolean; hito: Hi
             icon="fa-magic"
             :loading="isEnriching"
             @click="confirmAndEnrich"
-            >Sí, regenerar
+          >
+            Sí, regenerar
           </AppButton>
         </div>
       </div>

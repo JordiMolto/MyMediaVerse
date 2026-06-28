@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Item } from "@/types";
 import { useRouter } from "vue-router";
+import { collectionItemPath } from "@/utils/slugify";
 import "./dashboard-backlog.css";
 
 defineProps<{
@@ -11,8 +12,8 @@ defineProps<{
 
 const router = useRouter();
 
-const goToItem = (id?: string) => {
-  if (id) router.push(`/item/${id}`);
+const goToItem = (item?: Item | null) => {
+  if (item) router.push(collectionItemPath(item.tipo, item.titulo, item.id));
 };
 </script>
 
@@ -21,7 +22,7 @@ const goToItem = (id?: string) => {
     <h3 class="section-title">Tu Lista de Espera</h3>
 
     <div class="backlog-grid">
-      <div class="backlog-card" @click="goToItem(oldest?.id)">
+      <div class="backlog-card" @click="goToItem(oldest)">
         <div class="card-tag">MÁS ANTIGUO</div>
         <div v-if="oldest" class="card-content">
           <img v-if="oldest.imagen" :src="oldest.imagen" class="card-bg" />
@@ -34,7 +35,7 @@ const goToItem = (id?: string) => {
         <div v-else class="empty-card">No hay pendientes</div>
       </div>
 
-      <div class="backlog-card" @click="goToItem(best?.id)">
+      <div class="backlog-card" @click="goToItem(best)">
         <div class="card-tag">MEJOR VALORADO</div>
         <div v-if="best" class="card-content">
           <img v-if="best.imagen" :src="best.imagen" class="card-bg" />
@@ -47,7 +48,7 @@ const goToItem = (id?: string) => {
         <div v-else class="empty-card">No hay pendientes</div>
       </div>
 
-      <div class="backlog-card backlog-card--random" @click="goToItem(random?.id)">
+      <div class="backlog-card backlog-card--random" @click="goToItem(random)">
         <div class="card-tag">QUÉ CONSUMIR AHORA</div>
         <div v-if="random" class="random-inner">
           <i class="fas fa-dice dice-icon"></i>

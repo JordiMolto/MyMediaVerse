@@ -4,7 +4,8 @@ import { useRouter } from "vue-router";
 import { useItemsStore } from "@/stores/items";
 import { useCategoriesStore } from "@/stores/categories";
 import { useDashboardStats } from "@/composables/useDashboardStats";
-import { ItemType } from "@/types";
+import { Item, ItemType } from "@/types";
+import { collectionItemPath } from "@/utils/slugify";
 
 import logoUrl from "@/assets/images/logo_mymediaverse.png";
 import DashboardSearch from "@/components/dashboard/dashboard-search/DashboardSearch.vue";
@@ -54,8 +55,8 @@ function handleSearch(query: string) {
   router.push({ name: "search", query: { q: query } });
 }
 
-function goToItem(id: string) {
-  router.push(`/item/${id}`);
+function goToItem(item: Item) {
+  router.push(collectionItemPath(item.tipo, item.titulo, item.id));
 }
 
 function timeAgo(date: Date | string | undefined): string {
@@ -155,7 +156,7 @@ function timeAgo(date: Date | string | undefined): string {
             v-for="item in stats.inProgressItems"
             :key="item.id"
             class="in-progress-card"
-            @click="goToItem(item.id)"
+            @click="goToItem(item)"
           >
             <div
               class="in-progress-thumb"
@@ -192,7 +193,7 @@ function timeAgo(date: Date | string | undefined): string {
             v-for="item in stats.recentlyAdded"
             :key="item.id"
             class="recent-item"
-            @click="goToItem(item.id)"
+            @click="goToItem(item)"
           >
             <div class="recent-icon-box">
               <i class="fas" :class="typeIcon(item.tipo)"></i>

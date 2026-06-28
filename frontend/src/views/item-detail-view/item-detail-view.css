@@ -1,6 +1,5 @@
 .item-detail-view {
   min-height: 100vh;
-  padding: var(--space-6) var(--space-4);
 
   & .detail-container {
     max-width: 1200px;
@@ -333,82 +332,6 @@
     &:hover {
       border-color: var(--color-accent);
     }
-
-    &.platform-chip--add {
-      border-style: dashed;
-      padding: var(--space-1) var(--space-2);
-    }
-  }
-
-  & .chip-remove {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--color-text-muted);
-    font-size: 10px;
-    padding: 0;
-    line-height: 1;
-    transition: color var(--transition-fast);
-
-    &:hover {
-      color: var(--color-danger);
-    }
-  }
-
-  & .chip-add {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--color-text-muted);
-    font-size: 11px;
-    padding: 0;
-    line-height: 1;
-    transition: color var(--transition-fast);
-
-    &:hover {
-      color: var(--color-accent);
-    }
-  }
-
-  & .platform-input {
-    background: none;
-    border: none;
-    outline: none;
-    color: var(--color-text-secondary);
-    font-size: var(--fs-sm);
-    font-family: inherit;
-    width: 90px;
-
-    &::placeholder {
-      color: var(--color-text-muted);
-    }
-  }
-
-  & .trailer-row {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-
-  & .trailer-input {
-    background: var(--color-bg-surface);
-    border: 1px dashed var(--color-border);
-    border-radius: var(--radius-sm);
-    color: var(--color-text-secondary);
-    font-size: var(--fs-sm);
-    font-family: inherit;
-    padding: var(--space-2) var(--space-3);
-    outline: none;
-    width: 100%;
-    transition: border-color var(--transition-fast);
-
-    &:focus {
-      border-color: var(--color-accent);
-    }
-
-    &::placeholder {
-      color: var(--color-text-muted);
-    }
   }
 
   & .youtube-btn {
@@ -510,12 +433,6 @@
     color: var(--color-text-muted);
   }
 
-  & .notes-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-  }
-
   & .section-heading {
     display: flex;
     align-items: center;
@@ -535,43 +452,6 @@
     font-size: var(--fs-xl);
     font-weight: 700;
     color: white;
-  }
-
-  & .thoughts-card {
-    background: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-5);
-  }
-
-  & .thoughts-editor {
-    width: 100%;
-    background: transparent;
-    border: none;
-    color: var(--color-text-secondary);
-    font-family: inherit;
-    font-size: var(--fs-base);
-    line-height: 1.7;
-    resize: vertical;
-    min-height: 120px;
-    outline: none;
-
-    &::placeholder {
-      color: var(--color-text-muted);
-      font-style: italic;
-    }
-  }
-
-  & .editor-footer {
-    text-align: right;
-    margin-top: var(--space-2);
-  }
-
-  & .editor-hint {
-    font-size: 10px;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
   }
 
   & .timeline-section {
@@ -665,11 +545,6 @@
     & .youtube-btn {
       width: 100%;
       justify-content: center;
-    }
-
-    & .platform-chip {
-      flex: 1 1 auto;
-      text-align: center;
     }
 
     & .confirm-actions {

@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useCategoriesStore } from "@/stores/categories";
 import { useUserAvatar } from "@/composables/useUserAvatar";
 import logoUrl from "@/assets/images/logo_mymediaverse.png";
+import { collectionPath, slugify } from "@/utils/slugify";
 import "./side-menu.css";
 
 const router = useRouter();
@@ -34,12 +35,12 @@ function navigateTo(path: string) {
 }
 
 function navigateToCollection(nombre: string) {
-  router.push({ name: "collection", params: { nombre } });
+  router.push(collectionPath(nombre));
   uiStore.toggleSideMenu(false);
 }
 
 function isCollectionActive(nombre: string): boolean {
-  return route.name === "collection" && route.params.nombre === nombre;
+  return route.name === "collection" && route.params.nombre === slugify(nombre);
 }
 
 function getCollectionStyle(nombre: string, color?: string) {

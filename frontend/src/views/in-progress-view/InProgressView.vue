@@ -5,12 +5,13 @@ import { useItemsStore } from "@/stores/items";
 import { useCategoriesStore } from "@/stores/categories";
 import MediaCard from "@/components/common/media-card/MediaCard.vue";
 import { exportToCSV } from "@/utils/export";
+import { collectionItemPath } from "@/utils/slugify";
 import AppSelect from "@/components/common/app-select/AppSelect.vue";
 import BulkActionsBar from "@/components/common/bulk-actions-bar/BulkActionsBar.vue";
 import { useBulkSelection } from "@/composables/useBulkSelection";
 import { useTMDBEnrichment } from "@/composables/useTMDBEnrichment";
 import { useUIStore } from "@/stores/ui";
-import { ItemStatus, ItemType } from "@/types";
+import { Item, ItemStatus, ItemType } from "@/types";
 import AppModal from "@/components/common/app-modal/AppModal.vue";
 import { useConfirm } from "@/composables/useConfirm";
 import "./in-progress-view.css";
@@ -159,8 +160,8 @@ watch(isSelectionMode, (v) => {
   if (!v) clearSelection();
 });
 
-function goToDetail(id: string) {
-  router.push(`/item/${id}`);
+function goToDetail(item: Item) {
+  router.push(collectionItemPath(item.tipo, item.titulo, item.id));
 }
 
 async function handleBulkChangeStatus(status: ItemStatus) {

@@ -4,9 +4,10 @@ import { useRoute, useRouter } from "vue-router";
 import { useItemsStore } from "@/stores/items";
 import { useCategoriesStore } from "@/stores/categories";
 import { useUIStore } from "@/stores/ui";
-import { ItemStatus } from "@/types";
+import { Item, ItemStatus } from "@/types";
 import MediaCard from "@/components/common/media-card/MediaCard.vue";
 import AppSelect from "@/components/common/app-select/AppSelect.vue";
+import { collectionItemPath, slugify } from "@/utils/slugify";
 import "./collection-view.css";
 
 const route = useRoute();
@@ -20,11 +21,13 @@ const selectedStatus = ref<string>("todos");
 const sortBy = ref<string>("recent");
 const currentPage = ref(1);
 
-// Derived from route
-const categoryName = computed(() => decodeURIComponent(route.params.nombre as string));
+// Derived from route — el param llega como slug (ej: "juegos-de-mesa")
+const categorySlug = computed(() => route.params.nombre as string);
 const category = computed(() =>
-  categoriesStore.categories.find((c) => c.nombre === categoryName.value),
+  categoriesStore.categories.find((c) => slugify(c.nombre) === categorySlug.value),
 );
+// Nombre real para mostrar en UI y filtrar items
+const categoryName = computed(() => category.value?.nombre ?? categorySlug.value);
 
 const sortOptions = [
   { value: "recent", label: "Recientes" },
@@ -53,7 +56,7 @@ onMounted(() => {
   categoriesStore.fetchCategories();
 });
 
-watch(categoryName, () => {
+watch(categorySlug, () => {
   selectedStatus.value = "todos";
   currentPage.value = 1;
 });
@@ -123,8 +126,8 @@ function changePage(page: number | string) {
   }
 }
 
-function goToDetail(id: string) {
-  router.push(`/item/${id}`);
+function goToDetail(item: Item) {
+  router.push(collectionItemPath(item.tipo, item.titulo, item.id));
 }
 
 const headerStyle = computed(() => {

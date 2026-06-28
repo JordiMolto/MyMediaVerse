@@ -8,6 +8,7 @@ import AppModal from "@/components/common/app-modal/AppModal.vue";
 import ItemForm from "@/components/items/item-form/ItemForm.vue";
 import MediaCard from "@/components/common/media-card/MediaCard.vue";
 import { exportToCSV } from "@/utils/export";
+import { collectionItemPath } from "@/utils/slugify";
 import AppSelect from "@/components/common/app-select/AppSelect.vue";
 import BulkActionsBar from "@/components/common/bulk-actions-bar/BulkActionsBar.vue";
 import { useBulkSelection } from "@/composables/useBulkSelection";
@@ -187,15 +188,15 @@ watch(isSelectionMode, (v) => {
   if (!v) clearSelection();
 });
 
-function goToDetail(id: string) {
-  router.push(`/item/${id}`);
+function goToDetail(item: Item) {
+  router.push(collectionItemPath(item.tipo, item.titulo, item.id));
 }
 
 async function handleCreateItem(itemData: Partial<Item>) {
   try {
     const newItem = await itemsStore.createItem(itemData as Omit<Item, "id" | "fechaCreacion">);
     showCreateModal.value = false;
-    router.push(`/item/${newItem.id}`);
+    router.push(collectionItemPath(newItem.tipo, newItem.titulo, newItem.id));
   } catch (error) {
     console.error("Error creating item:", error);
   }
