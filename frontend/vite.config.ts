@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     vue(),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt",
       includeAssets: ["favicon.png", "app-icon.png"],
       devOptions: {
         enabled: true,
