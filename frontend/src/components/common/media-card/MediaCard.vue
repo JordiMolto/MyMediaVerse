@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { Item, ItemType } from "@/types";
+import { CategoryViewMode } from "@/types/category";
 import { useCategoriesStore } from "@/stores/categories";
 import { useItemsStore } from "@/stores/items";
 import "./media-card.css";
 
 interface Props {
   item: Item;
+  viewMode?: CategoryViewMode;
   selectable?: boolean;
   selected?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), { viewMode: "grid" });
 
 const emit = defineEmits<{
   click: [item: Item];
@@ -70,9 +72,77 @@ function handleCardClick() {
 </script>
 
 <template>
+  <!-- ── LIST MODE ─────────────────────────────────────────────────────── -->
   <div
+    v-if="viewMode === 'list'"
+    class="media-card media-card--list"
+    :class="{ selectable, selected }"
+    @click="handleCardClick"
+  >
+    <div class="list-thumbnail">
+      <img v-if="hasImage" :src="item.imagen" :alt="item.titulo" class="list-thumbnail-img" />
+      <div v-else class="list-thumbnail-placeholder" :style="typeColor ? { color: typeColor } : {}">
+        <i class="fas" :class="typeIcon"></i>
+      </div>
+      <Transition name="fade">
+        <div v-if="selectable" class="selection-checkbox" @click="handleSelect">
+          <div class="checkbox-inner" :class="{ checked: selected }">
+            <i v-if="selected" class="fas fa-check"></i>
+          </div>
+        </div>
+      </Transition>
+    </div>
+
+    <div class="list-info">
+      <div class="list-info-header">
+        <h3 class="list-title">{{ item.titulo }}</h3>
+        <div class="list-badges">
+          <div v-if="item.rating" class="item-rating">
+            <i class="fas fa-star"></i>
+            <span>{{ item.rating }}</span>
+          </div>
+          <div
+            class="favorite-tag"
+            :class="{ active: item.favorito }"
+            @click="handleToggleFavorite"
+          >
+            <i class="fas fa-heart"></i>
+          </div>
+        </div>
+      </div>
+      <p v-if="item.descripcion" class="list-description">{{ item.descripcion }}</p>
+    </div>
+  </div>
+
+  <!-- ── COMPACT MODE ───────────────────────────────────────────────────── -->
+  <div
+    v-else-if="viewMode === 'compact'"
+    class="media-card media-card--compact"
+    :class="{ selectable, selected }"
+    @click="handleCardClick"
+    :title="item.titulo"
+  >
+    <div class="compact-inner">
+      <img v-if="hasImage" :src="item.imagen" :alt="item.titulo" class="compact-image" />
+      <div v-else class="compact-placeholder" :style="typeColor ? { color: typeColor } : {}">
+        <i class="fas" :class="typeIcon"></i>
+      </div>
+      <div class="compact-name">{{ item.titulo }}</div>
+      <Transition name="fade">
+        <div v-if="selectable" class="selection-checkbox" @click="handleSelect">
+          <div class="checkbox-inner" :class="{ checked: selected }">
+            <i v-if="selected" class="fas fa-check"></i>
+          </div>
+        </div>
+      </Transition>
+    </div>
+  </div>
+
+  <!-- ── GRID MODE (default) ────────────────────────────────────────────── -->
+  <div
+    v-else
     class="media-card"
-    :class="{ selectable: selectable, selected: selected }"
+    :class="{ selectable, selected }"
     @click="handleCardClick"
   >
     <div class="card-inner">

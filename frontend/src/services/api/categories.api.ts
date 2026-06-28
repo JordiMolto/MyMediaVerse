@@ -35,6 +35,7 @@ export async function createCategory(
     icono: category.icono,
     color: category.color,
     oculto: category.oculto || false,
+    view_mode: category.viewMode ?? "grid",
   };
 
   const { data, error } = await supabase
@@ -56,6 +57,7 @@ export async function updateCategory(id: string, updates: Partial<Category>): Pr
   if (updates.icono) supabaseUpdates.icono = updates.icono;
   if (updates.color) supabaseUpdates.color = updates.color;
   if (updates.oculto !== undefined) supabaseUpdates.oculto = updates.oculto;
+  if (updates.viewMode !== undefined) supabaseUpdates.view_mode = updates.viewMode;
 
   const { data, error } = await supabase
     .from("categories")
@@ -88,6 +90,7 @@ function mapSupabaseCategoryToLocal(supabaseCategory: any): Category {
     icono: supabaseCategory.icono,
     color: supabaseCategory.color,
     oculto: supabaseCategory.oculto,
+    viewMode: supabaseCategory.view_mode ?? "grid",
     createdAt: new Date(supabaseCategory.created_at),
     updatedAt: new Date(supabaseCategory.updated_at),
   };

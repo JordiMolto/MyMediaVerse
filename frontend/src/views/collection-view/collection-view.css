@@ -172,17 +172,51 @@
     line-height: 1.4;
   }
 
-  & .tabs-sort {
+  & .tabs-controls {
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
     padding-bottom: var(--space-2);
 
     @media (max-width: 1023px) {
       padding-bottom: 0;
       width: 100%;
+      justify-content: space-between;
+    }
+  }
 
-      & > * {
-        width: 100%;
-      }
+  & .view-mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 3px;
+  }
+
+  & .view-mode-btn {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-size: var(--fs-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover {
+      color: var(--color-text-secondary);
+    }
+
+    &.active {
+      background: var(--color-bg-surface);
+      color: white;
     }
   }
 
@@ -248,17 +282,32 @@
 
   & .items-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: var(--space-5);
     width: 100%;
 
     @media (max-width: 1023px) {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: var(--space-4);
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 600px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    &.items-grid--list {
       grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
+
+    &.items-grid--compact {
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: var(--space-3);
+
+      @media (max-width: 600px) {
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: var(--space-2);
+      }
     }
   }
 

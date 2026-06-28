@@ -20,6 +20,10 @@
 
   &.full-width {
     width: 100%;
+    white-space: normal;
+    text-align: center;
+    height: auto;
+    flex-wrap: wrap;
   }
 
   &.is-loading {

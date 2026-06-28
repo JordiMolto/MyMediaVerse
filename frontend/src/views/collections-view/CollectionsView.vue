@@ -151,10 +151,7 @@ const colors = [
       <p class="state-hint">Asegúrate de haber ejecutado la migración SQL en Supabase.</p>
     </div>
 
-    <div
-      v-if="categoriesStore.loading && categoriesStore.categories.length === 0"
-      class="loading-state"
-    >
+    <div v-else-if="categoriesStore.loading" class="loading-state">
       <i class="fas fa-spinner fa-spin loading-icon"></i>
       <span class="loading-text">Cargando colecciones...</span>
     </div>

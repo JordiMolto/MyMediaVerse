@@ -25,30 +25,6 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/pendiente",
-    name: "pending",
-    component: () => import("@/views/pending-view/PendingView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/en-progreso",
-    name: "in-progress",
-    component: () => import("@/views/in-progress-view/InProgressView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/hecho",
-    name: "completed",
-    component: () => import("@/views/completed-view/CompletedView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/favoritos",
-    name: "favorites",
-    component: () => import("@/views/favorites-view/FavoritesView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
     path: "/buscar",
     name: "search",
     component: () => import("@/views/search-view/SearchView.vue"),
@@ -65,6 +41,20 @@ const routes: RouteRecordRaw[] = [
     name: "collections",
     component: () => import("@/views/collections-view/CollectionsView.vue"),
     meta: { requiresAuth: true },
+  },
+  {
+    path: "/plantillas",
+    name: "templates",
+    component: () => import("@/views/template-editor-view/TemplateEditorView.vue"),
+    meta: { requiresAuth: true },
+  },
+
+  // ─── Auth callbacks (sin guard — Supabase aterriza aquí con token en el hash) ──
+  {
+    path: "/auth/confirm",
+    name: "auth-confirm",
+    component: () => import("@/views/auth-confirm-view/AuthConfirmView.vue"),
+    meta: { requiresAuth: false },
   },
 
   // ─── Alias de compatibilidad: /item/:id → URL semántica ───────────────────────

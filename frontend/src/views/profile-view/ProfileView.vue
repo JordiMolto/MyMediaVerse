@@ -138,10 +138,7 @@ async function handleSignOut() {
         </div>
 
         <div class="category-grid">
-          <div
-            class="mini-stat-card glass-card mini-stat-card--clickable"
-            @click="router.push('/hecho?grupo=audiovisual')"
-          >
+          <div class="mini-stat-card glass-card">
             <div class="stat-icon-box stat-icon-box--movies">
               <i class="fas fa-film"></i>
             </div>
@@ -152,10 +149,7 @@ async function handleSignOut() {
             </div>
           </div>
 
-          <div
-            class="mini-stat-card glass-card mini-stat-card--clickable"
-            @click="router.push('/hecho?grupo=juegos')"
-          >
+          <div class="mini-stat-card glass-card">
             <div class="stat-icon-box stat-icon-box--games">
               <i class="fas fa-gamepad"></i>
             </div>
@@ -166,10 +160,7 @@ async function handleSignOut() {
             </div>
           </div>
 
-          <div
-            class="mini-stat-card glass-card mini-stat-card--clickable"
-            @click="router.push('/hecho?grupo=libros')"
-          >
+          <div class="mini-stat-card glass-card">
             <div class="stat-icon-box stat-icon-box--books">
               <i class="fas fa-book"></i>
             </div>
@@ -180,10 +171,7 @@ async function handleSignOut() {
             </div>
           </div>
 
-          <div
-            class="mini-stat-card glass-card mini-stat-card--clickable"
-            @click="router.push('/hecho?grupo=mesa')"
-          >
+          <div class="mini-stat-card glass-card">
             <div class="stat-icon-box stat-icon-box--board">
               <i class="fas fa-dice"></i>
             </div>

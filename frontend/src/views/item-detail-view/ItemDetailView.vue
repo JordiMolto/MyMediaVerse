@@ -11,6 +11,8 @@ import NoteForm from "@/components/notes/note-form/NoteForm.vue";
 import NoteCard from "@/components/notes/note-card/NoteCard.vue";
 import { useConfirm } from "@/composables/useConfirm";
 import { useItemEnrichment } from "@/composables/useItemEnrichment";
+import { useDetailTemplate } from "@/composables/useDetailTemplate";
+import { useDetailTemplatesStore } from "@/stores/detailTemplates";
 import { extractIdFromSlug } from "@/utils/slugify";
 import "./item-detail-view.css";
 
@@ -27,7 +29,10 @@ const showDeleteConfirm = ref(false);
 const editingNoteId = ref<string | null>(null);
 const { showConfirm } = useConfirm();
 const { isEnriching, enrichmentResult, canEnrich, enrichItem } = useItemEnrichment();
+const { bloques } = useDetailTemplate(item);
 const showEnrichConfirm = ref(false);
+
+const templatesStore = useDetailTemplatesStore();
 
 // Soporta /:categoria/:slug--id y /item/:id (legacy)
 const itemId = route.params.slug
@@ -35,8 +40,7 @@ const itemId = route.params.slug
   : (route.params.id as string);
 
 onMounted(async () => {
-  await loadItem();
-  await loadNotes();
+  await Promise.all([loadItem(), loadNotes(), templatesStore.fetchTemplates()]);
 });
 
 async function loadItem() {
@@ -360,14 +364,14 @@ function formatDate(date?: Date) {
 
       <div class="detail-layout">
         <aside class="sidebar-column">
-          <div class="poster-wrap">
+          <div v-if="bloques.poster" class="poster-wrap">
             <img v-if="item.imagen" :src="item.imagen" :alt="item.titulo" class="poster-image" />
             <div v-else class="poster-fallback">
               <i class="fas" :class="getTypeIcon(item.tipo)"></i>
             </div>
           </div>
 
-          <section v-if="displayedMetadata.length > 0" class="info-card specs-card">
+          <section v-if="bloques.detalles && displayedMetadata.length > 0" class="info-card specs-card">
             <h3 class="card-label">Especificaciones</h3>
             <div class="specs-grid">
               <div v-for="meta in displayedMetadata" :key="meta.label" class="spec-row">
@@ -380,28 +384,30 @@ function formatDate(date?: Date) {
             </div>
           </section>
 
-          <AppButton
-            v-if="canEnrich(item.tipo)"
-            variant="glass"
-            icon="fa-magic"
-            block
-            :loading="isEnriching"
-            @click="showEnrichConfirm = true"
-          >
-            Regenerar info automáticamente
-          </AppButton>
+          <div v-if="bloques.acciones" class="sidebar-actions">
+            <AppButton
+              v-if="canEnrich(item.tipo)"
+              variant="glass"
+              icon="fa-magic"
+              full-width
+              :loading="isEnriching"
+              @click="showEnrichConfirm = true"
+            >
+              Regenerar info automáticamente
+            </AppButton>
+          </div>
         </aside>
 
         <main class="main-column">
-          <div v-if="item.backdropImage" class="hero-backdrop" :style="backdropStyle">
+          <div v-if="bloques.hero && item.backdropImage" class="hero-backdrop" :style="backdropStyle">
             <div class="hero-content">
               <h1 class="hero-title">{{ item.titulo }}</h1>
-              <p v-if="item.tagline" class="hero-tagline">{{ item.tagline }}</p>
+              <p v-if="bloques.heroTagline && item.tagline" class="hero-tagline">{{ item.tagline }}</p>
             </div>
           </div>
 
           <header class="main-header">
-            <div v-if="!item.backdropImage" class="header-titles">
+            <div v-if="!item.backdropImage || !bloques.hero" class="header-titles">
               <div class="title-row">
                 <h1 class="main-title">{{ item.titulo }}</h1>
                 <div class="type-pill">{{ item.tipo }}</div>
@@ -412,13 +418,13 @@ function formatDate(date?: Date) {
               </div>
             </div>
 
-            <div v-if="hasGenres" class="genres-row">
+            <div v-if="bloques.heroGeneros && hasGenres" class="genres-row">
               <span v-for="genre in item.genero" :key="genre" class="genre-pill">
                 <i class="fas fa-tag"></i> {{ genre }}
               </span>
             </div>
 
-            <div v-if="hasStreamingInfo" class="info-card streaming-box">
+            <div v-if="bloques.plataformasStreaming && hasStreamingInfo" class="info-card streaming-box">
               <div class="card-header">
                 <i class="fas fa-tv accent-icon"></i>
                 <h3 class="card-title">Disponible en</h3>
@@ -434,7 +440,7 @@ function formatDate(date?: Date) {
               </div>
             </div>
 
-            <div v-if="hasTrailer" class="info-card trailer-box">
+            <div v-if="bloques.trailer && hasTrailer" class="info-card trailer-box">
               <div class="card-header">
                 <i class="fas fa-play-circle accent-icon"></i>
                 <h3 class="card-title">Tráiler</h3>
@@ -444,7 +450,7 @@ function formatDate(date?: Date) {
               </a>
             </div>
 
-            <div v-if="hasCastInfo" class="info-card cast-box">
+            <div v-if="bloques.reparto && hasCastInfo" class="info-card cast-box">
               <div class="card-header">
                 <i class="fas fa-users accent-icon"></i>
                 <h3 class="card-title">Reparto Principal</h3>
@@ -456,12 +462,12 @@ function formatDate(date?: Date) {
               </div>
             </div>
 
-            <div v-if="item.descripcion" class="info-card synopsis-box">
+            <div v-if="bloques.sinopsis && item.descripcion" class="info-card synopsis-box">
               <h3 class="synopsis-label">Sinopsis</h3>
               <p class="synopsis-text">{{ item.descripcion }}</p>
             </div>
 
-            <div class="status-bar">
+            <div v-if="bloques.estado" class="status-bar">
               <div class="status-indicator">
                 <span class="indicator-label">Estado:</span>
                 <div class="status-badge" :style="{ color: statusColors[item.estado] }">
@@ -480,7 +486,7 @@ function formatDate(date?: Date) {
             </div>
           </header>
 
-          <section class="timeline-section">
+          <section v-if="bloques.diario" class="timeline-section">
             <div class="timeline-header">
               <div class="section-heading">
                 <i class="fas fa-stream heading-icon heading-icon--primary"></i>

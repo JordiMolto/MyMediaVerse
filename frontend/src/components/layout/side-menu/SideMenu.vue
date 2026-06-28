@@ -16,13 +16,6 @@ const authStore = useAuthStore();
 const categoriesStore = useCategoriesStore();
 const { avatarUrl } = useUserAvatar();
 
-const activityLinks = [
-  { name: "En Progreso", icon: "fa-play", path: "/en-progreso" },
-  { name: "Pendiente", icon: "fa-clock", path: "/pendiente" },
-  { name: "Completado", icon: "fa-check-circle", path: "/hecho" },
-  { name: "Favoritos", icon: "fa-heart", path: "/favoritos" },
-];
-
 const visibleCategories = computed(() => categoriesStore.categories.filter((cat) => !cat.oculto));
 
 onMounted(() => {
@@ -81,21 +74,6 @@ function handleOverlayClick() {
           </button>
 
           <div class="nav-section">
-            <span class="nav-section-label">Actividad</span>
-            <button
-              v-for="link in activityLinks"
-              :key="link.path"
-              class="side-link"
-              :class="{ active: route.path === link.path }"
-              @click="navigateTo(link.path)"
-            >
-              <i class="side-link-icon fas" :class="link.icon"></i>
-              <span class="side-link-text">{{ link.name }}</span>
-              <i v-if="route.path === link.path" class="active-indicator fas fa-chevron-right"></i>
-            </button>
-          </div>
-
-          <div class="nav-section">
             <span class="nav-section-label">Colecciones</span>
 
             <p v-if="visibleCategories.length === 0" class="nav-empty">
@@ -130,6 +108,14 @@ function handleOverlayClick() {
             >
               <i class="side-link-icon fas fa-sliders-h"></i>
               <span class="side-link-text">Gestionar colecciones</span>
+            </button>
+            <button
+              class="side-link side-link--manage"
+              :class="{ active: route.path === '/plantillas' }"
+              @click="navigateTo('/plantillas')"
+            >
+              <i class="side-link-icon fas fa-puzzle-piece"></i>
+              <span class="side-link-text">Plantillas de vista</span>
             </button>
           </div>
         </nav>

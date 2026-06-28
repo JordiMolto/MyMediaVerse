@@ -144,7 +144,10 @@ export const useAuthStore = defineStore("auth", () => {
     error.value = null;
 
     try {
-      const { data, error: updateError } = await supabase.auth.updateUser({ email: newEmail });
+      const { data, error: updateError } = await supabase.auth.updateUser(
+        { email: newEmail },
+        { emailRedirectTo: `${window.location.origin}/auth/confirm` },
+      );
       if (updateError) throw updateError;
       user.value = data.user;
       return data.user;

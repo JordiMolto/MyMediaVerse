@@ -1,5 +1,5 @@
 import { openDB, DBSchema, IDBPDatabase } from "idb";
-import { Item, Note } from "@/types";
+import { Item, Note, DetailTemplate } from "@/types";
 
 interface MyMediaVerseDB extends DBSchema {
   items: {
@@ -16,10 +16,15 @@ interface MyMediaVerseDB extends DBSchema {
     key: string;
     value: any;
   };
+  detail_templates: {
+    key: string;
+    value: DetailTemplate;
+    indexes: { "by-tipo": string };
+  };
 }
 
 const DB_NAME = "MyMediaVerseDB";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 let dbInstance: IDBPDatabase<MyMediaVerseDB> | null = null;
 
@@ -28,22 +33,24 @@ export async function initDB(): Promise<IDBPDatabase<MyMediaVerseDB>> {
 
   dbInstance = await openDB<MyMediaVerseDB>(DB_NAME, DB_VERSION, {
     upgrade(db, _oldVersion) {
-      // Create items store
       if (!db.objectStoreNames.contains("items")) {
         const itemStore = db.createObjectStore("items", { keyPath: "id" });
         itemStore.createIndex("by-tipo", "tipo");
         itemStore.createIndex("by-estado", "estado");
       }
 
-      // Create notes store
       if (!db.objectStoreNames.contains("notes")) {
         const noteStore = db.createObjectStore("notes", { keyPath: "id" });
         noteStore.createIndex("by-itemId", "itemId");
       }
 
-      // Create categories store
       if (!db.objectStoreNames.contains("categories")) {
         db.createObjectStore("categories", { keyPath: "id" });
+      }
+
+      if (!db.objectStoreNames.contains("detail_templates")) {
+        const tplStore = db.createObjectStore("detail_templates", { keyPath: "id" });
+        tplStore.createIndex("by-tipo", "tipoAsociado");
       }
     },
   });
@@ -127,4 +134,25 @@ export async function updateCategory(category: any): Promise<string> {
 export async function deleteCategory(id: string): Promise<void> {
   const db = await initDB();
   await db.delete("categories", id);
+}
+
+// DetailTemplates CRUD
+export async function getAllDetailTemplates(): Promise<DetailTemplate[]> {
+  const db = await initDB();
+  return db.getAll("detail_templates");
+}
+
+export async function addDetailTemplate(template: DetailTemplate): Promise<string> {
+  const db = await initDB();
+  return db.add("detail_templates", template);
+}
+
+export async function putDetailTemplate(template: DetailTemplate): Promise<string> {
+  const db = await initDB();
+  return db.put("detail_templates", template);
+}
+
+export async function deleteDetailTemplate(id: string): Promise<void> {
+  const db = await initDB();
+  await db.delete("detail_templates", id);
 }

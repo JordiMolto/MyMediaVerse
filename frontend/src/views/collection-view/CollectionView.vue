@@ -5,6 +5,7 @@ import { useItemsStore } from "@/stores/items";
 import { useCategoriesStore } from "@/stores/categories";
 import { useUIStore } from "@/stores/ui";
 import { Item, ItemStatus } from "@/types";
+import { CategoryViewMode } from "@/types/category";
 import MediaCard from "@/components/common/media-card/MediaCard.vue";
 import AppSelect from "@/components/common/app-select/AppSelect.vue";
 import { collectionItemPath, slugify } from "@/utils/slugify";
@@ -28,6 +29,20 @@ const category = computed(() =>
 );
 // Nombre real para mostrar en UI y filtrar items
 const categoryName = computed(() => category.value?.nombre ?? categorySlug.value);
+
+// View mode — se lee de la categoría, fallback a "grid"
+const viewMode = computed<CategoryViewMode>(() => category.value?.viewMode ?? "grid");
+
+const viewModeOptions: { value: CategoryViewMode; icon: string; title: string }[] = [
+  { value: "grid", icon: "fa-th-large", title: "Cuadrícula" },
+  { value: "list", icon: "fa-list", title: "Lista" },
+  { value: "compact", icon: "fa-th", title: "Compacto" },
+];
+
+async function setViewMode(mode: CategoryViewMode) {
+  if (!category.value || category.value.viewMode === mode) return;
+  await categoriesStore.updateCategory(category.value.id, { viewMode: mode });
+}
 
 const sortOptions = [
   { value: "recent", label: "Recientes" },
@@ -98,12 +113,12 @@ function getCount(status: string): number {
   return getItemsForStatus(status).length;
 }
 
-// Pagination
-const itemsPerPage = 12;
-const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage));
+// Pagination — compact shows more items per page
+const itemsPerPage = computed(() => (viewMode.value === "compact" ? 30 : viewMode.value === "list" ? 20 : 12));
+const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage.value));
 const paginatedItems = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  return filteredItems.value.slice(start, start + itemsPerPage);
+  const start = (currentPage.value - 1) * itemsPerPage.value;
+  return filteredItems.value.slice(start, start + itemsPerPage.value);
 });
 const visiblePages = computed(() => {
   const pages: (number | string)[] = [];
@@ -187,7 +202,19 @@ function getTabStyle(tabValue: string) {
           </button>
         </div>
       </div>
-      <div class="tabs-sort">
+      <div class="tabs-controls">
+        <div class="view-mode-toggle">
+          <button
+            v-for="opt in viewModeOptions"
+            :key="opt.value"
+            class="view-mode-btn"
+            :class="{ active: viewMode === opt.value }"
+            :title="opt.title"
+            @click="setViewMode(opt.value)"
+          >
+            <i class="fas" :class="opt.icon"></i>
+          </button>
+        </div>
         <AppSelect v-model="sortBy" :options="sortOptions" pill />
       </div>
     </div>
@@ -216,11 +243,18 @@ function getTabStyle(tabValue: string) {
       </div>
 
       <div v-else class="content-wrapper">
-        <div class="items-grid">
+        <div
+          class="items-grid"
+          :class="{
+            'items-grid--list': viewMode === 'list',
+            'items-grid--compact': viewMode === 'compact',
+          }"
+        >
           <MediaCard
             v-for="item in paginatedItems"
             :key="item.id"
             :item="item"
+            :view-mode="viewMode"
             @click="goToDetail"
           />
         </div>
