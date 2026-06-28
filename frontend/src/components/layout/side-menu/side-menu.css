@@ -212,6 +212,7 @@
     transition: background var(--transition-fast);
 
     &:hover {
+      cursor: pointer;
       background: rgba(255, 255, 255, 0.05);
       .settings-btn {
         color: rgb(164, 164, 164);
@@ -252,7 +253,6 @@
     background: transparent;
     border: none;
     color: var(--color-text-muted);
-    cursor: pointer;
     padding: var(--space-2);
     transition: color var(--transition-fast);
   }

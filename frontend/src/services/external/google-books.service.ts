@@ -24,23 +24,24 @@ export async function searchGoogleBooks(query: string): Promise<GoogleBookResult
   const trimmedQuery = query.trim();
   if (!trimmedQuery) return null;
 
+  const baseParams: any = { maxResults: 1 };
+  if (GOOGLE_BOOKS_API_KEY) baseParams.key = GOOGLE_BOOKS_API_KEY;
+
   try {
-    const params: any = {
-      q: `intitle:${trimmedQuery}`,
-      maxResults: 1,
-      langRestrict: "es", // Prefer Spanish
-    };
-
-    if (GOOGLE_BOOKS_API_KEY) {
-      params.key = GOOGLE_BOOKS_API_KEY;
-    }
-
-    const response = await axios.get(BASE_URL, { params });
-
+    // First attempt: exact intitle search
+    const response = await axios.get(BASE_URL, {
+      params: { ...baseParams, q: `intitle:${trimmedQuery}` },
+    });
     const items = response.data.items as GoogleBookResult[];
-    if (items && items.length > 0) {
-      return items[0];
-    }
+    if (items && items.length > 0) return items[0];
+
+    // Fallback: broad search (handles typos / translated titles)
+    const fallback = await axios.get(BASE_URL, {
+      params: { ...baseParams, q: trimmedQuery },
+    });
+    const fallbackItems = fallback.data.items as GoogleBookResult[];
+    if (fallbackItems && fallbackItems.length > 0) return fallbackItems[0];
+
     return null;
   } catch (error: any) {
     console.error("Error searching Google Books:", error.message);

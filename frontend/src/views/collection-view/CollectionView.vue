@@ -5,6 +5,7 @@ import { useItemsStore } from "@/stores/items";
 import { useCategoriesStore } from "@/stores/categories";
 import { useUIStore } from "@/stores/ui";
 import { useConfirm } from "@/composables/useConfirm";
+import { useItemEnrichment } from "@/composables/useItemEnrichment";
 import { Item, ItemStatus } from "@/types";
 import { CategoryViewMode } from "@/types/category";
 import MediaCard from "@/components/common/media-card/MediaCard.vue";
@@ -18,11 +19,21 @@ const itemsStore = useItemsStore();
 const categoriesStore = useCategoriesStore();
 const uiStore = useUIStore();
 const { showConfirm } = useConfirm();
+const { enrichMultiple, canEnrich } = useItemEnrichment();
 
 // State
 const selectedStatus = ref<string>("todos");
 const sortBy = ref<string>("recent");
 const currentPage = ref(1);
+
+// ── Pagination size ────────────────────────────────────────────────────────
+const pageSizeOptions = [
+  { value: 25, label: "25" },
+  { value: 50, label: "50" },
+  { value: 100, label: "100" },
+  { value: 200, label: "200" },
+];
+const itemsPerPage = ref(25);
 
 // ── Selection ──────────────────────────────────────────────────────────────
 const isSelecting = ref(false);
@@ -74,6 +85,7 @@ onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
 
 // ── Bulk actions ───────────────────────────────────────────────────────────
 const isBulkLoading = ref(false);
+const bulkEnrichResult = ref<{ success: number; failed: number; skipped: number } | null>(null);
 
 async function bulkChangeStatus(status: ItemStatus) {
   isBulkLoading.value = true;
@@ -94,6 +106,41 @@ async function bulkToggleFavorite() {
   );
   isBulkLoading.value = false;
   exitSelectMode();
+}
+
+async function bulkEnrichInfo() {
+  const ids = [...selectedIds.value];
+  const items = ids.map((id) => itemsStore.items.find((i) => i.id === id)).filter(Boolean) as Item[];
+  const enrichable = items.filter((i) => canEnrich(i.tipo));
+
+  if (enrichable.length === 0) {
+    await showConfirm({
+      title: "Sin compatibles",
+      message: "Ninguno de los items seleccionados es compatible con la regeneración automática.",
+      confirmLabel: "Entendido",
+      danger: false,
+    });
+    return;
+  }
+
+  const ok = await showConfirm({
+    title: "Regenerar info automáticamente",
+    message: `Se regenerará la info de ${enrichable.length} item${enrichable.length === 1 ? "" : "s"} desde fuentes externas. Los campos manuales (notas, valoración, estado, tags) no se tocarán.`,
+    confirmLabel: "Sí, regenerar",
+    danger: false,
+  });
+  if (!ok) return;
+
+  isBulkLoading.value = true;
+  bulkEnrichResult.value = null;
+  const result = await enrichMultiple(enrichable);
+  isBulkLoading.value = false;
+  bulkEnrichResult.value = result;
+
+  setTimeout(() => {
+    bulkEnrichResult.value = null;
+    exitSelectMode();
+  }, 3000);
 }
 
 async function bulkDelete() {
@@ -166,7 +213,7 @@ watch(categorySlug, () => {
   exitSelectMode();
 });
 
-watch([selectedStatus, sortBy], () => {
+watch([selectedStatus, sortBy, itemsPerPage], () => {
   currentPage.value = 1;
 });
 
@@ -202,9 +249,6 @@ function getCount(status: string): number {
 }
 
 // ── Pagination ─────────────────────────────────────────────────────────────
-const itemsPerPage = computed(() =>
-  viewMode.value === "compact" ? 30 : viewMode.value === "list" ? 20 : 12,
-);
 const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage.value));
 const paginatedItems = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
@@ -375,6 +419,16 @@ onUnmounted(() => window.removeEventListener("click", handleDocClick));
           </button>
 
           <button
+            class="bulk-btn"
+            :disabled="selectedIds.size === 0 || isBulkLoading"
+            title="Regenerar info automáticamente"
+            @click="bulkEnrichInfo"
+          >
+            <i class="fas" :class="isBulkLoading ? 'fa-circle-notch fa-spin' : 'fa-magic'"></i>
+            <span>Regenerar</span>
+          </button>
+
+          <button
             class="bulk-btn bulk-btn--danger"
             :disabled="selectedIds.size === 0 || isBulkLoading"
             title="Eliminar"
@@ -384,6 +438,18 @@ onUnmounted(() => window.removeEventListener("click", handleDocClick));
             <span>Eliminar</span>
           </button>
         </div>
+      </div>
+    </Transition>
+
+    <!-- ── Bulk enrich result toast ───────────────────────────────────────── -->
+    <Transition name="fade">
+      <div v-if="bulkEnrichResult" class="bulk-enrich-toast">
+        <i class="fas fa-check-circle"></i>
+        <span>
+          {{ bulkEnrichResult.success }} actualizados
+          <template v-if="bulkEnrichResult.failed > 0">, {{ bulkEnrichResult.failed }} no encontrados</template>
+          <template v-if="bulkEnrichResult.skipped > 0">, {{ bulkEnrichResult.skipped }} omitidos</template>
+        </span>
       </div>
     </Transition>
 
@@ -419,6 +485,7 @@ onUnmounted(() => window.removeEventListener("click", handleDocClick));
           </button>
         </div>
         <AppSelect v-model="sortBy" :options="sortOptions" pill />
+        <AppSelect v-model="itemsPerPage" :options="pageSizeOptions" pill />
       </div>
     </div>
 

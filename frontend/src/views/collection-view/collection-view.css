@@ -588,3 +588,24 @@
 .fade-leave-to {
   opacity: 0;
 }
+
+/* ── Bulk enrich toast ─────────────────────────────────────────────────────── */
+.bulk-enrich-toast {
+  position: fixed;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-success, #22c55e);
+  border-radius: var(--radius-full);
+  color: var(--color-success, #22c55e);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+}

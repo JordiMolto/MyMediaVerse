@@ -34,5 +34,35 @@ export function useItemEnrichment() {
     return success;
   }
 
-  return { isEnriching, enrichmentResult, canEnrich, enrichItem };
+  async function enrichMultiple(items: Item[]): Promise<{ success: number; failed: number; skipped: number }> {
+    isEnriching.value = true;
+    enrichmentResult.value = null;
+
+    let success = 0;
+    let failed = 0;
+    let skipped = 0;
+
+    for (const item of items) {
+      if (!canEnrich(item.tipo)) {
+        skipped++;
+        continue;
+      }
+      let ok = false;
+      if (tmdb.isEnrichable(item.tipo)) {
+        ok = await tmdb.enrichItemWithTMDB(item);
+      } else if (books.isEnrichableBook(item.tipo)) {
+        ok = await books.enrichItemWithBooks(item);
+      }
+      if (ok) success++;
+      else failed++;
+      // Small delay to avoid rate limiting
+      await new Promise((r) => setTimeout(r, 300));
+    }
+
+    isEnriching.value = false;
+    enrichmentResult.value = { success, failed };
+    return { success, failed, skipped };
+  }
+
+  return { isEnriching, enrichmentResult, canEnrich, enrichItem, enrichMultiple };
 }
