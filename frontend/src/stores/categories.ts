@@ -19,11 +19,11 @@ export const useCategoriesStore = defineStore("categories", () => {
       if (data.length === 0) {
         console.log("No categories found, seeding defaults...");
         const defaults = [
-          { nombre: "Películas", icono: "fa-film", color: "#A855F7" },
-          { nombre: "Series", icono: "fa-tv", color: "#A855F7" },
-          { nombre: "Libros", icono: "fa-book", color: "#4CAF50" },
-          { nombre: "Videojuegos", icono: "fa-gamepad", color: "#00F5FF" },
-          { nombre: "Juegos de Mesa", icono: "fa-dice", color: "#FFC107" },
+          { nombre: "Películas", icono: "fa-film", color: "#A855F7", isDefault: true },
+          { nombre: "Series", icono: "fa-tv", color: "#A855F7", isDefault: true },
+          { nombre: "Libros", icono: "fa-book", color: "#4CAF50", isDefault: true },
+          { nombre: "Videojuegos", icono: "fa-gamepad", color: "#00F5FF", isDefault: true },
+          { nombre: "Juegos de Mesa", icono: "fa-dice", color: "#FFC107", isDefault: true },
         ];
 
         for (const cat of defaults) {

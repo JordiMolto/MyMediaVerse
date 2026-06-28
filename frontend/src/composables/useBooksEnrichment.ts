@@ -34,7 +34,7 @@ export function useBooksEnrichment() {
         autor: details.authors ? details.authors.join(", ") : item.autor,
         editorial: details.publisher || item.editorial,
         duracion: details.pageCount ? details.pageCount : item.duracion,
-        imagen: details.imageLinks?.thumbnail || details.imageLinks?.smallThumbnail || item.imagen,
+        imagen: (details.imageLinks?.smallThumbnail || details.imageLinks?.thumbnail)?.replace("http:", "https:") || item.imagen,
       };
 
       // Genres/Categories

@@ -71,7 +71,7 @@ export function useTMDBEnrichment() {
         titulo: details.title || details.name || item.titulo,
         descripcion: details.overview || item.descripcion,
         imagen: getTMDBImageUrl(details.poster_path) || item.imagen,
-        backdropImage: getTMDBImageUrl(details.backdrop_path),
+        backdropImage: getTMDBImageUrl(details.backdrop_path, true),
         rating: details.vote_average ? Math.round(details.vote_average / 2) : item.rating,
         tagline: details.tagline,
       };

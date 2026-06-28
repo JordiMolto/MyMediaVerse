@@ -181,7 +181,7 @@ const colors = [
           <div class="card-info">
             <h4 class="cat-name">{{ cat.nombre }}</h4>
             <div class="cat-meta">
-              <span class="cat-type">Colección</span>
+              <span class="cat-type">{{ cat.isDefault ? "Predeterminada" : "Colección" }}</span>
               <span v-if="cat.oculto" class="hidden-badge">Oculta</span>
             </div>
           </div>
@@ -197,7 +197,12 @@ const colors = [
           <button class="action-btn action-btn--edit" @click="openEditModal(cat)" title="Editar">
             <i class="fas fa-edit"></i>
           </button>
-          <button class="action-btn action-btn--delete" @click="confirmDelete(cat)" title="Borrar">
+          <button
+            v-if="!cat.isDefault"
+            class="action-btn action-btn--delete"
+            @click="confirmDelete(cat)"
+            title="Borrar"
+          >
             <i class="fas fa-trash"></i>
           </button>
         </div>

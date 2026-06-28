@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useItemsStore } from "@/stores/items";
 import { useCategoriesStore } from "@/stores/categories";
 import { useUIStore } from "@/stores/ui";
+import { useCollectionFiltersStore } from "@/stores/collectionFilters";
 import { useConfirm } from "@/composables/useConfirm";
 import { useItemEnrichment } from "@/composables/useItemEnrichment";
 import { Item, ItemStatus } from "@/types";
@@ -18,14 +19,33 @@ const router = useRouter();
 const itemsStore = useItemsStore();
 const categoriesStore = useCategoriesStore();
 const uiStore = useUIStore();
+const filtersStore = useCollectionFiltersStore();
 const { showConfirm } = useConfirm();
 const { enrichMultiple, canEnrich } = useItemEnrichment();
 
-// State
-const selectedStatus = ref<string>("todos");
-const selectedGenre = ref<string>("todos");
-const sortBy = ref<string>("recent");
-const currentPage = ref(1);
+// ── Filters (persisted in Pinia per category slug) ─────────────────────────
+const categorySlug = computed(() => route.params.nombre as string);
+
+const selectedStatus = computed({
+  get: () => filtersStore.getFilters(categorySlug.value).status,
+  set: (v) => filtersStore.setFilters(categorySlug.value, { status: v, page: 1 }),
+});
+const selectedGenre = computed({
+  get: () => filtersStore.getFilters(categorySlug.value).genre,
+  set: (v) => filtersStore.setFilters(categorySlug.value, { genre: v, page: 1 }),
+});
+const sortBy = computed({
+  get: () => filtersStore.getFilters(categorySlug.value).sortBy,
+  set: (v) => filtersStore.setFilters(categorySlug.value, { sortBy: v, page: 1 }),
+});
+const currentPage = computed({
+  get: () => filtersStore.getFilters(categorySlug.value).page,
+  set: (v) => filtersStore.setFilters(categorySlug.value, { page: v }),
+});
+const itemsPerPage = computed({
+  get: () => filtersStore.getFilters(categorySlug.value).itemsPerPage,
+  set: (v) => filtersStore.setFilters(categorySlug.value, { itemsPerPage: v, page: 1 }),
+});
 
 // ── Pagination size ────────────────────────────────────────────────────────
 const pageSizeOptions = [
@@ -34,7 +54,6 @@ const pageSizeOptions = [
   { value: 100, label: "100" },
   { value: 200, label: "200" },
 ];
-const itemsPerPage = ref(25);
 
 // ── Selection ──────────────────────────────────────────────────────────────
 const isSelecting = ref(false);
@@ -160,7 +179,6 @@ async function bulkDelete() {
 }
 
 // ── Route / category ───────────────────────────────────────────────────────
-const categorySlug = computed(() => route.params.nombre as string);
 const category = computed(() =>
   categoriesStore.categories.find((c) => slugify(c.nombre) === categorySlug.value),
 );
@@ -185,6 +203,7 @@ const sortOptions = [
   { value: "recent", label: "Recientes" },
   { value: "alpha", label: "Alfabético" },
   { value: "rating", label: "Valoración" },
+  { value: "genre", label: "Género" },
 ];
 
 const statusTabs = [
@@ -209,14 +228,7 @@ onMounted(() => {
 });
 
 watch(categorySlug, () => {
-  selectedStatus.value = "todos";
-  selectedGenre.value = "todos";
-  currentPage.value = 1;
   exitSelectMode();
-});
-
-watch([selectedStatus, selectedGenre, sortBy, itemsPerPage], () => {
-  currentPage.value = 1;
 });
 
 function getItemsForStatus(status: string) {
@@ -263,6 +275,20 @@ const filteredItems = computed(() => {
 function getCount(status: string): number {
   return getItemsForStatus(status).length;
 }
+
+// ── Genre grouping ─────────────────────────────────────────────────────────
+const groupedByGenre = computed(() => {
+  if (sortBy.value !== "genre") return null;
+  const groups = new Map<string, Item[]>();
+  for (const item of filteredItems.value) {
+    const genres = item.genero?.length ? item.genero : ["Sin género"];
+    for (const g of genres) {
+      if (!groups.has(g)) groups.set(g, []);
+      groups.get(g)!.push(item);
+    }
+  }
+  return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b));
+});
 
 // ── Pagination ─────────────────────────────────────────────────────────────
 const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage.value));
@@ -536,7 +562,43 @@ onUnmounted(() => window.removeEventListener("click", handleDocClick));
       </div>
 
       <div v-else class="content-wrapper">
+        <!-- Agrupado por género -->
+        <template v-if="groupedByGenre">
+          <div v-for="[genre, items] in groupedByGenre" :key="genre" class="genre-group">
+            <h3 class="genre-group-title">{{ genre }}</h3>
+            <div
+              class="items-grid"
+              :class="{
+                'items-grid--list': viewMode === 'list',
+                'items-grid--compact': viewMode === 'compact',
+                'items-grid--selecting': isSelecting,
+              }"
+            >
+              <div
+                v-for="item in items"
+                :key="item.id"
+                class="card-wrapper"
+                @pointerdown="onCardPointerDown(item)"
+                @pointerup="onCardPointerUp"
+                @pointerleave="onCardPointerUp"
+                @contextmenu.prevent="!isSelecting && (enterSelectMode(), toggleSelect(item.id))"
+              >
+                <MediaCard
+                  :item="item"
+                  :view-mode="viewMode"
+                  :selectable="isSelecting"
+                  :selected="selectedIds.has(item.id)"
+                  @click="handleCardClick"
+                  @toggle-select="toggleSelect"
+                />
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Grid normal -->
         <div
+          v-else
           class="items-grid"
           :class="{
             'items-grid--list': viewMode === 'list',

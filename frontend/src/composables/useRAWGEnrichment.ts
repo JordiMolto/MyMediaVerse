@@ -26,9 +26,13 @@ export function useRAWGEnrichment() {
       const detail = await getRawgGameDetail(searchResult.id);
       const game = detail ?? searchResult;
 
+      const rawgImage = game.background_image
+        ? game.background_image.replace("/media/", "/media/resize/420/-/")
+        : item.imagen;
+
       const updates: Partial<Item> = {
         titulo: game.name || item.titulo,
-        imagen: game.background_image || item.imagen,
+        imagen: rawgImage,
       };
 
       if (game.description_raw) updates.descripcion = game.description_raw;

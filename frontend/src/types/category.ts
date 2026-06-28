@@ -7,6 +7,7 @@ export interface Category {
   icono?: string;
   color?: string;
   oculto?: boolean;
+  isDefault?: boolean;
   viewMode?: CategoryViewMode;
   createdAt?: Date;
   updatedAt?: Date;

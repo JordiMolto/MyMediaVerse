@@ -138,7 +138,7 @@ export function useBulkImport() {
             item.titulo = details.title || details.name || row.titulo;
             item.descripcion = details.overview;
             item.imagen = getTMDBImageUrl(details.poster_path);
-            item.backdropImage = getTMDBImageUrl(details.backdrop_path);
+            item.backdropImage = getTMDBImageUrl(details.backdrop_path, true);
             item.rating = details.vote_average ? Math.round(details.vote_average / 2) : item.rating;
             item.tagline = details.tagline;
 

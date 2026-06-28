@@ -3,7 +3,8 @@ import { ItemType } from "@/types";
 
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
-const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w185";
+const IMAGE_BASE_URL_BACKDROP = "https://image.tmdb.org/t/p/w780";
 
 export interface TMDBResult {
   id: number;
@@ -130,9 +131,9 @@ export async function getTMDBDetails(
   }
 }
 
-export function getTMDBImageUrl(path: string | null): string | undefined {
+export function getTMDBImageUrl(path: string | null, backdrop = false): string | undefined {
   if (!path) return undefined;
-  return `${IMAGE_BASE_URL}${path}`;
+  return backdrop ? `${IMAGE_BASE_URL_BACKDROP}${path}` : `${IMAGE_BASE_URL}${path}`;
 }
 
 export function getYouTubeTrailerUrl(videos?: TMDBDetailedResult["videos"]): string | undefined {

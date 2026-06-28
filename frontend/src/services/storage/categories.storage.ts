@@ -30,6 +30,7 @@ export async function createCategory(
     ...category,
     id: crypto.randomUUID(),
     userId: "local-user",
+    isDefault: category.isDefault || false,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
